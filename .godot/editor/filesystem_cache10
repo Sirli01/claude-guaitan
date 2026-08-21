@@ -1,5 +1,5 @@
 9cad1ddce9e5a63143ba340c9520626b
-::res://::1787296060
+::res://::1787298073
 CLAUDE.md::TextFile::-1::1787232554::0::1::::<><><>0<>0<><>::
 claude_desktop_config.json::JSON::-1::1787232554::0::1::::<><><>0<>0<><>::
 default_bus_layout.tres::AudioBusLayout::-1::1787232554::0::1::::<><><>0<>0<><>::
@@ -400,7 +400,7 @@ floor_1.tscn::PackedScene::-1::1787232592::0::1::::<><><>0<>0<><>::res://scripts
 floor_2.tscn::PackedScene::-1::1787232592::0::1::::<><><>0<>0<><>::res://scripts/levels/floor_2_scene.gd
 floor_3.tscn::PackedScene::-1::1787232592::0::1::::<><><>0<>0<><>::res://scripts/levels/floor_3_scene.gd
 level_base.tscn::PackedScene::-1::1787232592::0::1::::<><><>0<>0<><>::res://scripts/levels/level_base_v2.gd<>res://scenes/ui/hud.tscn<>res://scenes/ui/dialogue_ui.tscn<>res://scenes/ui/inventory_ui.tscn
-prologue_room.tscn::PackedScene::-1::1787232592::0::1::::<><><>0<>0<><>::res://scripts/levels/prologue_room_scene.gd<>res://scripts/editor/GameWall.gd<>res://scripts/editor/GameFurniture.gd
+prologue_room.tscn::PackedScene::-1::1787297934::0::1::::<><><>0<>0<><>::res://scripts/levels/prologue_room_scene.gd<>res://scripts/editor/GameWall.gd<>res://scripts/editor/GameFurniture.gd<>res://scenes/characters/player.tscn<>res://assets/sprites/_0000_手机.png
 prologue_street.tscn::PackedScene::-1::1787232592::0::1::::<><><>0<>0<><>::res://scripts/levels/prologue_street_scene.gd
 ::res://scenes/rooms/::1787232592
 room_template.tscn::PackedScene::-1::1787232592::0::1::::<><><>0<>0<><>::res://scripts/levels/room_template_v2.gd
@@ -467,7 +467,7 @@ floor_1_scene.gd::GDScript::6146921460919718431::1787232597::0::1::::<>LevelBase
 floor_2_scene.gd::GDScript::4649786221020564258::1787232597::0::1::::<>LevelBaseV2<><>0<>1<><>::
 floor_3_scene.gd::GDScript::2882611919509387544::1787232597::0::1::::<>LevelBaseV2<><>0<>1<><>::
 level_base_v2.gd::GDScript::2936638386997926036::1787232597::0::1::::LevelBaseV2<>Node2D<><>0<>1<><>::
-prologue_room_scene.gd::GDScript::1986724484492922701::1787232598::0::1::::<>Node2D<><>0<>1<><>::
+prologue_room_scene.gd::GDScript::1986724484492922701::1787297988::0::1::::<>Node2D<><>0<>1<><>::
 prologue_street_scene.gd::GDScript::1166543927005910792::1787232598::0::1::::<>Node2D<><>0<>0<><>::
 room_template.gd::GDScript::2052437197385357397::1787232598::0::1::::RoomTemplate<>Node2D<><>0<>0<><>::
 room_template_v2.gd::GDScript::1249754643268673934::1787232598::0::1::::RoomTemplateV2<>Node2D<><>0<>0<><>::
@@ -493,10 +493,11 @@ map_capture_tool.gd::GDScript::2553994059305514451::1787232599::0::1::::MapCaptu
 procedural_sfx.gd::GDScript::2218602499333918575::1787232599::0::1::::ProceduralSFX<>Node<><>0<>0<><>::
 texture_utils.gd::GDScript::6883219931692858681::1787232600::0::1::::TextureUtils<>RefCounted<><>0<>0<><>::
 world_label_manager.gd::GDScript::870925850467823239::1787232600::0::1::::<>Node<><>0<>0<><>::
-::res://tools/::1787232557
+::res://tools/::1787298035
 auto_fix_errors.gd::GDScript::3290216246741151234::1787232556::0::1::::<>EditorScript<><>0<>1<><>::
 generate_horror_theme.gd::GDScript::2703654713484769578::1787232556::0::1::::<>EditorScript<><>0<>1<><>::
 test_mcp_tools.gd::GDScript::5342148733635973289::1787232556::0::1::::<>EditorScript<><>0<>1<><>::
+test_prologue_load.gd::GDScript::353182298683129859::1787298047::0::1::::<>SceneTree<><>0<>0<><>::
 ::res://website/::1787232599
 ::res://website/images/::1787232602
 abyss_mouth.png::CompressedTexture2D::6377637076316254522::1787232600::1787232600::1::::<><><>0<>0<>edd25804720c644f30292ac248e6c03a<>res://.godot/imported/abyss_mouth.png-cc39037cfe9106403c596ccf3d08d18a.ctex::

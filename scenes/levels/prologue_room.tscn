@@ -1,8 +1,126 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/prologue_room_scene.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/editor/GameWall.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/editor/GameFurniture.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/characters/player.tscn" id="4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/_0000_手机.png" id="5"]
+
+[sub_resource type="Shader" id="shader_beam"]
+code = "
+shader_type canvas_item;
+void fragment() {
+	float edge = 1.0 - 2.0 * abs(UV.x - 0.5);
+	edge = smoothstep(0.0, 0.7, edge);
+	float vert = 1.0 - UV.y * 0.6;
+	float a = edge * vert * 0.10;
+	COLOR = vec4(1.0, 0.92, 0.65, a);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="mat_beam"]
+shader = SubResource("shader_beam")
+
+[sub_resource type="Shader" id="shader_core"]
+code = "
+shader_type canvas_item;
+void fragment() {
+	float edge = 1.0 - 2.0 * abs(UV.x - 0.5);
+	edge = smoothstep(0.0, 0.8, edge);
+	float vert = 1.0 - UV.y * 0.5;
+	float a = edge * vert * 0.07;
+	COLOR = vec4(1.0, 0.95, 0.7, a);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="mat_core"]
+shader = SubResource("shader_core")
+
+[sub_resource type="Gradient" id="grad_light"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.25, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_light"]
+gradient = SubResource("grad_light")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="GradientTexture2D" id="gtex_player_light"]
+gradient = SubResource("grad_light")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="grad_dust"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_dust"]
+gradient = SubResource("grad_dust")
+width = 4
+height = 4
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Curve" id="curve_alpha"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.2, 1), 0.0, 0.0, 0, 0, Vector2(0.8, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="ctex_alpha"]
+curve = SubResource("curve_alpha")
+
+[sub_resource type="ParticleProcessMaterial" id="pmat_dust"]
+direction = Vector3(0.5, 1, 0)
+spread = 30.0
+initial_velocity_min = 3.0
+initial_velocity_max = 6.0
+gravity = Vector3(0, 1, 0)
+emission_shape = 3
+emission_box_extents = Vector3(80, 160, 0)
+scale_min = 0.3
+scale_max = 0.8
+color = Color(1, 0.95, 0.75, 0.5)
+alpha_curve = SubResource("ctex_alpha")
+
+[sub_resource type="StyleBoxFlat" id="sb_stam_bg"]
+bg_color = Color(0.15, 0.12, 0.12, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="sb_stam_fill"]
+bg_color = Color(0.4, 0.8, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="sb_san_bg"]
+bg_color = Color(0.12, 0.1, 0.15, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="sb_san_fill"]
+bg_color = Color(0.5, 0.4, 0.9, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="RectangleShape2D" id="shape_phone"]
+size = Vector2(40, 24)
+
+[sub_resource type="RectangleShape2D" id="shape_door"]
+size = Vector2(80, 20)
 
 [node name="PrologueRoom" type="Node2D"]
 script = ExtResource("1")
@@ -56,3 +174,139 @@ script = ExtResource("3")
 furniture_name = "衣柜"
 furniture_size = Vector2(60, 40)
 furniture_color = Color(0.2, 0.22, 0.25, 1)
+
+[node name="WindowEffects" type="Node2D" parent="."]
+
+[node name="WinFrame" type="ColorRect" parent="WindowEffects"]
+z_index = 1
+offset_left = 88.0
+offset_top = -468.0
+offset_right = 264.0
+offset_bottom = -420.0
+color = Color(0.45, 0.35, 0.25, 0)
+
+[node name="SunBeam" type="Polygon2D" parent="WindowEffects"]
+z_index = 3
+material = SubResource("mat_beam")
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(120, -432, 232, -432, 416, 104, 216, 104)
+uv = PackedVector2Array(0, 0, 1, 0, 1, 1, 0, 1)
+
+[node name="SunBeamCore" type="Polygon2D" parent="WindowEffects"]
+z_index = 3
+material = SubResource("mat_core")
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(144, -432, 208, -432, 336, 24, 248, 24)
+uv = PackedVector2Array(0, 0, 1, 0, 1, 1, 0, 1)
+
+[node name="WindowLight" type="PointLight2D" parent="WindowEffects"]
+position = Vector2(176, -336)
+color = Color(1, 0.9, 0.65, 1)
+energy = 0.5
+texture = SubResource("gtex_light")
+texture_scale = 10.0
+
+[node name="DustParticles" type="GPUParticles2D" parent="WindowEffects"]
+z_index = 4
+position = Vector2(236, -176)
+amount = 12
+lifetime = 5.0
+speed_scale = 0.3
+process_material = SubResource("pmat_dust")
+texture = SubResource("gtex_dust")
+
+[node name="Player" parent="." instance=ExtResource("4")]
+unique_name_in_owner = true
+position = Vector2(0, 136)
+
+[node name="PointLight2D" type="PointLight2D" parent="Player"]
+color = Color(0.95, 0.9, 0.75, 1)
+energy = 0.6
+texture = SubResource("gtex_player_light")
+texture_scale = 8.0
+
+[node name="PhoneArea" type="Area2D" parent="." groups=["interactable"]]
+unique_name_in_owner = true
+position = Vector2(140, -156)
+collision_layer = 16
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PhoneArea"]
+shape = SubResource("shape_phone")
+
+[node name="PhoneSprite" type="Sprite2D" parent="PhoneArea"]
+position = Vector2(-10, -8)
+scale = Vector2(0.012987, 0.01411)
+texture = ExtResource("5")
+texture_filter = 1
+
+[node name="DoorArea" type="Area2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, 216)
+collision_layer = 32
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorArea"]
+shape = SubResource("shape_door")
+
+[node name="DoorVisual" type="ColorRect" parent="DoorArea"]
+offset_left = -40.0
+offset_top = -10.0
+offset_right = 40.0
+offset_bottom = 10.0
+color = Color(0.35, 0.22, 0.12, 1)
+
+[node name="HUDLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 5
+
+[node name="TopBar" type="HBoxContainer" parent="HUDLayer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 60.0
+offset_top = 30.0
+offset_right = -60.0
+offset_bottom = 120.0
+grow_horizontal = 2
+
+[node name="FloorLabel" type="Label" parent="HUDLayer/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 60
+
+[node name="StatusVBox" type="VBoxContainer" parent="HUDLayer"]
+unique_name_in_owner = true
+offset_left = 60.0
+offset_top = 114.0
+offset_right = 480.0
+offset_bottom = 114.0
+theme_override_constants/separation = 8
+
+[node name="StaminaLabel" type="Label" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 0.5, 1)
+theme_override_font_sizes/font_size = 44
+
+[node name="StaminaBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 24)
+layout_mode = 2
+theme_override_styles/background = SubResource("sb_stam_bg")
+theme_override_styles/fill = SubResource("sb_stam_fill")
+show_percentage = false
+
+[node name="SanityLabel" type="Label" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.5, 0.9, 1)
+theme_override_font_sizes/font_size = 44
+
+[node name="SanityBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 24)
+layout_mode = 2
+theme_override_styles/background = SubResource("sb_san_bg")
+theme_override_styles/fill = SubResource("sb_san_fill")
+show_percentage = false
+
+[editable path="Player"]
