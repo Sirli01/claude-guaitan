@@ -223,13 +223,12 @@ func setup_ui(floor_name: String) -> void:
 	rule_paper = load("res://scenes/ui/rule_paper_ui.tscn").instantiate()
 	rules_layer.add_child(rule_paper)
 	
-	# 背包UI
+	# 背包UI（实例化 inventory_ui.tscn，脚本依赖场景中的 Background/Panel 子节点）
 	var inv_layer = CanvasLayer.new()
 	inv_layer.layer = 15
 	inv_layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(inv_layer)
-	var inv_ui = Control.new()
-	inv_ui.set_script(load("res://scripts/ui/inventory_ui.gd"))
+	var inv_ui = load("res://scenes/ui/inventory_ui.tscn").instantiate()
 	inv_layer.add_child(inv_ui)
 	
 	# 对话UI（使用dialogue_ui.tscn，内含头像系统）

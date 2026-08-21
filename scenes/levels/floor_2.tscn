@@ -1,6 +1,425 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/floor_2_scene.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/editor/GameWall.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/editor/GameFurniture.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/editor/GameDoor.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/editor/GameCeiling.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/editor/RoomLight.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/editor/GameDoorLeak.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/monsters/high_heel.tscn" id="8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/_0000_走廊地板.png" id="9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/_0001_房间木地板.png" id="10"]
 
 [node name="Floor2" type="Node2D"]
 script = ExtResource("1")
+
+[node name="Z_Corridor" type="TextureRect" parent="."]
+offset_left = -800.0
+offset_top = -600.0
+offset_right = 800.0
+offset_bottom = 600.0
+texture = ExtResource("9")
+stretch_mode = 1
+texture_filter = 1
+texture_repeat = 2
+modulate = Color(0.24, 0.21, 0.18, 1)
+
+[node name="Z_Room201" type="TextureRect" parent="."]
+offset_left = -800.0
+offset_top = -600.0
+offset_right = -220.0
+offset_bottom = -260.0
+texture = ExtResource("10")
+stretch_mode = 1
+texture_filter = 1
+texture_repeat = 2
+modulate = Color(0.24, 0.21, 0.18, 1)
+
+[node name="Z_Room202" type="TextureRect" parent="."]
+offset_left = 220.0
+offset_top = -600.0
+offset_right = 800.0
+offset_bottom = -260.0
+texture = ExtResource("10")
+stretch_mode = 1
+texture_filter = 1
+texture_repeat = 2
+modulate = Color(0.24, 0.21, 0.18, 1)
+
+[node name="Z_Room203" type="TextureRect" parent="."]
+offset_left = 220.0
+offset_top = 260.0
+offset_right = 800.0
+offset_bottom = 600.0
+texture = ExtResource("10")
+stretch_mode = 1
+texture_filter = 1
+texture_repeat = 2
+modulate = Color(0.24, 0.21, 0.18, 1)
+
+[node name="Z_Storage" type="TextureRect" parent="."]
+offset_left = -800.0
+offset_top = -140.0
+offset_right = -440.0
+offset_bottom = 100.0
+texture = ExtResource("10")
+stretch_mode = 1
+texture_filter = 1
+texture_repeat = 2
+modulate = Color(0.24, 0.21, 0.18, 1)
+
+[node name="W_North" type="StaticBody2D" parent="."]
+position = Vector2(0, -610)
+script = ExtResource("2")
+wall_size = Vector2(1640, 20)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+
+[node name="W_South" type="StaticBody2D" parent="."]
+position = Vector2(0, 610)
+script = ExtResource("2")
+wall_size = Vector2(1640, 20)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+
+[node name="W_West" type="StaticBody2D" parent="."]
+position = Vector2(-810, 0)
+script = ExtResource("2")
+wall_size = Vector2(20, 1240)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+
+[node name="W_East" type="StaticBody2D" parent="."]
+position = Vector2(810, 0)
+script = ExtResource("2")
+wall_size = Vector2(20, 1240)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+
+[node name="W_201Bottom" type="StaticBody2D" parent="."]
+position = Vector2(-500, -260)
+script = ExtResource("2")
+wall_size = Vector2(580, 16)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+face_normal = Vector2(0, -1)
+
+[node name="W_201Right" type="StaticBody2D" parent="."]
+position = Vector2(-220, -460)
+script = ExtResource("2")
+wall_size = Vector2(16, 280)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+
+[node name="W_202Bottom" type="StaticBody2D" parent="."]
+position = Vector2(500, -260)
+script = ExtResource("2")
+wall_size = Vector2(580, 16)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+face_normal = Vector2(0, -1)
+
+[node name="W_202Left" type="StaticBody2D" parent="."]
+position = Vector2(220, -460)
+script = ExtResource("2")
+wall_size = Vector2(16, 280)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_front_face = false
+face_normal = Vector2(-1, 0)
+
+[node name="W_203Top" type="StaticBody2D" parent="."]
+position = Vector2(500, 260)
+script = ExtResource("2")
+wall_size = Vector2(580, 16)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+face_normal = Vector2(0, 1)
+
+[node name="W_203Left" type="StaticBody2D" parent="."]
+position = Vector2(220, 460)
+script = ExtResource("2")
+wall_size = Vector2(16, 280)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_front_face = false
+face_normal = Vector2(-1, 0)
+
+[node name="W_StorTop" type="StaticBody2D" parent="."]
+position = Vector2(-614, -140)
+script = ExtResource("2")
+wall_size = Vector2(372, 16)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+face_normal = Vector2(0, 1)
+
+[node name="W_StorBottom" type="StaticBody2D" parent="."]
+position = Vector2(-614, 100)
+script = ExtResource("2")
+wall_size = Vector2(332, 16)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+show_side_face = false
+face_normal = Vector2(0, -1)
+
+[node name="W_StorRight" type="StaticBody2D" parent="."]
+position = Vector2(-440, -44)
+script = ExtResource("2")
+wall_size = Vector2(16, 180)
+wall_color = Color(0.1, 0.07, 0.05, 1)
+
+[node name="D_201" type="Node2D" parent="."]
+position = Vector2(-220, -290)
+script = ExtResource("4")
+door_size = Vector2(16, 60)
+room_side_normal = Vector2(-1, 0)
+
+[node name="D_202" type="Node2D" parent="."]
+position = Vector2(220, -290)
+script = ExtResource("4")
+door_size = Vector2(16, 60)
+locked = true
+room_side_normal = Vector2(1, 0)
+
+[node name="D_203" type="Node2D" parent="."]
+position = Vector2(220, 310)
+script = ExtResource("4")
+door_size = Vector2(16, 100)
+room_side_normal = Vector2(1, 0)
+
+[node name="D_Stor" type="Node2D" parent="."]
+position = Vector2(-440, 70)
+script = ExtResource("4")
+door_size = Vector2(16, 60)
+room_side_normal = Vector2(-1, 0)
+
+[node name="F_201Bed" type="StaticBody2D" parent="."]
+position = Vector2(-740, -540)
+script = ExtResource("3")
+furniture_name = "床"
+furniture_size = Vector2(56, 32)
+furniture_color = Color(0.16, 0.1, 0.08, 1)
+contained_item_id = "sweets"
+contained_item_name = "糖果"
+
+[node name="F_201Cabinet" type="StaticBody2D" parent="."]
+position = Vector2(-600, -540)
+script = ExtResource("3")
+furniture_name = "柜子"
+furniture_size = Vector2(48, 36)
+furniture_color = Color(0.13, 0.09, 0.07, 1)
+contained_item_id = "rope"
+contained_item_name = "绳子"
+
+[node name="F_201Desk" type="StaticBody2D" parent="."]
+position = Vector2(-400, -516)
+script = ExtResource("3")
+furniture_name = "书桌"
+furniture_size = Vector2(56, 32)
+furniture_color = Color(0.14, 0.1, 0.08, 1)
+contained_item_id = "master_key"
+contained_item_name = "万能钥匙"
+
+[node name="F_202Cabinet" type="StaticBody2D" parent="."]
+position = Vector2(300, -540)
+script = ExtResource("3")
+furniture_name = "柜子"
+furniture_size = Vector2(52, 32)
+furniture_color = Color(0.16, 0.12, 0.09, 1)
+contained_item_id = "sedative"
+contained_item_name = "镇定剂"
+
+[node name="F_202Nightstand" type="StaticBody2D" parent="."]
+position = Vector2(440, -540)
+script = ExtResource("3")
+furniture_name = "床头柜"
+furniture_size = Vector2(28, 24)
+furniture_color = Color(0.14, 0.1, 0.08, 1)
+contained_item_id = "sweets"
+contained_item_name = "糖果"
+
+[node name="F_202Desk" type="StaticBody2D" parent="."]
+position = Vector2(560, -500)
+script = ExtResource("3")
+furniture_name = "书桌"
+furniture_size = Vector2(60, 32)
+furniture_color = Color(0.15, 0.1, 0.08, 1)
+contained_item_id = "match"
+contained_item_name = "火柴"
+
+[node name="F_203Bed" type="StaticBody2D" parent="."]
+position = Vector2(300, 340)
+script = ExtResource("3")
+furniture_name = "床"
+furniture_size = Vector2(60, 36)
+furniture_color = Color(0.15, 0.1, 0.08, 1)
+contained_item_id = "energy_drink"
+contained_item_name = "能量饮料"
+
+[node name="F_203Cabinet" type="StaticBody2D" parent="."]
+position = Vector2(540, 360)
+script = ExtResource("3")
+furniture_name = "柜子"
+furniture_size = Vector2(60, 32)
+furniture_color = Color(0.14, 0.1, 0.07, 1)
+contained_item_id = "battery"
+contained_item_name = "电池"
+
+[node name="F_203Desk" type="StaticBody2D" parent="."]
+position = Vector2(630, 440)
+script = ExtResource("3")
+furniture_name = "书桌"
+furniture_size = Vector2(56, 32)
+furniture_color = Color(0.15, 0.1, 0.08, 1)
+contained_item_id = "sweets"
+contained_item_name = "糖果"
+
+[node name="F_203Cabinet2" type="StaticBody2D" parent="."]
+position = Vector2(420, 450)
+script = ExtResource("3")
+furniture_name = "柜子"
+furniture_size = Vector2(36, 32)
+furniture_color = Color(0.13, 0.09, 0.07, 1)
+contained_item_id = "sweets"
+contained_item_name = "糖果"
+
+[node name="F_StorShelf" type="StaticBody2D" parent="."]
+position = Vector2(-764, -84)
+script = ExtResource("3")
+furniture_name = "货架"
+furniture_size = Vector2(104, 36)
+furniture_color = Color(0.14, 0.1, 0.08, 1)
+contained_item_id = "energy_bar"
+contained_item_name = "能量棒"
+
+[node name="F_StorCabinet" type="StaticBody2D" parent="."]
+position = Vector2(-610, -84)
+script = ExtResource("3")
+furniture_name = "柜子"
+furniture_size = Vector2(48, 36)
+furniture_color = Color(0.13, 0.09, 0.07, 1)
+contained_item_id = "sedative"
+contained_item_name = "镇定剂"
+
+[node name="C_201" type="Node2D" parent="."]
+position = Vector2(-510, -430)
+script = ExtResource("5")
+room_id = "201"
+ceiling_size = Vector2(580, 340)
+
+[node name="C_202" type="Node2D" parent="."]
+position = Vector2(510, -430)
+script = ExtResource("5")
+room_id = "202"
+ceiling_size = Vector2(580, 340)
+
+[node name="C_203" type="Node2D" parent="."]
+position = Vector2(510, 430)
+script = ExtResource("5")
+room_id = "203"
+ceiling_size = Vector2(580, 340)
+
+[node name="C_Stor" type="Node2D" parent="."]
+position = Vector2(-620, -20)
+script = ExtResource("5")
+room_id = "储藏室"
+ceiling_size = Vector2(360, 240)
+
+[node name="L_Room201" type="PointLight2D" parent="."]
+position = Vector2(-500, -440)
+script = ExtResource("6")
+light_type = "room"
+base_energy = 2.5
+light_scale_val = 4.0
+
+[node name="L_Room202" type="PointLight2D" parent="."]
+position = Vector2(500, -440)
+script = ExtResource("6")
+light_type = "room"
+base_energy = 2.5
+light_scale_val = 4.0
+
+[node name="L_Room203" type="PointLight2D" parent="."]
+position = Vector2(500, 400)
+script = ExtResource("6")
+light_type = "room"
+base_energy = 2.5
+light_scale_val = 4.0
+
+[node name="L_StorFlicker" type="PointLight2D" parent="."]
+position = Vector2(-620, -20)
+script = ExtResource("6")
+light_type = "flickering"
+base_energy = 1.5
+light_scale_val = 2.5
+
+[node name="L_Cor1" type="PointLight2D" parent="."]
+position = Vector2(-400, 200)
+script = ExtResource("6")
+light_type = "room"
+base_energy = 2.0
+light_scale_val = 3.5
+
+[node name="L_Cor2Flicker" type="PointLight2D" parent="."]
+position = Vector2(0, 0)
+script = ExtResource("6")
+light_type = "flickering"
+base_energy = 2.0
+light_scale_val = 3.5
+
+[node name="L_Cor3" type="PointLight2D" parent="."]
+position = Vector2(600, 0)
+script = ExtResource("6")
+light_type = "room"
+base_energy = 2.0
+light_scale_val = 3.5
+
+[node name="L_CorBroken" type="PointLight2D" parent="."]
+position = Vector2(-700, 0)
+script = ExtResource("6")
+light_type = "broken"
+base_energy = 1.2
+light_scale_val = 3.0
+
+[node name="L_Cor4Flicker" type="PointLight2D" parent="."]
+position = Vector2(0, 400)
+script = ExtResource("6")
+light_type = "flickering"
+base_energy = 1.8
+light_scale_val = 3.0
+
+[node name="L_Dust1" type="PointLight2D" parent="."]
+position = Vector2(-600, -100)
+script = ExtResource("6")
+light_type = "dust"
+base_energy = 0.0
+light_scale_val = 1.0
+
+[node name="L_Dust2" type="PointLight2D" parent="."]
+position = Vector2(300, 200)
+script = ExtResource("6")
+light_type = "dust"
+base_energy = 0.0
+light_scale_val = 1.0
+
+[node name="L_Dust3" type="PointLight2D" parent="."]
+position = Vector2(-200, 400)
+script = ExtResource("6")
+light_type = "dust"
+base_energy = 0.0
+light_scale_val = 1.0
+
+[node name="Leak_201Door" type="Node2D" parent="."]
+position = Vector2(-500, -360)
+script = ExtResource("7")
+leak_width = 25.0
+
+[node name="Leak_203Door" type="Node2D" parent="."]
+position = Vector2(500, 480)
+script = ExtResource("7")
+leak_width = 25.0
+
+[node name="Leak_StorDoor" type="Node2D" parent="."]
+position = Vector2(-440, 80)
+script = ExtResource("7")
+leak_width = 20.0
+
+[node name="HighHeel" parent="." instance=ExtResource("8")]
+unique_name_in_owner = true

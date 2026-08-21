@@ -21,7 +21,10 @@ class_name GameDoor
 var _built_runtime: bool = false
 
 func _ready() -> void:
-	_rebuild()
+	if Engine.is_editor_hint():
+		_rebuild()
+	# 运行时由 LevelBaseV2.discover_scene_nodes() 统一触发重建，
+	# 避免场景装载期间父节点忙碌导致 add_child 失败
 
 func _rebuild() -> void:
 	if not is_inside_tree():

@@ -23,8 +23,17 @@ var _detection_area: Area2D = null
 
 func _ready() -> void:
 	_apply_type()
+	# 检测区域/灰尘粒子需要 add_child 到父节点，延迟到场景装载完成后再创建
+	if not Engine.is_editor_hint():
+		if create_detection_area:
+			call_deferred("_setup_detection")
+		if light_type == "dust":
+			call_deferred("_spawn_dust")
 
 func _apply_type() -> void:
+	# tscn 加载时 setter 会先于入树触发，等 _ready 再应用
+	if not is_inside_tree():
+		return
 	texture = _make_circle_texture(64)
 	texture_scale = light_scale_val
 	shadow_enabled = true
@@ -50,12 +59,6 @@ func _apply_type() -> void:
 		"dust":
 			energy = 0.0
 			color = Color.WHITE
-			if not Engine.is_editor_hint():
-				_spawn_dust()
-
-	# Detection area for sanity recovery
-	if create_detection_area and not Engine.is_editor_hint():
-		_setup_detection()
 
 func _setup_detection() -> void:
 	if _detection_area and is_instance_valid(_detection_area):

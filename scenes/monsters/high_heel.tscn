@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/monsters/high_heel.png" id="1"]
+
+[node name="HighHeel" type="Node2D"]
+z_index = 30
+visible = false
+
+[node name="HeelSprite" type="Sprite2D" parent="."]
+scale = Vector2(0.292969, 0.292969)
+texture = ExtResource("1")
+self_modulate = Color(1, 0.82, 0.85, 1)

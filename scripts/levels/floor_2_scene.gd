@@ -16,7 +16,8 @@ var male_npc: CharacterBody2D
 var female_npc: CharacterBody2D
 var timid_npc: CharacterBody2D
 
-var high_heel_visual: Node2D
+## 高跟鞋怪物视觉（场景实例，初始隐藏，事件触发时显示）
+@onready var high_heel_visual: Node2D = %HighHeel
 var elevator_card_found: bool = false
 var _wander_tweens: Dictionary = {}  # NPC -> bool，用于标记仍在徘徊
 var _timid_walk_tween: Tween = null
@@ -42,12 +43,8 @@ enum Phase { EXPLORE, TIMID_DEATH, RULE_DISCOVER, FEMALE_DEATH, CHEERFUL_DANGER,
 var current_phase: Phase = Phase.EXPLORE
 
 func _ready() -> void:
-	# 编辑器模式：只生成视觉布局，跳过游戏逻辑
+	# 编辑器模式：几何与灯光已在 .tscn 中定义，无需生成
 	if Engine.is_editor_hint():
-		if get_child_count() == 0:
-			_build_floor()
-			_place_lights()
-			_editor_set_owners(self, self)
 		return
 
 	GameManager.set_state(GameManager.GameState.PLAYING)
@@ -59,12 +56,12 @@ func _ready() -> void:
 	_heel_sfx = _sfx_gen.high_heel_step()
 	_rumble_sfx = _sfx_gen.ground_rumble()
 
-	_build_floor()
-	_place_lights()
+	discover_scene_nodes()
+	_add_room_labels()
+	_add_ceiling_cracks()
 	setup_player(FLOOR_2_PARTY_SPAWN_POS, 6.0)
 	_build_arrival_elevator(FLOOR_2_ARRIVAL_POS)
 	_spawn_npcs()
-	_build_high_heel()
 	_build_elevator()
 	setup_ui("第二层")
 	# 等物理帧完成后再开启房间检测，避免初始化阶段误判。
@@ -138,110 +135,27 @@ func _is_world_pos_clearly_visible(pos: Vector2) -> bool:
 	var rect = Rect2(cam.get_screen_center_position() - world_size * 0.5 + margin, world_size - margin * 2.0)
 	return rect.has_point(pos)
 
-func _build_floor() -> void:
-	add_floor_zone(Vector2(-800, -600), Vector2(1600, 1200), Color(0.06, 0.05, 0.05), "corridor")
-	add_floor_zone(Vector2(-800, -600), Vector2(580, 340), Color(0.22, 0.17, 0.13), "room")
-	add_floor_zone(Vector2(220, -600), Vector2(580, 340), Color(0.22, 0.17, 0.13), "room")
-	add_floor_zone(Vector2(220, 260), Vector2(580, 340), Color(0.22, 0.17, 0.13), "room")
-	add_floor_zone(Vector2(-800, -140), Vector2(360, 240), Color(0.22, 0.17, 0.13), "room")
-	
-	var walls = StaticBody2D.new()
-	walls.collision_layer = 4
-	add_child(walls)
-	add_visible_wall(walls, Vector2(0, -610), Vector2(1640, 20), Color(0.1, 0.07, 0.05), true, false, false)
-	add_visible_wall(walls, Vector2(0, 610), Vector2(1640, 20), Color(0.1, 0.07, 0.05), true, false, false)
-	add_visible_wall(walls, Vector2(-810, 0), Vector2(20, 1240), Color(0.1, 0.07, 0.05), true, false, false)
-	add_visible_wall(walls, Vector2(810, 0), Vector2(20, 1240), Color(0.1, 0.07, 0.05), true, false, false)
-	
-	# 天花板裂缝装饰
-	for i in range(5):
-		var crack = ColorRect.new()
-		crack.color = Color(0.03, 0.02, 0.02)
-		crack.position = Vector2(-600 + i * 260 + randf() * 80, -596)
-		crack.size = Vector2(4, randi_range(10, 30))
-		add_child(crack)
-	
-	# === 房间 201（左上角）：绳子 - 开门 ===
-	add_visible_wall(walls, Vector2(-500, -260), Vector2(580, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.UP)  # 底墙
-	add_visible_wall(walls, Vector2(-220, -460), Vector2(16, 280), Color(0.1, 0.07, 0.05))  # 右墙（留门洞）
-	add_door(walls, Vector2(-220, -290), Vector2(16, 60), false, Vector2.LEFT)
+## 创建各房间名称的世界标签（多语言文本需运行时解析，故由代码创建）
+func _add_room_labels() -> void:
 	_add_room_label("201", Vector2(-740, -540))
-	_add_furniture(Vector2(-740, -540), Vector2(56, 32), "床", Color(0.16, 0.1, 0.08))
-	_add_furniture(Vector2(-600, -540), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07))
-	_add_furniture(Vector2(-400, -516), Vector2(56, 32), "书桌", Color(0.14, 0.1, 0.08))
-	_place_container(Vector2(-740, -540), Vector2(56, 32), "床", Color(0.16, 0.1, 0.08), "sweets", "糖果")
-	_place_container(Vector2(-600, -540), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07), "rope", "绳子")
-	_place_container(Vector2(-400, -516), Vector2(56, 32), "书桌", Color(0.14, 0.1, 0.08), "master_key", "万能钥匙")
-	add_room_ceiling("201", Vector2(-800, -600), Vector2(580, 340))
-	
-	# === 房间 202（右上角）：镇定剂+火柴 - 锁住 ===
-	add_visible_wall(walls, Vector2(500, -260), Vector2(580, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.UP)  # 底墙
-	add_visible_wall(walls, Vector2(220, -460), Vector2(16, 280), Color(0.1, 0.07, 0.05), true, false, true, Vector2.LEFT)  # 左墙（留门洞）
-	add_door(walls, Vector2(220, -290), Vector2(16, 60), true, Vector2.RIGHT)  # 锁门！
 	_add_room_label("202", Vector2(280, -540))
-	_add_furniture(Vector2(300, -540), Vector2(52, 32), "柜子", Color(0.16, 0.12, 0.09))
-	_add_furniture(Vector2(440, -540), Vector2(28, 24), "床头柜", Color(0.14, 0.1, 0.08))
-	_add_furniture(Vector2(560, -500), Vector2(60, 32), "书桌", Color(0.15, 0.1, 0.08))
-	_place_container(Vector2(300, -540), Vector2(52, 32), "柜子", Color(0.16, 0.12, 0.09), "sedative", "镇定剂")
-	_place_container(Vector2(440, -540), Vector2(28, 24), "床头柜", Color(0.14, 0.1, 0.08), "sweets", "糖果")
-	_place_container(Vector2(560, -500), Vector2(60, 32), "书桌", Color(0.15, 0.1, 0.08), "match", "火柴")
-	add_room_ceiling("202", Vector2(220, -600), Vector2(580, 340))
-	
-	# === 房间 203（右下角）：电池 - 开门 ===
-	add_visible_wall(walls, Vector2(500, 260), Vector2(580, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.DOWN)  # 顶墙
-	add_visible_wall(walls, Vector2(220, 460), Vector2(16, 280), Color(0.1, 0.07, 0.05), true, false, true, Vector2.LEFT)  # 左墙（留门洞）
-	add_door(walls, Vector2(220, 310), Vector2(16, 100), false, Vector2.RIGHT)
 	_add_room_label("203", Vector2(280, 300))
-	_add_furniture(Vector2(300, 340), Vector2(60, 36), "床", Color(0.15, 0.1, 0.08))
-	_add_furniture(Vector2(540, 360), Vector2(60, 32), "柜子", Color(0.14, 0.1, 0.07))
-	_add_furniture(Vector2(630, 440), Vector2(56, 32), "书桌", Color(0.15, 0.1, 0.08))
-	_add_furniture(Vector2(420, 450), Vector2(36, 32), "柜子", Color(0.13, 0.09, 0.07))
-	_place_container(Vector2(300, 340), Vector2(60, 36), "床", Color(0.15, 0.1, 0.08), "energy_drink", "能量饮料")
-	_place_container(Vector2(540, 360), Vector2(60, 32), "柜子", Color(0.14, 0.1, 0.07), "battery", "电池")
-	_place_container(Vector2(630, 440), Vector2(56, 32), "书桌", Color(0.15, 0.1, 0.08), "sweets", "糖果")
-	_place_container(Vector2(420, 450), Vector2(36, 32), "柜子", Color(0.13, 0.09, 0.07), "sweets", "糖果")
-	add_room_ceiling("203", Vector2(220, 260), Vector2(580, 340))
-	
-	# === 储藏室（左侧走廊中段）：能量棒 - 开门，打断玩家直冲北侧的路线 ===
-	add_visible_wall(walls, Vector2(-614, -140), Vector2(372, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.DOWN)  # 顶墙
-	add_visible_wall(walls, Vector2(-614, 100), Vector2(332, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.UP)   # 底墙（右端止于门洞左侧，不再与门重叠）
-	add_visible_wall(walls, Vector2(-440, -44), Vector2(16, 180), Color(0.1, 0.07, 0.05))   # 右墙（留门洞在底部）
-	add_door(walls, Vector2(-440, 70), Vector2(16, 60), false, Vector2.LEFT)
 	_add_room_label("储藏室", Vector2(-780, -124))
-	_add_furniture(Vector2(-764, -84), Vector2(104, 36), "货架", Color(0.14, 0.1, 0.08))
-	_add_furniture(Vector2(-610, -84), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07))
-	_place_container(Vector2(-764, -84), Vector2(104, 36), "货架", Color(0.14, 0.1, 0.08), "energy_bar", "能量棒")
-	_place_container(Vector2(-610, -84), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07), "sedative", "镇定剂")
-	add_room_ceiling("储藏室", Vector2(-800, -140), Vector2(360, 240))
-	
-	# 耳塞改为余凡死后掉落，不再固定放置
 
+## 创建单个房间名称标签。
+## [param text] 房间名。[param pos] 标签世界坐标。
 func _add_room_label(text: String, pos: Vector2) -> void:
 	var label_text := text if Engine.is_editor_hint() else LocaleManager.world_text(text)
 	create_world_label(label_text, pos, 22, Color(0.3, 0.25, 0.2))
 
-func _place_lights() -> void:
-	# 房间灯光
-	add_room_light(Vector2(-500, -440), 2.5, 4.0)  # 201
-	add_room_light(Vector2(500, -440), 2.5, 4.0)   # 202
-	add_room_light(Vector2(500, 400), 2.5, 4.0)    # 203
-	add_flickering_light(Vector2(-620, -20), 1.5, 2.5)  # 储藏室（昏暗）
-	# 走廊灯光 — 部分闪烁/损坏，越深处越不安
-	add_room_light(Vector2(-400, 200), 2.0, 3.5)
-	add_flickering_light(Vector2(0, 0), 2.0, 3.5)
-	add_room_light(Vector2(600, 0), 2.0, 3.5)
-	add_broken_light(Vector2(-700, 0), 3.0)  # 损坏灯
-	add_flickering_light(Vector2(0, 400), 1.8, 3.0)
-
-	# 环境灰尘
-	add_dust_ambient(Vector2(-600, -100), Vector2(100, 70))
-	add_dust_ambient(Vector2(300, 200), Vector2(80, 60))
-	add_dust_ambient(Vector2(-200, 400), Vector2(70, 50))
-
-	# 门缝漏光
-	add_door_light_leak(Vector2(-500, -360), 25.0)  # 201门底
-	add_door_light_leak(Vector2(500, 480), 25.0)    # 203门底
-	add_door_light_leak(Vector2(-440, 80), 20.0)    # 储藏室门底
+## 天花板裂缝装饰（每次进入随机位置/长度，属运行时氛围特效，故动态创建）
+func _add_ceiling_cracks() -> void:
+	for i in range(5):
+		var crack := ColorRect.new()
+		crack.color = Color(0.03, 0.02, 0.02)
+		crack.position = Vector2(-600 + i * 260 + randf() * 80, -596)
+		crack.size = Vector2(4, randi_range(10, 30))
+		add_child(crack)
 
 func _place_room_item(pos: Vector2, item_id: String, item_name: String, color: Color) -> void:
 	var area = Area2D.new()
@@ -281,34 +195,6 @@ func _place_room_item(pos: Vector2, item_id: String, item_name: String, color: C
 			# 确保在可能的时机再次尝试（异步下一帧）
 			call_deferred("_trigger_earplug_branch")
 		)
-
-func _place_container(furniture_pos: Vector2, furniture_size: Vector2,
-		furniture_name: String, furniture_color: Color,
-		item_id: String = "", item_name: String = "") -> void:
-	var area = Area2D.new()
-	area.set_script(load("res://scripts/items/furniture_container.gd"))
-	area.position = furniture_pos + furniture_size / 2.0
-	area.collision_layer = 16
-	area.collision_mask = 1
-	area.monitoring = true
-	area.monitorable = true
-	area.furniture_name = furniture_name
-	area.contained_item_id = item_id
-	area.contained_item_name = item_name
-	area._level = self
-	var col = CollisionShape2D.new()
-	var shape = RectangleShape2D.new()
-	shape.size = furniture_size + Vector2(20, 20)
-	col.shape = shape
-	area.add_child(col)
-	add_child(area)
-
-	var display_furniture_name := furniture_name if Engine.is_editor_hint() else LocaleManager.world_text(furniture_name)
-	var hint_text := "" if Engine.is_editor_hint() else InputDevice.hint("interact")
-	var name_label = create_world_label("%s %s" % [display_furniture_name, hint_text], furniture_pos + Vector2(-20, -44), 18, furniture_color.lightened(0.4))
-	name_label.visible = false
-	area._name_label = name_label
-	area.tree_exiting.connect(func(): if is_instance_valid(name_label): name_label.queue_free())
 
 func _spawn_npcs() -> void:
 	if GameManager.is_character_alive("cool_npc"):
@@ -449,46 +335,6 @@ func _wander_loop(npc: Node2D) -> void:
 	await get_tree().create_timer(randf_range(2.0, 5.0)).timeout
 	if not _exiting and is_instance_valid(npc) and _wander_tweens.has(npc):
 		_wander_loop(npc)
-
-func _build_high_heel() -> void:
-	high_heel_visual = Node2D.new()
-	high_heel_visual.visible = false
-	high_heel_visual.z_index = 30
-	add_child(high_heel_visual)
-	if ResourceLoader.exists(HIGH_HEEL_TEX_PATH):
-		var heel_sprite = Sprite2D.new()
-		heel_sprite.texture = load(HIGH_HEEL_TEX_PATH)
-		heel_sprite.centered = true
-		heel_sprite.self_modulate = Color(1.0, 0.82, 0.85)
-		var tex_size = heel_sprite.texture.get_size()
-		if tex_size.y > 0.0:
-			heel_sprite.scale = Vector2.ONE * (HIGH_HEEL_WORLD_HEIGHT / tex_size.y)
-		high_heel_visual.add_child(heel_sprite)
-		var glow_tex_path = "res://assets/sprites/effects/light_gradient.png"
-		if ResourceLoader.exists(glow_tex_path):
-			var glow = PointLight2D.new()
-			glow.texture = load(glow_tex_path)
-			glow.color = Color(0.95, 0.12, 0.12)
-			glow.energy = 1.8
-			glow.texture_scale = 1.35
-			glow.position = Vector2(0, -56)
-			high_heel_visual.add_child(glow)
-			var glow_tw = create_tween().set_loops()
-			_loop_tweens.append(glow_tw)
-			glow_tw.tween_property(glow, "energy", 1.2, 0.16)
-			glow_tw.tween_property(glow, "energy", 2.0, 0.18)
-		return
-	var heel_shape = ColorRect.new()
-	heel_shape.color = Color(0.3, 0.0, 0.0, 0.8)
-	heel_shape.position = Vector2(-20, -200)
-	heel_shape.size = Vector2(40, 30)
-	high_heel_visual.add_child(heel_shape)
-	var heel_label = Label.new()
-	heel_label.text = "???"
-	heel_label.position = Vector2(-16, -236)
-	heel_label.add_theme_font_size_override("font_size", 18)
-	heel_label.add_theme_color_override("font_color", Color(0.6, 0.1, 0.1))
-	high_heel_visual.add_child(heel_label)
 
 func _play_heel_strike(world_pos: Vector2) -> void:
 	if high_heel_visual == null:

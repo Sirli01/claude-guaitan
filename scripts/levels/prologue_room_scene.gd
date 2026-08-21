@@ -131,8 +131,7 @@ func _setup_player() -> void:
 	# 角色阴影遮挡体（GameManager 提供的运行时组件）
 	player.add_child(GameManager.create_character_shadow_occluder("sister"))
 
-	# 所有子节点就绪后再恢复序章放大布局，确保不会被预览帧覆盖
-	player.call_deferred("_apply_default_sprite_layout")
+	# 延迟再次应用序章放大，覆盖 player._ready() 可能重置的尺寸
 	call_deferred("_finish_prologue_player_setup")
 
 ## 延迟再次应用序章 4/3 放大，覆盖 player._ready() 可能重置的尺寸。
