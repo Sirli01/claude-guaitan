@@ -1,0 +1,270 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_pm"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+layer = 90
+process_mode = 3
+script = ExtResource("1_pm")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -420.0
+offset_right = 500.0
+offset_bottom = 420.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainVBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="Panel/MainVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 56
+horizontal_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="Panel/MainVBox"]
+layout_mode = 2
+
+[node name="TabButtons" type="HBoxContainer" parent="Panel/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Tab0" type="Button" parent="Panel/MainVBox/TabButtons"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 56)
+theme_override_font_sizes/font_size = 32
+
+[node name="Tab1" type="Button" parent="Panel/MainVBox/TabButtons"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 56)
+theme_override_font_sizes/font_size = 32
+
+[node name="Tab2" type="Button" parent="Panel/MainVBox/TabButtons"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 56)
+theme_override_font_sizes/font_size = 32
+
+[node name="Tab3" type="Button" parent="Panel/MainVBox/TabButtons"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 56)
+theme_override_font_sizes/font_size = 32
+
+[node name="ContentArea" type="Control" parent="Panel/MainVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(936, 500)
+
+[node name="SettingsPage" type="ScrollContainer" parent="Panel/MainVBox/ContentArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel/MainVBox/ContentArea/SettingsPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="LangHBox" type="HBoxContainer" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LangLabel" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/LangHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 0)
+theme_override_font_sizes/font_size = 40
+
+[node name="ZhBtn" type="Button" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/LangHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 56)
+theme_override_font_sizes/font_size = 36
+
+[node name="EnBtn" type="Button" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/LangHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 56)
+theme_override_font_sizes/font_size = 36
+
+[node name="JaBtn" type="Button" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/LangHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 56)
+theme_override_font_sizes/font_size = 36
+
+[node name="MasterHBox" type="HBoxContainer" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MasterLabel" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/MasterHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 0)
+theme_override_font_sizes/font_size = 40
+
+[node name="MasterSlider" type="HSlider" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/MasterHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(400, 48)
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="MasterVal" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/MasterHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+theme_override_font_sizes/font_size = 36
+
+[node name="BgmHBox" type="HBoxContainer" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BgmLabel" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/BgmHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 0)
+theme_override_font_sizes/font_size = 40
+
+[node name="BgmSlider" type="HSlider" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/BgmHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(400, 48)
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="BgmVal" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/BgmHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+theme_override_font_sizes/font_size = 36
+
+[node name="SfxHBox" type="HBoxContainer" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SfxLabel" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/SfxHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 0)
+theme_override_font_sizes/font_size = 40
+
+[node name="SfxSlider" type="HSlider" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/SfxHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(400, 48)
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="SfxVal" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/SfxHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+theme_override_font_sizes/font_size = 36
+
+[node name="AmbHBox" type="HBoxContainer" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AmbLabel" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/AmbHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 0)
+theme_override_font_sizes/font_size = 40
+
+[node name="AmbSlider" type="HSlider" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/AmbHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(400, 48)
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="AmbVal" type="Label" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox/AmbHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+theme_override_font_sizes/font_size = 36
+
+[node name="FullscreenCheck" type="CheckButton" parent="Panel/MainVBox/ContentArea/SettingsPage/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+
+[node name="KeysPage" type="ScrollContainer" parent="Panel/MainVBox/ContentArea"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="KeysVBox" type="VBoxContainer" parent="Panel/MainVBox/ContentArea/KeysPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ItemsPage" type="ScrollContainer" parent="Panel/MainVBox/ContentArea"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemsVBox" type="VBoxContainer" parent="Panel/MainVBox/ContentArea/ItemsPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TipsPage" type="ScrollContainer" parent="Panel/MainVBox/ContentArea"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TipsVBox" type="VBoxContainer" parent="Panel/MainVBox/ContentArea/TipsPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="BottomButtons" type="HBoxContainer" parent="Panel/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="RestartButton" type="Button" parent="Panel/MainVBox/BottomButtons"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 72)
+theme_override_font_sizes/font_size = 40
+
+[node name="QuitButton" type="Button" parent="Panel/MainVBox/BottomButtons"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 72)
+theme_override_font_sizes/font_size = 40
+
+[node name="ResumeButton" type="Button" parent="Panel/MainVBox/BottomButtons"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 72)
+theme_override_font_sizes/font_size = 40
+
+[node name="CloseHint" type="Label" parent="Panel/MainVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1

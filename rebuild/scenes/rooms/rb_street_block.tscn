@@ -1,0 +1,75 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/street/前景楼.png" id="1_building_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0000_马路.png" id="2_road_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0004_路灯.png" id="3_lamp_tex"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_north"]
+size = Vector2(1240, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_south"]
+size = Vector2(1240, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_west"]
+size = Vector2(30, 280)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_east"]
+size = Vector2(30, 280)
+
+[node name="RbStreetBlock" type="Node2D"]
+
+[node name="Road" type="Sprite2D" parent="."]
+texture_filter = 1
+modulate = Color(0.36, 0.36, 0.4, 1)
+z_index = -25
+position = Vector2(-620, 0)
+scale = Vector2(0.317623, 0.59633)
+centered = false
+texture = ExtResource("2_road_tex")
+
+[node name="Building" type="Sprite2D" parent="."]
+texture_filter = 1
+modulate = Color(0.3, 0.3, 0.36, 1)
+z_index = -20
+position = Vector2(-620, -330)
+scale = Vector2(0.317136, 0.303309)
+centered = false
+texture = ExtResource("1_building_tex")
+
+[node name="LampLeft" type="Sprite2D" parent="."]
+texture_filter = 1
+modulate = Color(0.55, 0.53, 0.48, 1)
+z_index = -18
+position = Vector2(-330, 40)
+scale = Vector2(0.52381, 0.524336)
+offset = Vector2(0, -226)
+texture = ExtResource("3_lamp_tex")
+
+[node name="LampRight" type="Sprite2D" parent="."]
+texture_filter = 1
+modulate = Color(0.55, 0.53, 0.48, 1)
+z_index = -18
+position = Vector2(320, 40)
+scale = Vector2(0.52381, 0.524336)
+offset = Vector2(0, -226)
+texture = ExtResource("3_lamp_tex")
+
+[node name="Collisions" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 0
+
+[node name="North" type="CollisionShape2D" parent="Collisions"]
+position = Vector2(0, -15)
+shape = SubResource("RectangleShape2D_north")
+
+[node name="South" type="CollisionShape2D" parent="Collisions"]
+position = Vector2(0, 265)
+shape = SubResource("RectangleShape2D_south")
+
+[node name="West" type="CollisionShape2D" parent="Collisions"]
+position = Vector2(-605, 120)
+shape = SubResource("RectangleShape2D_west")
+
+[node name="East" type="CollisionShape2D" parent="Collisions"]
+position = Vector2(605, 120)
+shape = SubResource("RectangleShape2D_east")

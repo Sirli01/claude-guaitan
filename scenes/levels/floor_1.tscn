@@ -1,0 +1,565 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/editor/GameWall.gd" id="1_wall"]
+[ext_resource type="Script" path="res://scripts/editor/GameFurniture.gd" id="2_furn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/_0000_走廊地板.png" id="3_corr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/_0001_房间木地板.png" id="4_room"]
+[ext_resource type="Script" path="res://scripts/editor/GameContainer.gd" id="5_cont"]
+[ext_resource type="Script" path="res://scripts/editor/GameDecorRect.gd" id="6_deco"]
+[ext_resource type="Script" path="res://scripts/editor/GameElevatorDoor.gd" id="7_elev"]
+[ext_resource type="Script" path="res://scripts/editor/GamePickup.gd" id="8_pick"]
+[ext_resource type="Texture2D" path="res://assets/sprites/_0012_急救箱.png" id="9_medk"]
+[ext_resource type="Texture2D" path="res://assets/sprites/_0000_电梯卡.png" id="10_crd"]
+[ext_resource type="Script" path="res://scripts/levels/floor_1_scene.gd" id="11_flr"]
+
+[node name="Floor1" type="Node2D"]
+script = ExtResource("11_flr")
+
+[node name="Floor0_corridor" type="TextureRect" parent="."]
+position = Vector2(-890.0,500.0)
+size = Vector2(1350.0,200.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor1_corridor" type="TextureRect" parent="."]
+position = Vector2(370.0,40.0)
+size = Vector2(140.0,600.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor2_corridor" type="TextureRect" parent="."]
+position = Vector2(-470.0,40.0)
+size = Vector2(930.0,140.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor3_corridor" type="TextureRect" parent="."]
+position = Vector2(-520.0,-320.0)
+size = Vector2(140.0,500.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor4_corridor" type="TextureRect" parent="."]
+position = Vector2(-470.0,-320.0)
+size = Vector2(1190.0,140.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor5_corridor" type="TextureRect" parent="."]
+position = Vector2(720.0,-320.0)
+size = Vector2(190.0,140.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor6_corridor" type="TextureRect" parent="."]
+position = Vector2(-860.0,80.0)
+size = Vector2(480.0,110.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor7_corridor" type="TextureRect" parent="."]
+position = Vector2(-520.0,180.0)
+size = Vector2(140.0,320.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor8_corridor" type="TextureRect" parent="."]
+position = Vector2(288.0,40.0)
+size = Vector2(82.0,600.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor9_corridor" type="TextureRect" parent="."]
+position = Vector2(510.0,40.0)
+size = Vector2(22.0,512.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor10_corridor" type="TextureRect" parent="."]
+position = Vector2(532.0,68.0)
+size = Vector2(336.0,24.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor11_room" type="TextureRect" parent="."]
+position = Vector2(-848.0,-588.0)
+size = Vector2(366.0,640.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor12_room" type="TextureRect" parent="."]
+position = Vector2(-848.0,192.0)
+size = Vector2(326.0,308.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor13_room" type="TextureRect" parent="."]
+position = Vector2(-428.0,192.0)
+size = Vector2(326.0,308.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor14_room" type="TextureRect" parent="."]
+position = Vector2(-8.0,192.0)
+size = Vector2(296.0,308.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor15_room" type="TextureRect" parent="."]
+position = Vector2(-468.0,-588.0)
+size = Vector2(276.0,236.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor16_room" type="TextureRect" parent="."]
+position = Vector2(-68.0,-588.0)
+size = Vector2(276.0,236.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor17_room" type="TextureRect" parent="."]
+position = Vector2(248.0,-588.0)
+size = Vector2(480.0,236.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor18_room" type="TextureRect" parent="."]
+position = Vector2(768.0,-588.0)
+size = Vector2(108.0,236.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor19_room" type="TextureRect" parent="."]
+position = Vector2(532.0,92.0)
+size = Vector2(336.0,460.0)
+texture = ExtResource("4_room")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Floor20_corridor" type="TextureRect" parent="."]
+position = Vector2(-880.0,644.0)
+size = Vector2(208.0,64.0)
+texture = ExtResource("3_corr")
+stretch_mode = 2
+texture_filter = 0
+texture_repeat = 2
+modulate = Color(0.24,0.21,0.18,1)
+z_index = -10
+
+[node name="Wall0" type="StaticBody2D" parent="."]
+position = Vector2(0.0,-610.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(1840.0,20.0)
+wall_color = Color(0.12, 0.08, 0.06)
+
+[node name="Wall1" type="StaticBody2D" parent="."]
+position = Vector2(0.0,730.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(1840.0,20.0)
+wall_color = Color(0.12, 0.08, 0.06)
+
+[node name="Wall2" type="StaticBody2D" parent="."]
+position = Vector2(-910.0,0.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(20.0,1240.0)
+wall_color = Color(0.12, 0.08, 0.06)
+
+[node name="Wall3" type="StaticBody2D" parent="."]
+position = Vector2(910.0,0.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(20.0,1240.0)
+wall_color = Color(0.12, 0.08, 0.06)
+
+[node name="Wall4" type="StaticBody2D" parent="."]
+position = Vector2(-880.0,644.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(30.0,64.0)
+wall_color = Color(0.12, 0.08, 0.06)
+
+[node name="Wall5" type="StaticBody2D" parent="."]
+position = Vector2(120.0,730.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(1560.0,60.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall6" type="StaticBody2D" parent="."]
+position = Vector2(690.0,610.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(360.0,100.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall7" type="StaticBody2D" parent="."]
+position = Vector2(-475.0,345.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(70.0,310.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall8" type="StaticBody2D" parent="."]
+position = Vector2(-55.0,345.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(70.0,310.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall9" type="StaticBody2D" parent="."]
+position = Vector2(285.0,-80.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(1250.0,200.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall10" type="StaticBody2D" parent="."]
+position = Vector2(-700.0,66.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(400.0,28.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall11" type="StaticBody2D" parent="."]
+position = Vector2(700.0,686.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(400.0,28.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall12" type="StaticBody2D" parent="."]
+position = Vector2(300.0,539.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(16.0,114.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall13" type="StaticBody2D" parent="."]
+position = Vector2(715.0,-50.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(390.0,260.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="Wall14" type="StaticBody2D" parent="."]
+position = Vector2(885.0,80.0)
+script = ExtResource("1_wall")
+wall_size = Vector2(50.0,16.0)
+wall_color = Color(0.1, 0.07, 0.05)
+
+[node name="F0_柜子" type="StaticBody2D" parent="."]
+position = Vector2(-804.0,-556.0)
+script = ExtResource("2_furn")
+furniture_name = "柜子"
+furniture_size = Vector2(68.0,36.0)
+
+[node name="F1_桌子" type="StaticBody2D" parent="."]
+position = Vector2(-620.0,-556.0)
+script = ExtResource("2_furn")
+furniture_name = "桌子"
+furniture_size = Vector2(44.0,32.0)
+
+[node name="F2_沙发" type="StaticBody2D" parent="."]
+position = Vector2(-830.0,300.0)
+script = ExtResource("2_furn")
+furniture_name = "沙发"
+furniture_size = Vector2(60.0,36.0)
+
+[node name="F3_椅子" type="StaticBody2D" parent="."]
+position = Vector2(-660.0,350.0)
+script = ExtResource("2_furn")
+furniture_name = "椅子"
+furniture_size = Vector2(44.0,28.0)
+
+[node name="F4_柜子" type="StaticBody2D" parent="."]
+position = Vector2(-380.0,300.0)
+script = ExtResource("2_furn")
+furniture_name = "柜子"
+furniture_size = Vector2(56.0,32.0)
+
+[node name="F5_桌子" type="StaticBody2D" parent="."]
+position = Vector2(-220.0,350.0)
+script = ExtResource("2_furn")
+furniture_name = "桌子"
+furniture_size = Vector2(40.0,24.0)
+
+[node name="F6_柜子" type="StaticBody2D" parent="."]
+position = Vector2(70.0,300.0)
+script = ExtResource("2_furn")
+furniture_name = "柜子"
+furniture_size = Vector2(40.0,28.0)
+
+[node name="F7_柜子" type="StaticBody2D" parent="."]
+position = Vector2(190.0,330.0)
+script = ExtResource("2_furn")
+furniture_name = "柜子"
+furniture_size = Vector2(32.0,24.0)
+
+[node name="F8_床" type="StaticBody2D" parent="."]
+position = Vector2(-430.0,-570.0)
+script = ExtResource("2_furn")
+furniture_name = "床"
+furniture_size = Vector2(60.0,36.0)
+
+[node name="F9_桌子" type="StaticBody2D" parent="."]
+position = Vector2(-270.0,-570.0)
+script = ExtResource("2_furn")
+furniture_name = "桌子"
+furniture_size = Vector2(40.0,30.0)
+
+[node name="F10_床" type="StaticBody2D" parent="."]
+position = Vector2(-20.0,-570.0)
+script = ExtResource("2_furn")
+furniture_name = "床"
+furniture_size = Vector2(60.0,32.0)
+
+[node name="F11_桌子" type="StaticBody2D" parent="."]
+position = Vector2(120.0,-570.0)
+script = ExtResource("2_furn")
+furniture_name = "桌子"
+furniture_size = Vector2(40.0,24.0)
+
+[node name="F12_柜子" type="StaticBody2D" parent="."]
+position = Vector2(300.0,-568.0)
+script = ExtResource("2_furn")
+furniture_name = "柜子"
+furniture_size = Vector2(72.0,32.0)
+
+[node name="F13_桌子" type="StaticBody2D" parent="."]
+position = Vector2(584.0,-564.0)
+script = ExtResource("2_furn")
+furniture_name = "桌子"
+furniture_size = Vector2(48.0,28.0)
+
+[node name="F14_柜子" type="StaticBody2D" parent="."]
+position = Vector2(784.0,-568.0)
+script = ExtResource("2_furn")
+furniture_name = "柜子"
+furniture_size = Vector2(40.0,32.0)
+
+[node name="F15_沙发" type="StaticBody2D" parent="."]
+position = Vector2(580.0,148.0)
+script = ExtResource("2_furn")
+furniture_name = "沙发"
+furniture_size = Vector2(60.0,36.0)
+
+[node name="F16_柜子" type="StaticBody2D" parent="."]
+position = Vector2(724.0,148.0)
+script = ExtResource("2_furn")
+furniture_name = "柜子"
+furniture_size = Vector2(48.0,32.0)
+
+[node name="RoomLight0" type="PointLight2D" parent="."]
+position = Vector2(-680.0,-270.0)
+energy = 2.5
+texture_scale = 8.4
+
+[node name="RoomLight1" type="PointLight2D" parent="."]
+position = Vector2(-685.0,220.0)
+energy = 2.4
+texture_scale = 7.6
+
+[node name="RoomLight2" type="PointLight2D" parent="."]
+position = Vector2(-265.0,220.0)
+energy = 2.4
+texture_scale = 7.6
+
+[node name="RoomLight3" type="PointLight2D" parent="."]
+position = Vector2(140.0,220.0)
+energy = 2.3
+texture_scale = 7.0
+
+[node name="RoomLight4" type="PointLight2D" parent="."]
+position = Vector2(-330.0,-470.0)
+energy = 2.4
+texture_scale = 7.6
+
+[node name="RoomLight5" type="PointLight2D" parent="."]
+position = Vector2(70.0,-470.0)
+energy = 2.4
+texture_scale = 7.6
+
+[node name="RoomLight6" type="PointLight2D" parent="."]
+position = Vector2(488.0,-470.0)
+energy = 2.3
+texture_scale = 7.2
+
+[node name="RoomLight7" type="PointLight2D" parent="."]
+position = Vector2(822.0,-470.0)
+energy = 2.0
+texture_scale = 5.2
+
+[node name="RoomLight8" type="PointLight2D" parent="."]
+position = Vector2(690.0,320.0)
+energy = 2.4
+texture_scale = 8.0
+
+[node name="CorridorLight0" type="PointLight2D" parent="."]
+position = Vector2(-640.0,440.0)
+energy = 1.5
+texture_scale = 4.8
+
+[node name="CorridorLight1" type="PointLight2D" parent="."]
+position = Vector2(-140.0,440.0)
+energy = 1.5
+texture_scale = 4.8
+
+[node name="CorridorLight2" type="PointLight2D" parent="."]
+position = Vector2(420.0,370.0)
+energy = 1.4
+texture_scale = 4.4
+
+[node name="CorridorLight3" type="PointLight2D" parent="."]
+position = Vector2(190.0,100.0)
+energy = 1.4
+texture_scale = 4.4
+
+[node name="CorridorLight4" type="PointLight2D" parent="."]
+position = Vector2(-180.0,100.0)
+energy = 1.4
+texture_scale = 4.4
+
+[node name="CorridorLight5" type="PointLight2D" parent="."]
+position = Vector2(-420.0,-80.0)
+energy = 1.4
+texture_scale = 4.4
+
+[node name="CorridorLight6" type="PointLight2D" parent="."]
+position = Vector2(-240.0,-260.0)
+energy = 1.4
+texture_scale = 4.4
+
+[node name="CorridorLight7" type="PointLight2D" parent="."]
+position = Vector2(220.0,-260.0)
+energy = 1.4
+texture_scale = 4.4
+
+[node name="CorridorLight8" type="PointLight2D" parent="."]
+position = Vector2(470.0,-260.0)
+energy = 1.4
+texture_scale = 4.4
+
+[node name="急救箱" type="Node2D" parent="."]
+position = Vector2(210.0,42.0)
+script = ExtResource("5_cont")
+container_name = "急救箱"
+container_size = Vector2(14.0,14.0)
+container_color = Color(0.8, 0.2, 0.2, 1)
+contained_item_id = "bandage"
+contained_item_name = "绷带"
+texture_path = "res://assets/sprites/_0012_急救箱.png"
+texture_display_size = Vector2(18.0,14.0)
+
+[node name="大门" type="Node2D" parent="."]
+position = Vector2(-390.0,350.0)
+script = ExtResource("6_deco")
+decor_name = "大门"
+decor_size = Vector2(40.0,15.0)
+decor_color = Color(0.2, 0.15, 0.12, 1)
+hint_text = "门被锁住了"
+label_color = Color(0.5, 0.4, 0.35, 1)
+
+[node name="门厅" type="Node2D" parent="."]
+position = Vector2(-434.0,330.0)
+script = ExtResource("6_deco")
+decor_name = "门厅"
+decor_size = Vector2(1.0,1.0)
+decor_color = Color(0.72, 0.82, 0.88, 1)
+show_label = true
+label_font_size = 14
+
+[node name="镜子" type="Node2D" parent="."]
+position = Vector2(145.0,-178.0)
+script = ExtResource("6_deco")
+decor_name = "镜子"
+decor_size = Vector2(30.0,8.0)
+decor_color = Color(0.15, 0.15, 0.2, 1)
+label_color = Color(0.4, 0.4, 0.5, 1)
+
+[node name="电梯" type="Node2D" parent="."]
+position = Vector2(340.0,-130.0)
+script = ExtResource("7_elev")
+door_size = Vector2(72.0,60.0)
+is_arrival = false
+elevator_label = "电梯"
+requires_card = true
+required_event = "floor1_23_triggered"
+target_scene = "res://scenes/levels/elevator_f1_interior.tscn"
+
+[node name="电梯卡" type="Node2D" parent="."]
+position = Vector2(70.0,-250.0)
+script = ExtResource("8_pick")
+item_id = "elevator_card"
+item_name = "电梯卡"
+pickup_radius = 10.0
+preview_color = Color(0.5, 0.8, 1.0, 1)
+texture_path = "res://assets/sprites/_0000_电梯卡.png"
+texture_display_size = Vector2(12.0,8.0)

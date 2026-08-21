@@ -1,0 +1,10 @@
+要改什么	在哪改	怎么改
+门的位置	prologue_room_scene.gd → _build_door()	改 door_area.position = Vector2(x, y)
+手机位置	_build_phone_area()	改 phone_area.position = Vector2(x, y)
+家具位置/大小	_build_room() → _add_furniture(...)	改参数 pos, size, color, label
+房间大小	_build_room()	改 floor_rect.size 和四面墙的位置
+角色头像	把图片放到 assets/sprites/portraits/sister.png	自动加载，不用改代码
+物品图标	game_config.gd → ITEM_SPRITES	改路径指向你的图片
+玩家外观	_build_player() → img.fill(Color(...))	替换为 load("res://你的图片.png")
+2. 音乐播放
+你的音乐文件（.ogg 或 .mp3）放到 assets/audio/bgm/ 目录。

@@ -1,0 +1,16 @@
+{
+	"source_file": "C:\\Users\\25450\\Desktop\\游戏素材\\角色\\动作\\周锐走路.png",
+	"display_name": "周锐",
+	"character_id": "male_npc",
+	"row_order": [
+		"down",
+		"up",
+		"left",
+		"right"
+	],
+	"frame_count_per_direction": 4,
+	"canvas_width": 240,
+	"canvas_height": 439,
+	"baseline_y": 439,
+	"idle_frame_index": 0
+}

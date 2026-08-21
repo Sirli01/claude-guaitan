@@ -1,0 +1,16 @@
+{
+	"source_file": "C:\\Users\\25450\\Desktop\\游戏素材\\角色\\动作\\沈薇走路.png",
+	"display_name": "沈薇",
+	"character_id": "female_npc",
+	"row_order": [
+		"down",
+		"up",
+		"left",
+		"right"
+	],
+	"frame_count_per_direction": 4,
+	"canvas_width": 226,
+	"canvas_height": 438,
+	"baseline_y": 438,
+	"idle_frame_index": 0
+}

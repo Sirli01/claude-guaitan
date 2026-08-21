@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://dkf4023aoo2lk"]
+
+[ext_resource type="Script" uid="uid://ce48fsl4pqjwa" path="res://scripts/ui/dialogue_ui.gd" id="1_dlg"]
+
+[node name="DialogueUI" type="CanvasLayer" unique_id=2037898738]
+layer = 10
+script = ExtResource("1_dlg")
+
+[node name="DialoguePanel" type="PanelContainer" parent="." unique_id=2146679177]
+visible = false
+custom_minimum_size = Vector2(3680, 520)
+offset_left = 80.0
+offset_top = 1600.0
+offset_right = 3760.0
+offset_bottom = 2120.0
+
+[node name="MarginContainer" type="MarginContainer" parent="DialoguePanel" unique_id=1812905241]
+layout_mode = 2
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialoguePanel/MarginContainer" unique_id=509627468]
+layout_mode = 2
+
+[node name="SpeakerLabel" type="Label" parent="DialoguePanel/MarginContainer/VBoxContainer" unique_id=175954347]
+layout_mode = 2
+theme_override_font_sizes/font_size = 68
+
+[node name="TextLabel" type="RichTextLabel" parent="DialoguePanel/MarginContainer/VBoxContainer" unique_id=311406415]
+custom_minimum_size = Vector2(3200, 280)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/normal_font_size = 56
+fit_content = true
+scroll_active = false
+
+[node name="ContinueIndicator" type="Label" parent="DialoguePanel" unique_id=61899488]
+layout_mode = 2
+theme_override_font_sizes/font_size = 56
+text = "▼"
+horizontal_alignment = 2

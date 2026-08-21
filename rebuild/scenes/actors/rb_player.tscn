@@ -1,0 +1,52 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://rebuild/scripts/actors/rb_player_controller.gd" id="1_player"]
+[ext_resource type="Script" path="res://rebuild/scripts/actors/rb_interaction_sensor.gd" id="2_sensor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/sister/idle/idle_down.png" id="3_idle_down"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/sister/idle/idle_up.png" id="4_idle_up"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/sister/idle/idle_left.png" id="5_idle_left"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/sister/idle/idle_right.png" id="6_idle_right"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(28, 14)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_sensor"]
+radius = 48.0
+
+[node name="RbPlayer" type="CharacterBody2D"]
+motion_mode = 1
+collision_layer = 1
+collision_mask = 4
+script = ExtResource("1_player")
+texture_idle_down = ExtResource("3_idle_down")
+texture_idle_up = ExtResource("4_idle_up")
+texture_idle_left = ExtResource("5_idle_left")
+texture_idle_right = ExtResource("6_idle_right")
+move_speed = 130.0
+acceleration = 1400.0
+friction = 1800.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+offset = Vector2(0, -220)
+scale = Vector2(0.18, 0.18)
+texture = ExtResource("3_idle_down")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -7)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="InteractionSensor" type="Area2D" parent="."]
+position = Vector2(0, -30)
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("2_sensor")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionSensor"]
+shape = SubResource("CircleShape2D_sensor")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -40)
+zoom = Vector2(6, 6)
+position_smoothing_enabled = true
+position_smoothing_speed = 9.0

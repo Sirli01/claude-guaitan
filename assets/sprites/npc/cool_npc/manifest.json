@@ -1,0 +1,16 @@
+{
+	"source_file": "C:\\Users\\25450\\Desktop\\游戏素材\\角色\\动作\\林佳语走路.png",
+	"display_name": "林佳语",
+	"character_id": "cool_npc",
+	"row_order": [
+		"down",
+		"up",
+		"left",
+		"right"
+	],
+	"frame_count_per_direction": 4,
+	"canvas_width": 239,
+	"canvas_height": 439,
+	"baseline_y": 439,
+	"idle_frame_index": 0
+}

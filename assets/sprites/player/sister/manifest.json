@@ -1,0 +1,16 @@
+{
+	"source_file": "C:\\Users\\25450\\Desktop\\游戏素材\\角色\\动作\\夏桐走路.png",
+	"display_name": "夏桐",
+	"character_id": "sister",
+	"row_order": [
+		"down",
+		"up",
+		"left",
+		"right"
+	],
+	"frame_count_per_direction": 4,
+	"canvas_width": 232,
+	"canvas_height": 440,
+	"baseline_y": 440,
+	"idle_frame_index": 0
+}

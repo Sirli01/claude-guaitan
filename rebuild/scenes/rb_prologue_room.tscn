@@ -1,0 +1,40 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://rebuild/scenes/rb_level_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://rebuild/scenes/rooms/rb_room_interior.tscn" id="2_room"]
+[ext_resource type="PackedScene" path="res://rebuild/scenes/props/rb_door.tscn" id="3_door"]
+[ext_resource type="PackedScene" path="res://rebuild/scenes/props/rb_prop_bed.tscn" id="4_bed"]
+[ext_resource type="PackedScene" path="res://rebuild/scenes/props/rb_prop_desk.tscn" id="5_desk"]
+[ext_resource type="PackedScene" path="res://rebuild/scenes/props/rb_prop_phone.tscn" id="6_phone"]
+
+[node name="RbPrologueRoom" instance=ExtResource("1_base")]
+level_id = "prologue_room"
+default_spawn_id = "default"
+intro_dialogue_id = "room_intro"
+
+[node name="RoomInterior" parent="World/Ground" instance=ExtResource("2_room")]
+
+[node name="Bed" parent="World/Props" instance=ExtResource("4_bed")]
+position = Vector2(-190, 110)
+
+[node name="Desk" parent="World/Props" instance=ExtResource("5_desk")]
+position = Vector2(160, 30)
+
+[node name="Phone" parent="World/Props" instance=ExtResource("6_phone")]
+position = Vector2(90, 130)
+prompt_text = "查看手机"
+dialogue_id = "room_phone_first"
+repeat_dialogue_id = "room_phone_repeat"
+flag_on_examine = "read_sister_message"
+
+[node name="DoorToStreet" parent="World/Props" instance=ExtResource("3_door")]
+position = Vector2(0, -160)
+prompt_text = "回到街上"
+target_scene_key = "prologue_street"
+target_spawn_id = "from_room"
+
+[node name="default" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(-60, 120)
+
+[node name="from_street" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(0, -100)

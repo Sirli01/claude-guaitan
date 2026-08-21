@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>薛林 — AIGC美术设计师 / 游戏视觉创意设计师</title>
+<meta name="description" content="薛林的个人作品集 — AIGC美术设计师，专注于AI驱动的游戏美术创作与视觉设计。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-card: #16161f;
+  --bg-card-hover: #1c1c28;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-accent: rgba(0,210,255,0.15);
+  --text-primary: #e8e8ed;
+  --text-secondary: #8a8a9a;
+  --text-muted: #55556a;
+  --accent-cyan: #00d2ff;
+  --accent-purple: #a855f7;
+  --accent-gradient: linear-gradient(135deg, #00d2ff 0%, #a855f7 100%);
+  --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+  --font-body: 'Noto Sans SC', 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+::selection { background: rgba(0,210,255,0.25); color: #fff; }
+a { color: var(--accent-cyan); text-decoration: none; transition: opacity 0.2s; }
+a:hover { opacity: 0.8; }
+
+/* Grid Background */
+.grid-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 70%);
+}
+.glow-orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; opacity: 0.4; }
+.glow-orb.cyan { width: 400px; height: 400px; background: rgba(0,210,255,0.08); top: 10%; right: -100px; }
+.glow-orb.purple { width: 350px; height: 350px; background: rgba(168,85,247,0.06); bottom: 20%; left: -80px; }
+
+/* Nav */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 16px 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  background: rgba(10,10,15,0.7);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: transform 0.4s var(--ease-out);
+}
+.nav.hidden { transform: translateY(-100%); }
+.nav-logo {
+  font-family: var(--font-display); font-weight: 700; font-size: 18px;
+  letter-spacing: -0.02em;
+  background: var(--accent-gradient); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+.nav-links { display: flex; gap: 24px; list-style: none; }
+.nav-links a {
+  font-family: var(--font-display); font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); letter-spacing: 0.03em; text-transform: uppercase;
+  transition: color 0.2s; position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: -4px; left: 0;
+  width: 0; height: 1.5px; background: var(--accent-cyan);
+  transition: width 0.4s var(--ease-out);
+}
+.nav-links a:hover { color: var(--text-primary); }
+.nav-links a:hover::after { width: 100%; }
+
+/* Hero */
+.hero {
+  position: relative; min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 128px 32px 64px; z-index: 1;
+}
+.hero-content { max-width: 900px; margin: 0 auto; width: 100%; }
+.hero-tag {
+  font-family: var(--font-mono); font-size: 13px; color: var(--accent-cyan);
+  letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 24px;
+  opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s var(--ease-out) 0.2s forwards;
+}
+.hero-name {
+  font-family: var(--font-display); font-size: clamp(48px, 8vw, 96px);
+  font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px;
+  opacity: 0; transform: translateY(30px); animation: fadeUp 0.8s var(--ease-out) 0.4s forwards;
+}
+.hero-name .gradient {
+  background: var(--accent-gradient); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-title {
+  font-family: var(--font-display); font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: 400; color: var(--text-secondary); margin-bottom: 32px;
+  opacity: 0; transform: translateY(30px); animation: fadeUp 0.8s var(--ease-out) 0.6s forwards;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 24px; font-size: 14px; color: var(--text-muted);
+  opacity: 0; transform: translateY(30px); animation: fadeUp 0.8s var(--ease-out) 0.8s forwards;
+}
+.hero-meta span { display: flex; align-items: center; gap: 8px; }
+.hero-meta .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent-cyan); flex-shrink: 0; }
+.hero-scroll {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--text-muted); font-size: 11px; font-family: var(--font-mono);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  opacity: 0; animation: fadeUp 0.8s var(--ease-out) 1.2s forwards;
+}
+.scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, var(--accent-cyan), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse { 0%, 100% { opacity: 0.3; transform: scaleY(0.6); } 50% { opacity: 1; transform: scaleY(1); } }
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+/* Section */
+.section { position: relative; z-index: 1; padding: 96px 32px; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label { font-family: var(--font-mono); font-size: 12px; color: var(--accent-cyan); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; }
+.section-title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 48px; }
+.section-divider { width: 48px; height: 2px; background: var(--accent-gradient); margin-bottom: 48px; }
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* About */
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+.about-text p { color: var(--text-secondary); font-size: 16px; line-height: 1.8; margin-bottom: 24px; }
+.about-text p strong { color: var(--text-primary); font-weight: 500; }
+.about-highlights { display: flex; flex-direction: column; gap: 16px; }
+.highlight-card {
+  padding: 20px; background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); transition: border-color 0.2s, background 0.2s;
+}
+.highlight-card:hover { border-color: var(--border-accent); background: var(--bg-card-hover); }
+.highlight-card .label { font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+.highlight-card .value { font-family: var(--font-display); font-size: 15px; font-weight: 500; color: var(--text-primary); }
+
+/* Skills */
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.skill-group {
+  padding: 24px; background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); transition: border-color 0.2s, transform 0.4s var(--ease-out);
+}
+.skill-group:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+.skill-group-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.skill-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.skill-icon.ai { background: rgba(0,210,255,0.1); color: var(--accent-cyan); }
+.skill-icon.art { background: rgba(168,85,247,0.1); color: var(--accent-purple); }
+.skill-icon.video { background: rgba(251,146,60,0.1); color: #fb923c; }
+.skill-icon.game { background: rgba(52,211,153,0.1); color: #34d399; }
+.skill-group-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+.skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.skill-tag {
+  padding: 5px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle);
+  border-radius: 100px; font-size: 13px; color: var(--text-secondary);
+  transition: all 0.2s; white-space: nowrap;
+}
+.skill-tag:hover { background: rgba(0,210,255,0.08); border-color: rgba(0,210,255,0.2); color: var(--text-primary); }
+.skill-tag.core { background: rgba(0,210,255,0.08); border-color: rgba(0,210,255,0.2); color: var(--accent-cyan); }
+
+/* Projects */
+.projects-list { display: flex; flex-direction: column; gap: 20px; }
+.project-card {
+  padding: 24px 32px; background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); transition: all 0.4s var(--ease-out);
+  position: relative; overflow: hidden;
+}
+.project-card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+  background: var(--accent-gradient); opacity: 0; transition: opacity 0.2s;
+}
+.project-card:hover { border-color: var(--border-accent); background: var(--bg-card-hover); transform: translateX(4px); }
+.project-card:hover::before { opacity: 1; }
+.project-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 16px; }
+.project-name { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.project-role {
+  font-family: var(--font-mono); font-size: 12px; color: var(--accent-cyan); white-space: nowrap;
+  padding: 3px 10px; background: rgba(0,210,255,0.08); border-radius: 100px; flex-shrink: 0;
+}
+.project-date { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.project-desc { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
+.project-highlights { list-style: none; display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+.project-highlights li { font-size: 13px; color: var(--text-secondary); padding-left: 16px; position: relative; }
+.project-highlights li::before { content: ''; position: absolute; left: 0; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-cyan); opacity: 0.5; }
+.project-tech { display: flex; flex-wrap: wrap; gap: 8px; }
+.project-tech span {
+  font-family: var(--font-mono); font-size: 11px; padding: 3px 10px;
+  background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.15);
+  border-radius: 100px; color: var(--accent-purple);
+}
+
+/* Timeline */
+.timeline { position: relative; padding-left: 32px; }
+.timeline::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-purple), transparent); }
+.timeline-item { position: relative; padding-bottom: 32px; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot { position: absolute; left: -36px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--accent-cyan); }
+.timeline-item:first-child .timeline-dot { background: var(--accent-cyan); box-shadow: 0 0 12px rgba(0,210,255,0.4); }
+.timeline-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; flex-wrap: wrap; gap: 8px; }
+.timeline-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; }
+.timeline-date { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+.timeline-subtitle { font-size: 14px; color: var(--accent-cyan); margin-bottom: 8px; }
+.timeline-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+/* Education */
+.education-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+.edu-card {
+  padding: 24px; background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); position: relative; overflow: hidden;
+}
+.edu-card::after {
+  content: ''; position: absolute; top: 0; right: 0; width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(0,210,255,0.05) 0%, transparent 70%); pointer-events: none;
+}
+.edu-school { font-family: var(--font-display); font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+.edu-degree { font-size: 14px; color: var(--accent-cyan); margin-bottom: 8px; }
+.edu-date { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+.edu-detail { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+.edu-badge {
+  display: inline-block; margin-top: 16px; padding: 4px 12px;
+  background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.15);
+  border-radius: 100px; font-size: 12px; color: var(--accent-purple);
+}
+
+/* Contact */
+.contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.contact-card {
+  padding: 20px; background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); display: flex; align-items: center; gap: 16px;
+  transition: all 0.2s; text-decoration: none; color: inherit;
+}
+.contact-card:hover { border-color: var(--border-accent); background: var(--bg-card-hover); transform: translateY(-2px); opacity: 1; }
+.contact-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  background: rgba(0,210,255,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.contact-icon svg { width: 18px; height: 18px; stroke: var(--accent-cyan); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.contact-label { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+.contact-value { font-family: var(--font-display); font-size: 14px; font-weight: 500; color: var(--text-primary); }
+
+/* Footer */
+.footer {
+  position: relative; z-index: 1; padding: 64px 32px; text-align: center;
+  border-top: 1px solid var(--border-subtle);
+}
+.footer-text { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em; }
+.footer-text .heart { color: var(--accent-cyan); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav { padding: 16px; }
+  .nav-links { display: none; }
+  .hero { padding: 96px 16px 32px; }
+  .hero-meta { flex-direction: column; gap: 8px; }
+  .section { padding: 64px 16px; }
+  .about-grid { grid-template-columns: 1fr; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .project-header { flex-direction: column; }
+  .timeline { padding-left: 24px; }
+  .timeline-dot { left: -28px; }
+  .education-cards { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow-orb cyan"></div>
+<div class="glow-orb purple"></div>
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+  <div class="nav-logo">XL.</div>
+  <ul class="nav-links">
+    <li><a href="#about">关于</a></li>
+    <li><a href="#skills">技能</a></li>
+    <li><a href="#projects">项目</a></li>
+    <li><a href="#experience">经历</a></li>
+    <li><a href="#education">教育</a></li>
+    <li><a href="#contact">联系</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <div class="hero-tag">AIGC Art Designer / Game Visual Creative Designer</div>
+    <h1 class="hero-name">薛<span class="gradient">林</span></h1>
+    <p class="hero-title">AIGC美术设计师 / 游戏视觉创意设计师</p>
+    <div class="hero-meta">
+      <span><span class="dot"></span>辽宁</span>
+      <span><span class="dot"></span>京都情报大学院大学 硕士在读</span>
+      <span><span class="dot"></span>2545046640@qq.com</span>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="section" id="about">
+  <div class="section-inner reveal">
+    <div class="section-label">// About</div>
+    <h2 class="section-title">关于我</h2>
+    <div class="section-divider"></div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>专注于<strong>AIGC与游戏美术创作</strong>的视觉设计师，擅长将AI工具创造性地应用于美术与游戏开发全流程。具备从概念设计到最终交付的完整工作流经验，覆盖AI生图、角色设计、场景设定、视频后期等环节。</p>
+        <p>作为<strong>重度二次元文化爱好者</strong>和<strong>10年B站核心用户</strong>，对年轻用户审美趋势和游戏视觉风格有深刻理解。致力于探索AI技术与传统美术的融合边界，用技术驱动创意表达。</p>
+      </div>
+      <div class="about-highlights">
+        <div class="highlight-card"><div class="label">核心方向</div><div class="value">AIGC美术创作 · 游戏视觉设计</div></div>
+        <div class="highlight-card"><div class="label">教育背景</div><div class="value">京都情报大学院大学 IT动画硕士（在读）</div></div>
+        <div class="highlight-card"><div class="label">荣誉</div><div class="value">全国大学生广告艺术大赛辽宁省二等奖</div></div>
+        <div class="highlight-card"><div class="label">个人标签</div><div class="value">AI工具专家 · 快速学习者 · 跨学科创作者</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section class="section" id="skills">
+  <div class="section-inner reveal">
+    <div class="section-label">// Skills</div>
+    <h2 class="section-title">核心技能</h2>
+    <div class="section-divider"></div>
+    <div class="skills-grid">
+      <div class="skill-group">
+        <div class="skill-group-header"><div class="skill-icon ai">&#9881;</div><div class="skill-group-title">AIGC前沿技能</div></div>
+        <div class="skill-tags">
+          <span class="skill-tag core">Stable Diffusion（精通）</span>
+          <span class="skill-tag core">ControlNet（熟练）</span>
+          <span class="skill-tag core">即梦（熟练）</span>
+          <span class="skill-tag">Gemini</span>
+          <span class="skill-tag">可灵AI</span>
+          <span class="skill-tag">LoRA模型</span>
+          <span class="skill-tag">ComfyUI</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-header"><div class="skill-icon art">&#9998;</div><div class="skill-group-title">美术与设计</div></div>
+        <div class="skill-tags">
+          <span class="skill-tag">Photoshop</span>
+          <span class="skill-tag">Clip Studio Paint</span>
+          <span class="skill-tag">Procreate</span>
+          <span class="skill-tag">SAI2</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-header"><div class="skill-icon video">&#9654;</div><div class="skill-group-title">动画与视频</div></div>
+        <div class="skill-tags">
+          <span class="skill-tag">DaVinci Resolve</span>
+          <span class="skill-tag">Premiere</span>
+          <span class="skill-tag">After Effects</span>
+          <span class="skill-tag">剪映</span>
+          <span class="skill-tag">Live2D</span>
+          <span class="skill-tag">Animate</span>
+          <span class="skill-tag">MMD</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-header"><div class="skill-icon game">&#9733;</div><div class="skill-group-title">行业洞察</div></div>
+        <div class="skill-tags">
+          <span class="skill-tag">B站10年核心用户</span>
+          <span class="skill-tag">Steam 5年资深玩家</span>
+          <span class="skill-tag">二次元文化深度爱好者</span>
+          <span class="skill-tag">中日动漫游戏产业追踪</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Projects -->
+<section class="section" id="projects">
+  <div class="section-inner reveal">
+    <div class="section-label">// Projects</div>
+    <h2 class="section-title">项目经历</h2>
+    <div class="section-divider"></div>
+    <div class="projects-list">
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-name">AI辅助独立游戏开发项目</div>
+          <div class="project-role">项目主导</div>
+        </div>
+        <div class="project-date">2026年4月</div>
+        <p class="project-desc">主导开发独立游戏，运用AI工具实现全流程创作，包括AI编程、AI美术和AI音乐生成，探索AI在游戏开发中的创新应用。</p>
+        <ul class="project-highlights">
+          <li>制定项目计划，协调AI工具使用，确保项目按时完成</li>
+          <li>运用Stable Diffusion + ControlNet生成游戏素材，通过LoRA训练保持美术风格一致性</li>
+          <li>利用自然语言编程技术，让AI辅助完成游戏核心逻辑开发</li>
+          <li>使用AI工具生成游戏背景音乐和音效素材</li>
+        </ul>
+        <div class="project-tech">
+          <span>Stable Diffusion</span><span>ControlNet</span><span>LoRA</span><span>即梦</span><span>AI编程工具</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-name">Phantasmagoria Archives</div>
+          <div class="project-role">独立创作者</div>
+        </div>
+        <div class="project-date">2026年3月 — 至今</div>
+        <p class="project-desc">独立构思并搭建基于中国民俗神话并融合现代国潮、机能风美学的原创世界观IP，涵盖世界观构建、角色设计、场景设定和视觉风格指南。</p>
+        <ul class="project-highlights">
+          <li>设计完整的中国民俗神话与现代国潮融合的世界观体系</li>
+          <li>负责企划内多名角色的核心设定、技能体系设计与视觉形象创作</li>
+          <li>确定视觉风格，建立色彩方案和设计规范</li>
+          <li>使用AI生成工具辅助前期概念设计与灵感发散</li>
+        </ul>
+        <div class="project-tech">
+          <span>Stable Diffusion</span><span>ControlNet</span><span>即梦</span><span>数字绘画</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Experience -->
+<section class="section" id="experience">
+  <div class="section-inner reveal">
+    <div class="section-label">// Experience</div>
+    <h2 class="section-title">工作与实践经历</h2>
+    <div class="section-divider"></div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-header"><div class="timeline-title">自媒体内容运营与视频后期</div><div class="timeline-date">独立制作 / 后期</div></div>
+        <div class="timeline-subtitle">B站UP主封面设计 · 视频本地化 · 内容切片</div>
+        <div class="timeline-desc">为B站UP主提供定制化高转化视频封面设计服务，结合AI生图工具快速生成创意素材与氛围底图。独立完成海外二次元类视频的本地化全流程工作，单条最高播放55万。</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-header"><div class="timeline-title">漫剧与动画制作支持</div><div class="timeline-date">核心创作者</div></div>
+        <div class="timeline-desc">独立完成动态漫画全流程制作，使用Photoshop完成画面裁切、分层拆解、素材精修，使用After Effects完成动态效果设计、镜头运动、转场特效与音效卡点制作。</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-header"><div class="timeline-title">实体和服店商业旅拍</div><div class="timeline-date">特约摄影师</div></div>
+        <div class="timeline-desc">作为特约摄影师与实体和服店开展商业合作，独立负责客户定制化旅拍项目，涵盖取景、拍摄指导及后期（专业调色、液化、光影重塑），高标准交付商业级成片。</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-header"><div class="timeline-title">大学校级记者团</div><div class="timeline-date">新媒体编辑 / 撰稿人</div></div>
+        <div class="timeline-desc">负责校级官方微信公众号的文案撰写、内容策划与图文排版，具备扎实的文字功底与新媒体运营思维。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Education -->
+<section class="section" id="education">
+  <div class="section-inner reveal">
+    <div class="section-label">// Education</div>
+    <h2 class="section-title">教育背景</h2>
+    <div class="section-divider"></div>
+    <div class="education-cards">
+      <div class="edu-card">
+        <div class="edu-school">京都情报大学院大学</div>
+        <div class="edu-degree">IT动画 硕士（在读）</div>
+        <div class="edu-date">2024.09 — 2026.09（预计）</div>
+        <div class="edu-detail">主修：AIGC应用与创作、动画分镜设计、高级视频剪辑与特效制作、数字图像处理、三维建模基础</div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-school">大连理工大学城市学院</div>
+        <div class="edu-degree">数字媒体艺术 本科</div>
+        <div class="edu-date">2020.09 — 2024.06</div>
+        <div class="edu-detail">荣誉：全国大学生广告艺术大赛辽宁省二等奖</div>
+        <div class="edu-badge">省级二等奖</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="section" id="contact">
+  <div class="section-inner reveal">
+    <div class="section-label">// Contact</div>
+    <h2 class="section-title">联系我</h2>
+    <div class="section-divider"></div>
+    <div class="contact-grid">
+      <a href="tel:13104277144" class="contact-card">
+        <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
+        <div><div class="contact-label">电话</div><div class="contact-value">13104277144</div></div>
+      </a>
+      <a href="mailto:2545046640@qq.com" class="contact-card">
+        <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div><div class="contact-label">邮箱</div><div class="contact-value">2545046640@qq.com</div></div>
+      </a>
+      <div class="contact-card">
+        <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div><div class="contact-label">所在地</div><div class="contact-value">辽宁</div></div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div><div class="contact-label">生日</div><div class="contact-value">2003年1月</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <p class="footer-text">Designed &amp; Built by <span class="heart">薛林</span> &middot; 2026</p>
+</footer>
+
+<script>
+/* Scroll Reveal */
+var revealElements = document.querySelectorAll('.reveal');
+var revealObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+revealElements.forEach(function(el) { revealObserver.observe(el); });
+
+/* Nav hide/show */
+var lastScrollY = 0;
+var nav = document.getElementById('nav');
+window.addEventListener('scroll', function() {
+  var y = window.scrollY;
+  if (y > lastScrollY && y > 100) nav.classList.add('hidden');
+  else nav.classList.remove('hidden');
+  lastScrollY = y;
+}, { passive: true });
+
+/* Active nav link */
+var sections = document.querySelectorAll('.section, .hero');
+var navLinks = document.querySelectorAll('.nav-links a');
+var activeObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      var id = entry.target.id;
+      navLinks.forEach(function(link) {
+        link.style.color = link.getAttribute('href') === '#' + id ? 'var(--text-primary)' : '';
+      });
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(function(s) { activeObserver.observe(s); });
+
+/* Stagger reveal */
+var staggerItems = document.querySelectorAll('.skill-group, .project-card, .edu-card, .contact-card, .timeline-item, .highlight-card');
+staggerItems.forEach(function(el, i) {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s cubic-bezier(0.16,1,0.3,1) ' + (i * 0.08) + 's, transform 0.5s cubic-bezier(0.16,1,0.3,1) ' + (i * 0.08) + 's';
+});
+var staggerObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+staggerItems.forEach(function(el) { staggerObserver.observe(el); });
+</script>
+</body>
+</html>

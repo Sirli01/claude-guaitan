@@ -1,0 +1,13 @@
+
+# Godot 4 import cache
+.godot/
+
+# GodotPrompter skills (symlink)
+.godot_prompter
+
+# AI tool local data
+.claude/
+.omo/
+.qoder/
+.sisyphus/
+.workbuddy/

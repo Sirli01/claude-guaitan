@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://rebuild/scripts/ui/rb_game_ui.gd" id="1_gameui"]
+[ext_resource type="PackedScene" path="res://rebuild/ui/rb_interact_prompt.tscn" id="2_prompt"]
+[ext_resource type="PackedScene" path="res://rebuild/ui/rb_dialogue_box.tscn" id="3_dialogue"]
+
+[node name="RbGameUi" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_gameui")
+
+[node name="InteractPrompt" parent="." instance=ExtResource("2_prompt")]
+
+[node name="DialogueBox" parent="." instance=ExtResource("3_dialogue")]

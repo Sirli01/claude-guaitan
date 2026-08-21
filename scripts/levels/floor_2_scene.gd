@@ -1,0 +1,915 @@
+@tool
+extends LevelBaseV2
+## 第二层 - 听觉压迫与生死抉择
+## 规则："禁止离群 — 第二层"
+## 威胁：天花板上的巨大高跟鞋，锁定离群者
+## 流程：
+##   胆小男留电梯口→高跟鞋锁定→死亡
+##   发现规则「禁止离群」→众人慌张→发现女伴已离群
+##   女伴听到高跟鞋逼近→大喊→被杀
+##   众人冲向女伴方向时，开朗NPC跑得慢落后→被锁定→玩家抉择
+##   存活者紧靠在一起找电梯卡→找到后离开
+
+var cool_npc: CharacterBody2D
+var cheerful_npc: CharacterBody2D
+var male_npc: CharacterBody2D
+var female_npc: CharacterBody2D
+var timid_npc: CharacterBody2D
+
+var high_heel_visual: Node2D
+var elevator_card_found: bool = false
+var _wander_tweens: Dictionary = {}  # NPC -> bool，用于标记仍在徘徊
+var _timid_walk_tween: Tween = null
+var _used_earplug: bool = false  # 是否用了耳塞救鹿可
+var _earplug_branch_pending: bool = false
+var _heel_sfx: AudioStream  # 程序化高跟鞋音效
+var _rumble_sfx: AudioStream  # 地鸣音效
+var _waiting_for_female_proximity: bool = false  # 等待玩家接近沈薇
+var _timid_pacing_active: bool = false
+var _waiting_for_timid_distance: bool = false
+
+const HIGH_HEEL_TEX_PATH := "res://assets/sprites/monsters/high_heel.png"
+const HIGH_HEEL_WORLD_HEIGHT := 300.0
+const FLOOR_2_ARRIVAL_POS := Vector2(-680, 450)
+const FLOOR_2_PARTY_SPAWN_POS := Vector2(-680, 516)
+const TIMID_GUARD_POS := Vector2(-640, 510)
+const TIMID_SOUND_POS := Vector2(-660, 490)
+const PARTY_WANDER_MIN := Vector2(-280, -160)
+const PARTY_WANDER_MAX := Vector2(660, 480)
+const ITEM_LOSS_POOL := ["sweets", "sedative", "energy_drink", "energy_bar", "battery", "match"]
+
+enum Phase { EXPLORE, TIMID_DEATH, RULE_DISCOVER, FEMALE_DEATH, CHEERFUL_DANGER, RESCUE, SEARCH, DONE }
+var current_phase: Phase = Phase.EXPLORE
+
+func _ready() -> void:
+	# 编辑器模式：只生成视觉布局，跳过游戏逻辑
+	if Engine.is_editor_hint():
+		if get_child_count() == 0:
+			_build_floor()
+			_place_lights()
+			_editor_set_owners(self, self)
+		return
+
+	GameManager.set_state(GameManager.GameState.PLAYING)
+	GameManager.change_floor(GameManager.Floor.FLOOR_2)
+	scene_audio_id = "floor_2"
+
+	# 预生成程序化音效
+	var _sfx_gen = preload("res://scripts/utils/procedural_sfx.gd")
+	_heel_sfx = _sfx_gen.high_heel_step()
+	_rumble_sfx = _sfx_gen.ground_rumble()
+
+	_build_floor()
+	_place_lights()
+	setup_player(FLOOR_2_PARTY_SPAWN_POS, 6.0)
+	_build_arrival_elevator(FLOOR_2_ARRIVAL_POS)
+	_spawn_npcs()
+	_build_high_heel()
+	_build_elevator()
+	setup_ui("第二层")
+	# 等物理帧完成后再开启房间检测，避免初始化阶段误判。
+	await get_tree().physics_frame
+	_room_detection_enabled = true
+	
+	# 启用体力系统和黑暗
+	enable_stamina()
+	enable_darkness(0.06, 2.0)
+	
+	# 第二层起手机没电
+	if player_lighting:
+		player_lighting.disable_phone_power()
+	
+	# 第二层BGM播放列表（2首轮播）
+	var bgm_tracks: Array[AudioStream] = []
+	for path in ["res://assets/audio/bgm/第二层bgm.mp3", "res://assets/audio/bgm/第二层bgm2.mp3"]:
+		if ResourceLoader.exists(path):
+			bgm_tracks.append(load(path))
+	if not bgm_tracks.is_empty():
+		AudioManager.play_playlist(bgm_tracks, 1.0, 1.5)
+	
+	# 读档时跳过入场等待，但仍然运行入场剧情（楼层事件必须重新触发）
+	if SaveManager.is_loading_save:
+		_entry_sequence()
+		return
+	
+	await get_tree().create_timer(1.0).timeout
+	_entry_sequence()
+
+func _physics_process(_delta: float) -> void:
+	if _waiting_for_timid_distance and timid_npc and player:
+		if not _is_world_pos_on_screen(timid_npc.global_position, 36.0):
+			_waiting_for_timid_distance = false
+			_timid_death_event()
+	if _waiting_for_female_proximity and female_npc and player:
+		var dist = player.global_position.distance_to(female_npc.global_position)
+		# 沈薇一旦出现在玩家屏幕里就朝玩家跑（玩家必须在走廊，避免隔墙撞墙）
+		if _is_world_pos_on_screen(female_npc.global_position) and _current_room_id == "":
+			female_npc.walk_speed = 130.0
+			female_npc.walk_to(player.global_position)
+		if dist < 560.0 and _is_world_pos_on_screen(female_npc.global_position) and _current_room_id == "":
+			_waiting_for_female_proximity = false
+			_female_death_event()
+	if current_phase == Phase.CHEERFUL_DANGER and not _used_earplug:
+		# 每帧重试：拿到耳塞且条件合适时触发给鹿可耳塞的分支
+		_trigger_earplug_branch()
+
+func _is_world_pos_on_screen(pos: Vector2, padding: float = 0.0) -> bool:
+	var cam := get_viewport().get_camera_2d()
+	if cam == null:
+		return true
+	var viewport_size = get_viewport().get_visible_rect().size
+	# Camera2D.zoom 越大，实际可见世界范围越小。
+	var zoom = Vector2(max(cam.zoom.x, 0.001), max(cam.zoom.y, 0.001))
+	var world_size = viewport_size / zoom
+	var screen_rect = Rect2(
+		cam.get_screen_center_position() - world_size * 0.5 - Vector2.ONE * padding,
+		world_size + Vector2.ONE * padding * 2.0
+	)
+	return screen_rect.has_point(pos)
+
+func _is_world_pos_clearly_visible(pos: Vector2) -> bool:
+	var cam := get_viewport().get_camera_2d()
+	if cam == null:
+		return true
+	var viewport_size = get_viewport().get_visible_rect().size
+	var zoom = Vector2(max(cam.zoom.x, 0.001), max(cam.zoom.y, 0.001))
+	var world_size = viewport_size / zoom
+	var margin = Vector2(280, 280)
+	var rect = Rect2(cam.get_screen_center_position() - world_size * 0.5 + margin, world_size - margin * 2.0)
+	return rect.has_point(pos)
+
+func _build_floor() -> void:
+	add_floor_zone(Vector2(-800, -600), Vector2(1600, 1200), Color(0.06, 0.05, 0.05), "corridor")
+	add_floor_zone(Vector2(-800, -600), Vector2(580, 340), Color(0.22, 0.17, 0.13), "room")
+	add_floor_zone(Vector2(220, -600), Vector2(580, 340), Color(0.22, 0.17, 0.13), "room")
+	add_floor_zone(Vector2(220, 260), Vector2(580, 340), Color(0.22, 0.17, 0.13), "room")
+	add_floor_zone(Vector2(-800, -140), Vector2(360, 240), Color(0.22, 0.17, 0.13), "room")
+	
+	var walls = StaticBody2D.new()
+	walls.collision_layer = 4
+	add_child(walls)
+	add_visible_wall(walls, Vector2(0, -610), Vector2(1640, 20), Color(0.1, 0.07, 0.05), true, false, false)
+	add_visible_wall(walls, Vector2(0, 610), Vector2(1640, 20), Color(0.1, 0.07, 0.05), true, false, false)
+	add_visible_wall(walls, Vector2(-810, 0), Vector2(20, 1240), Color(0.1, 0.07, 0.05), true, false, false)
+	add_visible_wall(walls, Vector2(810, 0), Vector2(20, 1240), Color(0.1, 0.07, 0.05), true, false, false)
+	
+	# 天花板裂缝装饰
+	for i in range(5):
+		var crack = ColorRect.new()
+		crack.color = Color(0.03, 0.02, 0.02)
+		crack.position = Vector2(-600 + i * 260 + randf() * 80, -596)
+		crack.size = Vector2(4, randi_range(10, 30))
+		add_child(crack)
+	
+	# === 房间 201（左上角）：绳子 - 开门 ===
+	add_visible_wall(walls, Vector2(-500, -260), Vector2(580, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.UP)  # 底墙
+	add_visible_wall(walls, Vector2(-220, -460), Vector2(16, 280), Color(0.1, 0.07, 0.05))  # 右墙（留门洞）
+	add_door(walls, Vector2(-220, -290), Vector2(16, 60), false, Vector2.LEFT)
+	_add_room_label("201", Vector2(-740, -540))
+	_add_furniture(Vector2(-740, -540), Vector2(56, 32), "床", Color(0.16, 0.1, 0.08))
+	_add_furniture(Vector2(-600, -540), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07))
+	_add_furniture(Vector2(-400, -516), Vector2(56, 32), "书桌", Color(0.14, 0.1, 0.08))
+	_place_container(Vector2(-740, -540), Vector2(56, 32), "床", Color(0.16, 0.1, 0.08), "sweets", "糖果")
+	_place_container(Vector2(-600, -540), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07), "rope", "绳子")
+	_place_container(Vector2(-400, -516), Vector2(56, 32), "书桌", Color(0.14, 0.1, 0.08), "master_key", "万能钥匙")
+	add_room_ceiling("201", Vector2(-800, -600), Vector2(580, 340))
+	
+	# === 房间 202（右上角）：镇定剂+火柴 - 锁住 ===
+	add_visible_wall(walls, Vector2(500, -260), Vector2(580, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.UP)  # 底墙
+	add_visible_wall(walls, Vector2(220, -460), Vector2(16, 280), Color(0.1, 0.07, 0.05), true, false, true, Vector2.LEFT)  # 左墙（留门洞）
+	add_door(walls, Vector2(220, -290), Vector2(16, 60), true, Vector2.RIGHT)  # 锁门！
+	_add_room_label("202", Vector2(280, -540))
+	_add_furniture(Vector2(300, -540), Vector2(52, 32), "柜子", Color(0.16, 0.12, 0.09))
+	_add_furniture(Vector2(440, -540), Vector2(28, 24), "床头柜", Color(0.14, 0.1, 0.08))
+	_add_furniture(Vector2(560, -500), Vector2(60, 32), "书桌", Color(0.15, 0.1, 0.08))
+	_place_container(Vector2(300, -540), Vector2(52, 32), "柜子", Color(0.16, 0.12, 0.09), "sedative", "镇定剂")
+	_place_container(Vector2(440, -540), Vector2(28, 24), "床头柜", Color(0.14, 0.1, 0.08), "sweets", "糖果")
+	_place_container(Vector2(560, -500), Vector2(60, 32), "书桌", Color(0.15, 0.1, 0.08), "match", "火柴")
+	add_room_ceiling("202", Vector2(220, -600), Vector2(580, 340))
+	
+	# === 房间 203（右下角）：电池 - 开门 ===
+	add_visible_wall(walls, Vector2(500, 260), Vector2(580, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.DOWN)  # 顶墙
+	add_visible_wall(walls, Vector2(220, 460), Vector2(16, 280), Color(0.1, 0.07, 0.05), true, false, true, Vector2.LEFT)  # 左墙（留门洞）
+	add_door(walls, Vector2(220, 310), Vector2(16, 100), false, Vector2.RIGHT)
+	_add_room_label("203", Vector2(280, 300))
+	_add_furniture(Vector2(300, 340), Vector2(60, 36), "床", Color(0.15, 0.1, 0.08))
+	_add_furniture(Vector2(540, 360), Vector2(60, 32), "柜子", Color(0.14, 0.1, 0.07))
+	_add_furniture(Vector2(630, 440), Vector2(56, 32), "书桌", Color(0.15, 0.1, 0.08))
+	_add_furniture(Vector2(420, 450), Vector2(36, 32), "柜子", Color(0.13, 0.09, 0.07))
+	_place_container(Vector2(300, 340), Vector2(60, 36), "床", Color(0.15, 0.1, 0.08), "energy_drink", "能量饮料")
+	_place_container(Vector2(540, 360), Vector2(60, 32), "柜子", Color(0.14, 0.1, 0.07), "battery", "电池")
+	_place_container(Vector2(630, 440), Vector2(56, 32), "书桌", Color(0.15, 0.1, 0.08), "sweets", "糖果")
+	_place_container(Vector2(420, 450), Vector2(36, 32), "柜子", Color(0.13, 0.09, 0.07), "sweets", "糖果")
+	add_room_ceiling("203", Vector2(220, 260), Vector2(580, 340))
+	
+	# === 储藏室（左侧走廊中段）：能量棒 - 开门，打断玩家直冲北侧的路线 ===
+	add_visible_wall(walls, Vector2(-614, -140), Vector2(372, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.DOWN)  # 顶墙
+	add_visible_wall(walls, Vector2(-614, 100), Vector2(332, 16), Color(0.1, 0.07, 0.05), true, true, false, Vector2.UP)   # 底墙（右端止于门洞左侧，不再与门重叠）
+	add_visible_wall(walls, Vector2(-440, -44), Vector2(16, 180), Color(0.1, 0.07, 0.05))   # 右墙（留门洞在底部）
+	add_door(walls, Vector2(-440, 70), Vector2(16, 60), false, Vector2.LEFT)
+	_add_room_label("储藏室", Vector2(-780, -124))
+	_add_furniture(Vector2(-764, -84), Vector2(104, 36), "货架", Color(0.14, 0.1, 0.08))
+	_add_furniture(Vector2(-610, -84), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07))
+	_place_container(Vector2(-764, -84), Vector2(104, 36), "货架", Color(0.14, 0.1, 0.08), "energy_bar", "能量棒")
+	_place_container(Vector2(-610, -84), Vector2(48, 36), "柜子", Color(0.13, 0.09, 0.07), "sedative", "镇定剂")
+	add_room_ceiling("储藏室", Vector2(-800, -140), Vector2(360, 240))
+	
+	# 耳塞改为余凡死后掉落，不再固定放置
+
+func _add_room_label(text: String, pos: Vector2) -> void:
+	var label_text := text if Engine.is_editor_hint() else LocaleManager.world_text(text)
+	create_world_label(label_text, pos, 22, Color(0.3, 0.25, 0.2))
+
+func _place_lights() -> void:
+	# 房间灯光
+	add_room_light(Vector2(-500, -440), 2.5, 4.0)  # 201
+	add_room_light(Vector2(500, -440), 2.5, 4.0)   # 202
+	add_room_light(Vector2(500, 400), 2.5, 4.0)    # 203
+	add_flickering_light(Vector2(-620, -20), 1.5, 2.5)  # 储藏室（昏暗）
+	# 走廊灯光 — 部分闪烁/损坏，越深处越不安
+	add_room_light(Vector2(-400, 200), 2.0, 3.5)
+	add_flickering_light(Vector2(0, 0), 2.0, 3.5)
+	add_room_light(Vector2(600, 0), 2.0, 3.5)
+	add_broken_light(Vector2(-700, 0), 3.0)  # 损坏灯
+	add_flickering_light(Vector2(0, 400), 1.8, 3.0)
+
+	# 环境灰尘
+	add_dust_ambient(Vector2(-600, -100), Vector2(100, 70))
+	add_dust_ambient(Vector2(300, 200), Vector2(80, 60))
+	add_dust_ambient(Vector2(-200, 400), Vector2(70, 50))
+
+	# 门缝漏光
+	add_door_light_leak(Vector2(-500, -360), 25.0)  # 201门底
+	add_door_light_leak(Vector2(500, 480), 25.0)    # 203门底
+	add_door_light_leak(Vector2(-440, 80), 20.0)    # 储藏室门底
+
+func _place_room_item(pos: Vector2, item_id: String, item_name: String, color: Color) -> void:
+	var area = Area2D.new()
+	area.set_script(load("res://scripts/items/simple_pickup.gd"))
+	area.position = pos
+	area.collision_layer = 16
+	area.item_id = item_id
+	area.item_name = item_name
+	area._level = self
+	add_child(area)
+	var col = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = 30.0
+	col.shape = shape
+	area.add_child(col)
+	var visual = ColorRect.new()
+	visual.color = color
+	visual.position = Vector2(-10, -10)
+	visual.size = Vector2(20, 20)
+	area.add_child(visual)
+	var display_name: String = item_name
+	if not Engine.is_editor_hint():
+		display_name = InventoryManager.get_item_data(item_id).get("name", item_name)
+	var hint_text := "" if Engine.is_editor_hint() else InputDevice.hint("interact")
+	var label = create_world_label("%s %s" % [display_name, hint_text], pos + Vector2(-40, -44), 18, color.lightened(0.3))
+	label.visible = false
+	area._name_label = label
+	area.tree_exiting.connect(func(): if is_instance_valid(label): label.queue_free())
+	if not Engine.is_editor_hint():
+		var tw = create_tween().set_loops()
+		_loop_tweens.append(tw)
+		tw.tween_property(visual, "modulate:a", 0.4, 1.2)
+		tw.tween_property(visual, "modulate:a", 1.0, 1.2)
+	if item_id == "earplug":
+		area.picked_up.connect(func():
+			_trigger_earplug_branch()
+			# 确保在可能的时机再次尝试（异步下一帧）
+			call_deferred("_trigger_earplug_branch")
+		)
+
+func _place_container(furniture_pos: Vector2, furniture_size: Vector2,
+		furniture_name: String, furniture_color: Color,
+		item_id: String = "", item_name: String = "") -> void:
+	var area = Area2D.new()
+	area.set_script(load("res://scripts/items/furniture_container.gd"))
+	area.position = furniture_pos + furniture_size / 2.0
+	area.collision_layer = 16
+	area.collision_mask = 1
+	area.monitoring = true
+	area.monitorable = true
+	area.furniture_name = furniture_name
+	area.contained_item_id = item_id
+	area.contained_item_name = item_name
+	area._level = self
+	var col = CollisionShape2D.new()
+	var shape = RectangleShape2D.new()
+	shape.size = furniture_size + Vector2(20, 20)
+	col.shape = shape
+	area.add_child(col)
+	add_child(area)
+
+	var display_furniture_name := furniture_name if Engine.is_editor_hint() else LocaleManager.world_text(furniture_name)
+	var hint_text := "" if Engine.is_editor_hint() else InputDevice.hint("interact")
+	var name_label = create_world_label("%s %s" % [display_furniture_name, hint_text], furniture_pos + Vector2(-20, -44), 18, furniture_color.lightened(0.4))
+	name_label.visible = false
+	area._name_label = name_label
+	area.tree_exiting.connect(func(): if is_instance_valid(name_label): name_label.queue_free())
+
+func _spawn_npcs() -> void:
+	if GameManager.is_character_alive("cool_npc"):
+		cool_npc = create_npc_visual(FLOOR_2_PARTY_SPAWN_POS + Vector2(-60, 16), "cool_npc")
+	
+	if GameManager.is_character_alive("cheerful_npc"):
+		cheerful_npc = create_npc_visual(FLOOR_2_PARTY_SPAWN_POS + Vector2(36, 24), "cheerful_npc")
+	
+	if GameManager.is_character_alive("male_npc"):
+		male_npc = create_npc_visual(FLOOR_2_PARTY_SPAWN_POS + Vector2(80, 4), "male_npc")
+	
+	if GameManager.is_character_alive("female_npc"):
+		# 女伴和大家一起出发，之后会因吵架离群
+		female_npc = create_npc_visual(FLOOR_2_PARTY_SPAWN_POS + Vector2(-12, -36), "female_npc")
+	
+	if GameManager.is_character_alive("timid_male"):
+		# 余凡留在到达电梯旁，稍微偏离队伍（原地不动，等待其他人回来）
+		timid_npc = create_npc_visual(TIMID_GUARD_POS, "timid_male")
+		timid_npc.walk_speed = 40.0
+
+func _is_cheerful_waiting_for_rescue() -> bool:
+	return cheerful_npc != null \
+		and is_instance_valid(cheerful_npc) \
+		and cheerful_npc.visible \
+		and not cheerful_npc.is_following \
+		and not _used_earplug \
+		and (current_phase == Phase.CHEERFUL_DANGER or current_phase == Phase.DONE)
+
+func _refresh_floor_2_npc_dialogues() -> void:
+	if current_phase == Phase.EXPLORE:
+		set_npc_story_dialogue(cool_npc, "floor_2", "talk_explore_cool")
+		set_npc_story_dialogue(cheerful_npc, "floor_2", "talk_explore_cheerful")
+		set_npc_story_dialogue(male_npc, "floor_2", "talk_explore_male")
+		set_npc_story_dialogue(timid_npc, "floor_2", "talk_explore_timid")
+		return
+	if current_phase == Phase.RULE_DISCOVER:
+		set_npc_story_dialogue(cool_npc, "floor_2", "talk_rule_discover_cool")
+		set_npc_story_dialogue(male_npc, "floor_2", "talk_rule_discover_male")
+		set_npc_story_dialogue(female_npc, "floor_2", "talk_rule_discover_female")
+		return
+	if _is_cheerful_waiting_for_rescue():
+		set_npc_story_dialogue(cool_npc, "floor_2", "talk_cheerful_danger_cool")
+		set_npc_story_dialogue(male_npc, "floor_2", "talk_cheerful_danger_male")
+		return
+	if current_phase == Phase.SEARCH:
+		set_npc_story_dialogue(cool_npc, "floor_2", "talk_search_cool")
+		set_npc_story_dialogue(male_npc, "floor_2", "talk_search_male")
+		set_npc_story_dialogue(cheerful_npc, "floor_2", "talk_search_cheerful")
+		return
+	if current_phase == Phase.DONE and elevator_card_found:
+		set_npc_story_dialogue(cool_npc, "floor_2", "talk_done_cool")
+		set_npc_story_dialogue(male_npc, "floor_2", "talk_done_male")
+		set_npc_story_dialogue(cheerful_npc, "floor_2", "talk_done_cheerful")
+		return
+	if current_phase == Phase.DONE:
+		set_npc_story_dialogue(cool_npc, "floor_2", "talk_search_cool")
+		set_npc_story_dialogue(male_npc, "floor_2", "talk_search_male")
+		set_npc_story_dialogue(cheerful_npc, "floor_2", "talk_search_cheerful")
+
+func _enable_npc_phone_lights() -> void:
+	for npc in [cool_npc, cheerful_npc, male_npc, female_npc, timid_npc]:
+		if npc and is_instance_valid(npc) and npc.is_alive:
+			npc.enable_phone_light()
+
+func _start_npc_wandering() -> void:
+	_enable_npc_phone_lights()
+	var wandering_npcs: Array[Node2D] = []
+	if cool_npc:
+		wandering_npcs.append(cool_npc)
+	if cheerful_npc:
+		wandering_npcs.append(cheerful_npc)
+	if male_npc:
+		wandering_npcs.append(male_npc)
+	# 沈薇已离队，不参与闲逛
+	for npc in wandering_npcs:
+		_wander_loop(npc)
+	# 余凡留在电梯口，不移动（起点就是电梯口，他就站在原地）
+
+func _stop_all_wandering() -> void:
+	for npc_ref in _wander_tweens:
+		if is_instance_valid(npc_ref):
+			npc_ref.stop_walking()
+	_wander_tweens.clear()
+	_stop_timid_guard_pacing()
+
+func _start_timid_guard_pacing() -> void:
+	if timid_npc == null or not is_instance_valid(timid_npc):
+		return
+	_stop_timid_guard_pacing()
+	timid_npc.global_position = TIMID_GUARD_POS
+	_timid_pacing_active = true
+	_timid_guard_pacing_loop()
+
+func _stop_timid_guard_pacing() -> void:
+	_timid_pacing_active = false
+	if timid_npc and is_instance_valid(timid_npc):
+		timid_npc.stop_walking()
+
+func _timid_guard_pacing_loop() -> void:
+	if not _timid_pacing_active or timid_npc == null or not is_instance_valid(timid_npc):
+		return
+	var targets = [
+		TIMID_GUARD_POS + Vector2(0, -16),
+		TIMID_GUARD_POS + Vector2(16, -4),
+		TIMID_GUARD_POS + Vector2(12, 16),
+		TIMID_GUARD_POS + Vector2(-8, 20),
+		TIMID_GUARD_POS + Vector2(-18, 2),
+	]
+	for target in targets:
+		if not _timid_pacing_active or timid_npc == null or not is_instance_valid(timid_npc):
+			return
+		timid_npc.walk_to(target)
+		await timid_npc.walk_completed
+		await get_tree().create_timer(0.35).timeout
+	if _timid_pacing_active:
+		_timid_guard_pacing_loop()
+
+func _stop_npc_wander(npc: Node2D) -> void:
+	if _wander_tweens.has(npc):
+		if is_instance_valid(npc):
+			npc.stop_walking()
+		_wander_tweens.erase(npc)
+
+func _wander_loop(npc: Node2D) -> void:
+	if not is_instance_valid(npc) or not npc.is_inside_tree():
+		return
+	if _exiting:
+		return
+	var target = Vector2(
+		randf_range(PARTY_WANDER_MIN.x, PARTY_WANDER_MAX.x),
+		randf_range(PARTY_WANDER_MIN.y, PARTY_WANDER_MAX.y)
+	)
+	_wander_tweens[npc] = true
+	npc.walk_to(target)
+	await npc.walk_completed
+	if _exiting or not is_instance_valid(npc) or not _wander_tweens.has(npc):
+		return
+	await get_tree().create_timer(randf_range(2.0, 5.0)).timeout
+	if not _exiting and is_instance_valid(npc) and _wander_tweens.has(npc):
+		_wander_loop(npc)
+
+func _build_high_heel() -> void:
+	high_heel_visual = Node2D.new()
+	high_heel_visual.visible = false
+	high_heel_visual.z_index = 30
+	add_child(high_heel_visual)
+	if ResourceLoader.exists(HIGH_HEEL_TEX_PATH):
+		var heel_sprite = Sprite2D.new()
+		heel_sprite.texture = load(HIGH_HEEL_TEX_PATH)
+		heel_sprite.centered = true
+		heel_sprite.self_modulate = Color(1.0, 0.82, 0.85)
+		var tex_size = heel_sprite.texture.get_size()
+		if tex_size.y > 0.0:
+			heel_sprite.scale = Vector2.ONE * (HIGH_HEEL_WORLD_HEIGHT / tex_size.y)
+		high_heel_visual.add_child(heel_sprite)
+		var glow_tex_path = "res://assets/sprites/effects/light_gradient.png"
+		if ResourceLoader.exists(glow_tex_path):
+			var glow = PointLight2D.new()
+			glow.texture = load(glow_tex_path)
+			glow.color = Color(0.95, 0.12, 0.12)
+			glow.energy = 1.8
+			glow.texture_scale = 1.35
+			glow.position = Vector2(0, -56)
+			high_heel_visual.add_child(glow)
+			var glow_tw = create_tween().set_loops()
+			_loop_tweens.append(glow_tw)
+			glow_tw.tween_property(glow, "energy", 1.2, 0.16)
+			glow_tw.tween_property(glow, "energy", 2.0, 0.18)
+		return
+	var heel_shape = ColorRect.new()
+	heel_shape.color = Color(0.3, 0.0, 0.0, 0.8)
+	heel_shape.position = Vector2(-20, -200)
+	heel_shape.size = Vector2(40, 30)
+	high_heel_visual.add_child(heel_shape)
+	var heel_label = Label.new()
+	heel_label.text = "???"
+	heel_label.position = Vector2(-16, -236)
+	heel_label.add_theme_font_size_override("font_size", 18)
+	heel_label.add_theme_color_override("font_color", Color(0.6, 0.1, 0.1))
+	high_heel_visual.add_child(heel_label)
+
+func _play_heel_strike(world_pos: Vector2) -> void:
+	if high_heel_visual == null:
+		return
+	high_heel_visual.visible = true
+	high_heel_visual.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	high_heel_visual.scale = Vector2(0.72, 0.72)
+	high_heel_visual.global_position = world_pos + Vector2(0, -480)
+	var drop_tw = create_tween()
+	drop_tw.tween_property(high_heel_visual, "modulate:a", 1.0, 0.03)
+	drop_tw.parallel().tween_property(high_heel_visual, "global_position", world_pos + Vector2(0, -12), 0.09).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	drop_tw.parallel().tween_property(high_heel_visual, "scale", Vector2.ONE, 0.09).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await drop_tw.finished
+	AudioManager.play_sfx(_heel_sfx, 2.0)
+	ScreenEffects.death_impact()
+	var vanish_tw = create_tween()
+	vanish_tw.tween_interval(0.03)
+	vanish_tw.tween_property(high_heel_visual, "modulate:a", 0.0, 0.07)
+	vanish_tw.parallel().tween_property(high_heel_visual, "scale", Vector2(0.92, 0.92), 0.07)
+	await vanish_tw.finished
+	high_heel_visual.visible = false
+	high_heel_visual.scale = Vector2.ONE
+
+func _place_elevator_card(pos: Vector2) -> void:
+	var card_area = create_elevator_card_pickup(pos)
+	card_area.picked_up.connect(func():
+		elevator_card_found = true
+		current_phase = Phase.DONE
+		_refresh_floor_2_npc_dialogues()
+	)
+
+func _build_elevator() -> void:
+	var door_center := Vector2(740, 80)
+	var door_size := Vector2(144, 120)
+	var elevator_area = create_trigger_area(door_center + Vector2(0, 80), Vector2(door_size.x, 48))
+	add_elevator_door_visual(door_center, door_size)
+	add_elevator_door_blocker(door_center, door_size)
+	
+	var elev_label = create_world_label(LocaleManager.world_text("电梯"), Vector2(716, 36), 20, Color(0.5, 0.5, 0.5))
+	
+	elevator_area.body_entered.connect(func(body):
+		if body.is_in_group("player") and elevator_card_found and current_phase >= Phase.CHEERFUL_DANGER:
+			_enter_elevator()
+	)
+
+# ===== 入场 =====
+func _entry_sequence() -> void:
+	player.freeze_player()
+	GameManager.set_state(GameManager.GameState.CUTSCENE)
+	
+	# 手机没电提示
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "phone_dead"))
+	await DialogueManager.dialogue_ended
+	
+	# 第一段对话：到沈薇说"真可笑"
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "entry"))
+	await DialogueManager.dialogue_ended
+	
+	# 沈薇吵完赌气离队，边对话边走
+	if female_npc:
+		_stop_npc_wander(female_npc)
+		female_npc.walk_to(Vector2(0, -700))  # 走向地图上方消失
+	
+	# 第二段对话：沈薇甩手走人 + 剩余角色反应（沈薇边走边说）
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "entry_after"))
+	await DialogueManager.dialogue_ended
+	
+	# 对话结束后隐藏沈薇
+	if female_npc and is_instance_valid(female_npc):
+		female_npc.stop_walking()
+		female_npc.visible = false
+	
+	GameManager.set_state(GameManager.GameState.PLAYING)
+	player.unfreeze_player()
+	
+	# 对话结束后NPC才开始探索（余凡原地不动）
+	_start_npc_wandering()
+	_start_timid_guard_pacing()
+	_refresh_floor_2_npc_dialogues()
+	
+	# 先给玩家一点探索时间，之后只有真正离开余凡一段距离才触发死亡剧情
+	await get_tree().create_timer(5.0).timeout
+	_waiting_for_timid_distance = true
+
+# ===== 胆小男之死 =====
+func _timid_death_event() -> void:
+	if current_phase != Phase.EXPLORE:
+		return
+	current_phase = Phase.TIMID_DEATH
+	
+	# 脚步声阶段玩家可以自由移动
+	# 高跟鞋声由远及近（3次咔哒）
+	_play_heel_approach(3, TIMID_SOUND_POS, true)
+	await get_tree().create_timer(2.0).timeout
+	
+	# 对话/心理活动时冻结
+	player.freeze_player()
+	GameManager.set_state(GameManager.GameState.CUTSCENE)
+	
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "timid_death"))
+	await DialogueManager.dialogue_ended
+	
+	# 记录余凡死亡位置，用于掉落耳塞
+	var timid_death_pos: Vector2 = timid_npc.global_position if timid_npc else Vector2(700, 260)
+	if timid_npc:
+		_stop_timid_guard_pacing()
+		await _kill_with_heel(timid_npc)
+	
+	# 余凡死后，耳塞从他身上掉落（玩家回去查看才能捡到）
+	_place_room_item(timid_death_pos + Vector2(30, 20), "earplug", "耳塞", Color(0.85, 0.85, 0.7))
+	
+	await get_tree().create_timer(1.0).timeout
+	
+	# 其他人听到了高跟鞋落地的巨响
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "sound_event"))
+	await DialogueManager.dialogue_ended
+	
+	await get_tree().create_timer(1.0).timeout
+	
+	# 众人没有发现——但规则出现了
+	ScreenEffects.rule_appear()
+	GameManager.add_rule(LocaleManager.t("rule_floor_2"))
+	await show_rule_paper_and_wait()
+	_rule_discover_event()
+
+# ===== 发现规则 → 发现女伴独自一人 =====
+func _rule_discover_event() -> void:
+	current_phase = Phase.RULE_DISCOVER
+	
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "rule_discover"))
+	await DialogueManager.dialogue_ended
+	
+	show_hint(LocaleManager.t("hint_f2_scream"), 6.0)
+	
+	# 停止所有徘徊，切换为跟随模式
+	_stop_all_wandering()
+	
+	GameManager.set_state(GameManager.GameState.PLAYING)
+	player.unfreeze_player()
+	
+	# NPC跟随玩家
+	if cool_npc:
+		cool_npc.start_following(player, Vector2(-60, 20))
+	if male_npc:
+		male_npc.start_following(player, Vector2(-80, 40))
+	if cheerful_npc:
+		# 鹿可暂时隐藏（迟到）
+		cheerful_npc.visible = false
+		cheerful_npc.set_physics_process(false)
+	
+	# 沈薇出现在地图上方（房间区域），开始往下走
+	if female_npc:
+		female_npc.global_position = Vector2(0, -520)
+		female_npc.visible = true
+		female_npc.walk_to(Vector2(0, -200))
+	
+	# 上方传来高跟鞋声，进一步暗示沈薇所在方向
+	_refresh_floor_2_npc_dialogues()
+	_play_heel_approach(2)
+
+	# 等待玩家接近沈薇（距离 < 200px 触发）
+	_waiting_for_female_proximity = true
+
+# ===== 女伴之死 =====
+func _female_death_event() -> void:
+	current_phase = Phase.FEMALE_DEATH
+	
+	# 冻结玩家进入剧情
+	player.freeze_player()
+	GameManager.set_state(GameManager.GameState.CUTSCENE)
+	
+	# 高跟鞋声由远及近
+	_play_heel_approach(4)
+	
+	# 第一段对话：沈薇听到声音、恐慌、众人喊"快跑过来"
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "female_death_hear"))
+	await DialogueManager.dialogue_ended
+	
+	# 对话结束——沈薇朝玩家冲过来，但还没靠近就被杀死了
+	var fallback_pos = player.global_position + Vector2(0, -120)
+	
+	if female_npc:
+		female_npc.walk_speed = 180.0
+		female_npc.walk_to(player.global_position)  # 直接向玩家跑
+	
+	# 第二段对话：描述奔跑+高跟鞋落下（与奔跑同时进行）
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "female_death_run"))
+	
+	# 沈薇跑一小段后被高跟鞋杀死——还没到玩家身边
+	await get_tree().create_timer(2.2).timeout
+	var death_pos: Vector2 = female_npc.global_position if female_npc else fallback_pos
+	
+	if female_npc:
+		female_npc.stop_walking()
+		await _kill_with_heel(female_npc)
+	
+	# 等对话播完再继续
+	if DialogueManager.is_dialogue_active:
+		await DialogueManager.dialogue_ended
+	
+	# 沈薇死后，电梯卡从她身上掉落
+	_place_elevator_card(death_pos)
+	show_hint(LocaleManager.t("hint_f2_item_dropped"), 5.0)
+	
+	await get_tree().create_timer(2.0).timeout
+	
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "female_death_aftermath"))
+	await DialogueManager.dialogue_ended
+	
+		# 鹿可迟到登场（从她之前徘徊的位置走过来，不重置位置）
+	if cheerful_npc:
+		cheerful_npc.visible = true
+		cheerful_npc.set_physics_process(true)
+		cheerful_npc.walk_to(player.global_position + Vector2(-80, 20))
+		await cheerful_npc.walk_completed
+		DialogueManager.start_dialogue(StoryText.lines("floor_2", "cheerful_waiting"))
+		await DialogueManager.dialogue_ended
+	
+	await get_tree().create_timer(1.5).timeout
+	_cheerful_danger_event()
+
+# ===== 开朗NPC被锁定（跑得慢，掉队）=====
+func _cheerful_danger_event() -> void:
+	current_phase = Phase.CHEERFUL_DANGER
+	
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "cheerful_danger"))
+	await DialogueManager.dialogue_ended
+	
+	# 告诉鹿可先不要动
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "freeze_rescue"))
+	await DialogueManager.dialogue_ended
+	
+	# 鹿可原地不动，设为可交互（玩家拿到耳塞后可以给她）
+	if cheerful_npc:
+		cheerful_npc.stop_walking()
+		cheerful_npc.velocity = Vector2.ZERO
+		cheerful_npc.set_dialogue([])  # 清空默认对话，用自定义interact
+		_setup_cheerful_interact()
+	
+	# NPC跟随（鹿可除外）
+	if cool_npc:
+		cool_npc.start_following(player, Vector2(-50, 16))
+	if male_npc:
+		male_npc.start_following(player, Vector2(-70, 30))
+	_refresh_floor_2_npc_dialogues()
+	
+	GameManager.set_state(GameManager.GameState.PLAYING)
+	player.unfreeze_player()
+	show_hint(LocaleManager.t("hint_f2_cheerful_safe"), 6.0)
+	_trigger_earplug_branch()
+
+func _setup_cheerful_interact() -> void:
+	# 鹿可已在 interactable group，玩家按E会调 cheerful_npc.interact()
+	# 设置对话 → 对话结束后检查耳塞
+	if not cheerful_npc or not is_instance_valid(cheerful_npc):
+		return
+	cheerful_npc.set_dialogue(StoryText.lines("floor_2", "cheerful_worried"))
+	# 对话结束后检查
+	var _cb = func():
+		if _used_earplug:
+			return
+		if not is_instance_valid(cheerful_npc):
+			return
+		if current_phase != Phase.CHEERFUL_DANGER:
+			return
+		# 对话结束后的下一帧检查耳塞
+		await get_tree().create_timer(0.2).timeout
+		_trigger_earplug_branch()
+	DialogueManager.dialogue_ended.connect(_cb)
+	_signal_callbacks.append({"signal": DialogueManager.dialogue_ended, "callable": _cb})
+
+# 捡起耳塞 / 对话结束 / 鹿可原地等待后 调用，条件满足就触发耳塞分支
+func _trigger_earplug_branch() -> void:
+	if _used_earplug or _earplug_branch_pending:
+		return
+	if not _is_cheerful_waiting_for_rescue():
+		return
+	if not InventoryManager.has_item("earplug"):
+		return
+	if GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+	if DialogueManager.is_dialogue_active:
+		return
+	_earplug_branch_pending = true
+	player.freeze_player()
+	GameManager.set_state(GameManager.GameState.CUTSCENE)
+	_earplug_branch.call_deferred()
+
+func _earplug_branch() -> void:
+	if _used_earplug:
+		_earplug_branch_pending = false
+		return
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "earplug_branch"))
+	await DialogueManager.dialogue_ended
+	InventoryManager.remove_item("earplug")
+	_used_earplug = true
+	_earplug_branch_pending = false
+	# 鹿可加入队伍
+	if cheerful_npc:
+		cheerful_npc.start_following(player, Vector2(-40, -24))
+		cheerful_npc.walk_speed = 160
+	_rescue_complete()
+
+# ===== 救援后 → 找电梯卡 =====
+func _rescue_complete() -> void:
+	# 如果玩家已经捡过电梯卡，直接进入DONE阶段
+	if elevator_card_found:
+		current_phase = Phase.DONE
+		DialogueManager.start_dialogue(StoryText.lines("floor_2", "earplug_thanks"))
+	else:
+		current_phase = Phase.SEARCH
+		DialogueManager.start_dialogue(StoryText.lines("floor_2", "rescue_complete"))
+	await DialogueManager.dialogue_ended
+	_refresh_floor_2_npc_dialogues()
+	
+	GameManager.set_state(GameManager.GameState.PLAYING)
+	player.unfreeze_player()
+	if elevator_card_found:
+		show_hint(LocaleManager.t("hint_f2_go_elevator"), 5.0)
+	else:
+		show_hint(LocaleManager.t("hint_f2_find_card"), 8.0)
+
+func _roll_no_earplug_item_loss() -> void:
+	var candidates: Array[String] = []
+	for item_id in ITEM_LOSS_POOL:
+		if InventoryManager.has_item(item_id):
+			candidates.append(item_id)
+	if candidates.is_empty():
+		GameManager.pending_item_loss.clear()
+		return
+	candidates.shuffle()
+	var removed_items: Array[String] = []
+	var remove_count: int = min(2, candidates.size())
+	for i in range(remove_count):
+		var item_id = candidates[i]
+		InventoryManager.remove_item(item_id)
+		removed_items.append(item_id)
+	GameManager.pending_item_loss = removed_items
+
+func _kill_with_heel(npc: CharacterBody2D) -> void:
+	if npc == null or not is_instance_valid(npc):
+		return
+	var death_pos := npc.global_position
+	await _play_heel_strike(death_pos)
+	GameManager.kill_character(npc.npc_id)
+	var tw = create_tween()
+	tw.tween_property(npc, "modulate", Color(0.8, 0, 0), 0.08)
+	tw.tween_property(npc, "modulate:a", 0.0, 0.16)
+	await tw.finished
+	npc.queue_free()
+
+func _enter_elevator() -> void:
+	player.freeze_player()
+	GameManager.set_state(GameManager.GameState.CUTSCENE)
+	
+	# 刷卡进入电梯
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "elevator_card_use"))
+	await DialogueManager.dialogue_ended
+	
+	# NPC停止跟随
+	if cool_npc: cool_npc.stop_following()
+	if cheerful_npc and _used_earplug: cheerful_npc.stop_following()
+	if male_npc: male_npc.stop_following()
+	
+	if not _used_earplug and cheerful_npc:
+		# 无耳塞：鹿可一直站在原地，叫她过来
+		DialogueManager.start_dialogue(StoryText.lines("floor_2", "elevator_no_earplug"))
+		await DialogueManager.dialogue_ended
+		
+		# 鹿可一步一步缓缓走向电梯（分段移动 + 高跟鞋声渐强）
+		var elevator_pos = Vector2(700, 200)
+		var start_pos = cheerful_npc.position
+		var step_count := 6
+		
+		for i in step_count:
+			var t := float(i + 1) / step_count
+			var step_target = start_pos.lerp(elevator_pos, t)
+			
+			# 每一步移动
+			cheerful_npc.walk_to(step_target)
+			await cheerful_npc.walk_completed
+			
+			# 高跟鞋声随步数渐强
+			var vol := lerpf(-15.0, 0.0, t)
+			AudioManager.play_sfx(_heel_sfx, vol)
+			
+			# 最后一步前——鹿可停下来
+			if i == step_count - 2:
+				DialogueManager.start_dialogue(StoryText.lines("floor_2", "elevator_last_step"))
+				await DialogueManager.dialogue_ended
+			
+			await get_tree().create_timer(0.3).timeout
+		
+		# 高跟鞋声骤然加速——逼近！
+		_play_heel_approach(3)
+		
+		# 夏桐和林佳语同时拉住鹿可
+		DialogueManager.start_dialogue(StoryText.lines("floor_2", "elevator_pull_in"))
+		await DialogueManager.dialogue_ended
+		_roll_no_earplug_item_loss()
+		AudioManager.stop_playlist(0.15)
+		AudioManager.stop_ambience()
+		
+		# 切到电梯内部场景，剩余剧情在里面播放
+		TransitionManager.transition_to_scene("res://scenes/levels/elevator_f2_interior.tscn")
+		return
+	
+	DialogueManager.start_dialogue(StoryText.lines("floor_2", "enter_elevator"))
+	await DialogueManager.dialogue_ended
+	
+	await get_tree().create_timer(1.0).timeout
+	AudioManager.stop_playlist(0.15)
+	AudioManager.stop_ambience()
+	TransitionManager.transition_to_scene("res://scenes/levels/floor_3.tscn")
+
+## 高跟鞋由远及近音效（steps次咔哒，音量渐大，间隔渐短）
+func _play_heel_approach(steps: int, sound_pos_override: Vector2 = Vector2.ZERO, use_override: bool = false) -> void:
+	for i in steps:
+		var vol := lerpf(-18.0, 0.0, float(i) / (steps - 1)) if steps > 1 else 0.0
+		# 从沈薇位置播放（有左右声道空间感）
+		var sound_pos := sound_pos_override if use_override else (female_npc.global_position if female_npc and is_instance_valid(female_npc) else Vector2(800, 160))
+		AudioManager.play_sfx_at_position(sound_pos, _heel_sfx, vol)
+		var interval := lerpf(0.8, 0.4, float(i) / (steps - 1)) if steps > 1 else 0.6
+		await get_tree().create_timer(interval).timeout

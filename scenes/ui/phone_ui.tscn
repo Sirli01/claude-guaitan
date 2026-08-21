@@ -1,0 +1,79 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phone_ui.gd" id="1_phone"]
+
+[node name="PhoneUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_phone")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.6)
+
+[node name="PhoneFrame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -360.0
+offset_right = 280.0
+offset_bottom = 360.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="PhoneFrame"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="HeaderPanel" type="PanelContainer" parent="PhoneFrame/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+
+[node name="HeaderHBox" type="HBoxContainer" parent="PhoneFrame/VBox/HeaderPanel"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="PhoneFrame/VBox/HeaderPanel/HeaderHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+flat = true
+
+[node name="ContactLabel" type="Label" parent="PhoneFrame/VBox/HeaderPanel/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="PhoneFrame/VBox/HeaderPanel/HeaderHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(75, 0)
+
+[node name="Scroll" type="ScrollContainer" parent="PhoneFrame/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ChatContainer" type="VBoxContainer" parent="PhoneFrame/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="BottomHint" type="Label" parent="PhoneFrame/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1

@@ -1,0 +1,50 @@
+[gd_scene load_steps=2 format=3 uid="uid://rule_paper_ui"]
+
+[ext_resource type="Script" path="res://scripts/ui/rule_paper_ui.gd" id="1_rule"]
+
+[node name="RulePaperUI" type="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rule")
+
+[node name="Background" type="NinePatchRect" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -660.0
+offset_right = 540.0
+offset_bottom = 660.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="Background"]
+layout_mode = 1
+offset_left = 60.0
+offset_top = 44.0
+offset_right = 1020.0
+offset_bottom = 136.0
+text = ""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 60
+theme_override_colors/font_color = Color(0.15, 0, 0, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Background"]
+layout_mode = 1
+offset_left = 60.0
+offset_top = 164.0
+offset_right = 1020.0
+offset_bottom = 1260.0
+
+[node name="RulesContainer" type="VBoxContainer" parent="Background/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
