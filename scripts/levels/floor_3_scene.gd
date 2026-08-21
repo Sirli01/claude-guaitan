@@ -82,12 +82,8 @@ var current_phase: Phase = Phase.EXPLORE
 var elevator_card_found: bool = false
 
 func _ready() -> void:
-	# 编辑器模式：只生成视觉布局，跳过游戏逻辑
+	# 编辑器模式：几何与灯光已在 .tscn 中定义，无需生成
 	if Engine.is_editor_hint():
-		if get_child_count() == 0:
-			_build_floor()
-			_place_lights()
-			_editor_set_owners(self, self)
 		return
 
 	GameManager.set_state(GameManager.GameState.PLAYING)
@@ -102,8 +98,12 @@ func _ready() -> void:
 	_mouth_bite_sfx = load("res://assets/audio/sfx/巨嘴吼声.mp3")
 	_mouth_move_sfx = load("res://assets/audio/sfx/巨嘴移动.wav")
 
-	_build_floor()
-	_place_lights()
+	discover_scene_nodes()
+	_setup_door_keys()
+	_setup_container_actions()
+	_add_room_labels()
+	_add_floor_cracks()
+	_place_search_prop(Vector2(-332, -248), Vector2(18, 10), "残破日记", Color(0.5, 0.45, 0.3, 0.75), "_on_diary_found")
 	_build_corridor_obstacles()
 	setup_player(Vector2(0, 440), 6.0)
 	_build_arrival_elevator(Vector2(0, 440))
@@ -114,6 +114,7 @@ func _ready() -> void:
 	_build_abyss_mouths()
 	_build_elevator()
 	_place_exploration_items()
+	_build_vending_machine(null)
 	setup_ui("第三层")
 	# 等物理帧完成后再开启房间检测，避免初始化阶段误判。
 	await get_tree().physics_frame
@@ -161,86 +162,44 @@ func _ready() -> void:
 	await get_tree().create_timer(0.5).timeout
 	_entry_intro()
 
-func _build_floor() -> void:
-	# 方形走廊
-	add_floor_zone(Vector2(-450, -300), Vector2(900, 600), Color(0.08, 0.06, 0.07), "corridor")
-	add_floor_zone(Vector2(-450, -300), Vector2(150, 170), Color(0.22, 0.17, 0.13), "room")
-	add_floor_zone(Vector2(280, -300), Vector2(180, 170), Color(0.22, 0.17, 0.13), "room")
-	add_floor_zone(Vector2(40, -20), Vector2(200, 170), Color(0.22, 0.17, 0.13), "room")
-	
-	# 墙壁
-	var walls = StaticBody2D.new()
-	walls.collision_layer = 4
-	add_child(walls)
-	add_visible_wall(walls, Vector2(0, -305), Vector2(920, 10), Color(0.12, 0.08, 0.08), true, false, false)
-	add_visible_wall(walls, Vector2(0, 305), Vector2(920, 10), Color(0.12, 0.08, 0.08), true, false, false)
-	add_visible_wall(walls, Vector2(-455, 0), Vector2(10, 620), Color(0.12, 0.08, 0.08), true, false, false)
-	add_visible_wall(walls, Vector2(455, 0), Vector2(10, 620), Color(0.12, 0.08, 0.08), true, false, false)
-	
-	# 地板裂缝（暗示深渊巨口）
+## 为 304 门设置所需钥匙（门由 GameDoor 场景节点在 discover 时构建）
+func _setup_door_keys() -> void:
+	var dc_script: Script = load("res://scripts/items/door_controller.gd")
+	for child in get_children():
+		if child is Area2D and child.get_script() == dc_script and child.position == Vector2(280, -149):
+			child.set_meta("required_key", "room_304_key")
+
+## 为电梯卡容器挂接拿到卡后的剧情回调
+func _setup_container_actions() -> void:
+	var fc_script: Script = load("res://scripts/items/furniture_container.gd")
+	for child in get_children():
+		if child is Area2D and child.get_script() == fc_script and child.contained_item_id == "elevator_card":
+			child.post_take_action_method = "_on_elevator_card_container_taken"
+
+## 创建各房间名称的世界标签（多语言文本需运行时解析，故由代码创建）
+func _add_room_labels() -> void:
+	_add_room_label("301", Vector2(-420, -270))
+	_add_room_label("304", Vector2(330, -270))
+	_add_room_label("302", Vector2(70, -2))
+
+## 创建单个房间名称标签（静态文字 Label，与原实现一致）。
+## [param text] 房间名。[param pos] 标签位置。
+func _add_room_label(text: String, pos: Vector2) -> void:
+	var label := Label.new()
+	label.text = text
+	label.position = pos
+	label.add_theme_font_size_override("font_size", 22)
+	label.add_theme_color_override("font_color", Color(0.25, 0.15, 0.15))
+	add_child(label)
+
+## 地板裂缝装饰（随机长度，暗示深渊巨口；属运行时氛围特效，故动态创建）
+func _add_floor_cracks() -> void:
 	for i in range(4):
-		var crack = ColorRect.new()
+		var crack := ColorRect.new()
 		crack.color = Color(0.02, 0.0, 0.02)
 		crack.position = Vector2(-150 + i * 100, -150 + i * 80)
 		crack.size = Vector2(randi_range(30, 60), 3)
 		add_child(crack)
-	
-	# ========== 废弃房间 (y: -300 ~ -130) ==========
-	
-	# === 房间 301（左上，废弃）===
-	add_visible_wall(walls, Vector2(-375, -130), Vector2(150, 8), Color(0.1, 0.06, 0.06), true, true, false, Vector2.UP)  # 底墙，正面朝走廊
-	add_visible_wall(walls, Vector2(-300, -232), Vector2(8, 136), Color(0.1, 0.06, 0.06), true, false, true, Vector2.RIGHT)  # 右墙（门洞上方）
-	add_door(walls, Vector2(-300, -149), Vector2(8, 30), false, Vector2.LEFT)
-	_add_room_label("301", Vector2(-420, -270))
-	_add_furniture(Vector2(-430, -270), Vector2(30, 18), "破床", Color(0.1, 0.06, 0.05))
-	_place_container(Vector2(-430, -270), Vector2(30, 18), "破床下", Color(0.1, 0.06, 0.05), "energy_drink", "能量饮料")
-	_add_furniture(Vector2(-360, -280), Vector2(22, 14), "碎桌", Color(0.08, 0.05, 0.04))
-	_place_container(Vector2(-360, -280), Vector2(22, 14), "碎桌", Color(0.08, 0.05, 0.04), "sedative", "镇定剂")
-	_add_furniture(Vector2(-430, -200), Vector2(16, 14), "破椅子", Color(0.07, 0.04, 0.04))
-	_place_container(Vector2(-430, -200), Vector2(16, 14), "破椅子", Color(0.07, 0.04, 0.04), "match", "火柴")
-	_place_search_prop(Vector2(-332, -248), Vector2(18, 10), "残破日记", Color(0.5, 0.45, 0.3, 0.75), "_on_diary_found")
-	add_room_ceiling("301", Vector2(-450, -300), Vector2(150, 170))
-	
-	# === 房间 304（右上，周锐和沈薇的房间，锁住 — 在怪物背后最深处）===
-	add_visible_wall(walls, Vector2(375, -130), Vector2(180, 8), Color(0.1, 0.06, 0.06), true, true, false, Vector2.UP)  # 底墙，正面朝走廊
-	add_visible_wall(walls, Vector2(280, -232), Vector2(8, 136), Color(0.1, 0.06, 0.06), true, false, true, Vector2.LEFT)  # 左墙（门洞上方）
-	var door_304 = add_door(walls, Vector2(280, -149), Vector2(8, 30), true, Vector2.RIGHT)
-	# 304用周锐的房间钥匙
-	if door_304.has("interact_area") and door_304["interact_area"]:
-		door_304["interact_area"].set_meta("required_key", "room_304_key")
-	_add_room_label("304", Vector2(330, -270))
-	# 双人床
-	_add_furniture(Vector2(340, -270), Vector2(48, 26), "双人床", Color(0.15, 0.08, 0.07))
-	# 床头柜（放着咖啡）
-	_add_furniture(Vector2(400, -260), Vector2(14, 12), "床头柜", Color(0.12, 0.08, 0.06))
-	_place_container(Vector2(400, -260), Vector2(14, 12), "床头柜", Color(0.12, 0.08, 0.06), "coffee", "咖啡")
-	# 书桌
-	_add_furniture(Vector2(330, -200), Vector2(26, 16), "书桌", Color(0.14, 0.1, 0.08))
-	# 衣柜
-	_add_furniture(Vector2(420, -210), Vector2(18, 28), "衣柜", Color(0.12, 0.07, 0.06))
-	_place_container(Vector2(330, -200), Vector2(26, 16), "书桌", Color(0.14, 0.1, 0.08), "elevator_card", "电梯卡", "", "_on_elevator_card_container_taken")
-	add_room_ceiling("304", Vector2(280, -300), Vector2(180, 170))
-	
-	# ========== 独立房间 (y: 130 ~ 300) ==========
-	
-	# === 房间 302（右下，废弃）===
-	var room_302_top_left := Vector2(40, -20)
-	var room_302_size := Vector2(200, 170)
-	add_visible_wall(walls, Vector2(room_302_top_left.x + room_302_size.x / 2.0, room_302_top_left.y), Vector2(room_302_size.x, 8), Color(0.1, 0.06, 0.06), true, true, false, Vector2.DOWN)
-	add_visible_wall(walls, Vector2(room_302_top_left.x, 5), Vector2(8, 50), Color(0.1, 0.06, 0.06), true, false, true, Vector2.LEFT)
-	add_visible_wall(walls, Vector2(room_302_top_left.x, 120), Vector2(8, 60), Color(0.1, 0.06, 0.06), true, false, true, Vector2.LEFT)
-	add_visible_wall(walls, Vector2(room_302_top_left.x + room_302_size.x, room_302_top_left.y + room_302_size.y / 2.0), Vector2(8, room_302_size.y), Color(0.1, 0.06, 0.06), true, false, true, Vector2.RIGHT)
-	add_visible_wall(walls, Vector2(room_302_top_left.x + room_302_size.x / 2.0, room_302_top_left.y + room_302_size.y), Vector2(room_302_size.x, 8), Color(0.1, 0.06, 0.06), true, true, false, Vector2.UP)
-	add_door(walls, Vector2(room_302_top_left.x, 60), Vector2(8, 60), false, Vector2.RIGHT)
-	_add_room_label("302", Vector2(70, -2))
-	_add_furniture(Vector2(80, 10), Vector2(28, 16), "废柜", Color(0.08, 0.05, 0.04))
-	_place_container(Vector2(80, 10), Vector2(28, 16), "废柜", Color(0.08, 0.05, 0.04), "battery", "电池")
-	_add_furniture(Vector2(90, 70), Vector2(24, 16), "破沙发", Color(0.09, 0.05, 0.04))
-	_place_container(Vector2(90, 70), Vector2(24, 16), "破沙发", Color(0.09, 0.05, 0.04), "sedative", "镇定剂")
-	add_room_ceiling("302", room_302_top_left, room_302_size)
-	
-	# === 损坏的贩卖机（走廊右侧外边）===
-	_build_vending_machine(walls)
 
 func _spawn_npcs() -> void:
 	if GameManager.is_character_alive("cool_npc"):
@@ -831,21 +790,7 @@ func _create_abyss_mouth_visual(pos: Vector2) -> Node2D:
 	return mouth
 
 func _place_lights() -> void:
-	# 第三层灯光 — 最不安的一层，多处闪烁和损坏
-	add_flickering_light(Vector2(-300, 0), 2.5, 4.0)  # 左侧走廊（闪烁）
-	add_room_light(Vector2(0, 200), 2.5, 4.0)         # 入口附近（唯一稳定光源）
-	add_broken_light(Vector2(250, -80), 3.5)           # 右侧走廊（损坏）
-	add_flickering_light(Vector2(-150, -180), 2.0, 3.5)  # 左上角（闪烁）
-	
-	# 环境灰尘（更多、更密，暗示长期无人维护）
-	add_dust_ambient(Vector2(-250, -100), Vector2(60, 40))
-	add_dust_ambient(Vector2(100, -50), Vector2(50, 35))
-	add_dust_ambient(Vector2(-50, 150), Vector2(45, 30))
-	add_dust_ambient(Vector2(200, 100), Vector2(40, 30))
-	
-	# 门缝漏光（暗示某些房间内有诡异光源）
-	add_door_light_leak(Vector2(-350, -60), 20.0)
-	add_door_light_leak(Vector2(40, 60), 20.0, "right")
+	pass
 
 # === 探索阶段物品 ===
 func _place_exploration_items() -> void:
@@ -1500,6 +1445,9 @@ func _place_room_item(pos: Vector2, item_id: String, item_name: String, color: C
 	tw.tween_property(visual, "modulate:a", 0.4, 1.2)
 	tw.tween_property(visual, "modulate:a", 1.0, 1.2)
 
+## 创建可搜索的交互容器（运行时生成的交互物，如残破日记）。
+## [param pos] 家具左上角。[param size] 尺寸。[param prop_name] 名称。
+## [param color] 颜色。[param action_method] 搜索时触发的关卡方法名。
 func _place_search_prop(pos: Vector2, size: Vector2, prop_name: String, color: Color, action_method: String) -> void:
 	var visual = ColorRect.new()
 	visual.position = pos
@@ -1507,6 +1455,37 @@ func _place_search_prop(pos: Vector2, size: Vector2, prop_name: String, color: C
 	visual.color = color
 	add_child(visual)
 	_place_container(pos, size, prop_name, color, "", "", action_method)
+
+## 创建带脚本的容器交互区（供运行时生成搜索点使用；静态家具已由场景节点承担）。
+func _place_container(furniture_pos: Vector2, furniture_size: Vector2,
+		furniture_name: String, furniture_color: Color,
+		item_id: String = "", item_name: String = "",
+		search_action_method: String = "", post_take_action_method: String = "") -> void:
+	var area = Area2D.new()
+	area.set_script(load("res://scripts/items/furniture_container.gd"))
+	area.position = furniture_pos + furniture_size / 2.0
+	area.collision_layer = 16
+	area.collision_mask = 1
+	area.monitoring = true
+	area.monitorable = true
+	area.furniture_name = furniture_name
+	area.contained_item_id = item_id
+	area.contained_item_name = item_name
+	area.search_action_method = search_action_method
+	area.post_take_action_method = post_take_action_method
+	area._level = self
+	var col = CollisionShape2D.new()
+	var shape = RectangleShape2D.new()
+	shape.size = furniture_size + Vector2(20, 20)
+	col.shape = shape
+	area.add_child(col)
+	add_child(area)
+	var display_furniture_name := furniture_name if Engine.is_editor_hint() else LocaleManager.world_text(furniture_name)
+	var hint_text := "" if Engine.is_editor_hint() else InputDevice.hint("interact")
+	var name_label = create_world_label("%s %s" % [display_furniture_name, hint_text], furniture_pos + Vector2(-10, -22), 18, furniture_color.lightened(0.4))
+	name_label.visible = false
+	area._name_label = name_label
+	area.tree_exiting.connect(func(): if is_instance_valid(name_label): name_label.queue_free())
 
 func _create_light_texture() -> ImageTexture:
 	var size := 128
@@ -1655,45 +1634,7 @@ func debug_skip_to_soul_swap() -> void:
 	current_phase = Phase.MONSTER_CHASE
 	_trigger_soul_swap_cutscene()
 
-func _add_room_label(text: String, pos: Vector2) -> void:
-	var label = Label.new()
-	label.text = text
-	label.position = pos
-	label.add_theme_font_size_override("font_size", 22)
-	label.add_theme_color_override("font_color", Color(0.25, 0.15, 0.15))
-	add_child(label)
-
 ## 在家具位置创建可搜索容器
-func _place_container(furniture_pos: Vector2, furniture_size: Vector2,
-		furniture_name: String, furniture_color: Color,
-		item_id: String = "", item_name: String = "",
-		search_action_method: String = "", post_take_action_method: String = "") -> void:
-	var area = Area2D.new()
-	area.set_script(load("res://scripts/items/furniture_container.gd"))
-	area.position = furniture_pos + furniture_size / 2.0
-	area.collision_layer = 16
-	area.collision_mask = 1
-	area.monitoring = true
-	area.monitorable = true
-	area.furniture_name = furniture_name
-	area.contained_item_id = item_id
-	area.contained_item_name = item_name
-	area.search_action_method = search_action_method
-	area.post_take_action_method = post_take_action_method
-	area._level = self
-	var col = CollisionShape2D.new()
-	var shape = RectangleShape2D.new()
-	shape.size = furniture_size + Vector2(20, 20)
-	col.shape = shape
-	area.add_child(col)
-	add_child(area)
-	var display_furniture_name := furniture_name if Engine.is_editor_hint() else LocaleManager.world_text(furniture_name)
-	var hint_text := "" if Engine.is_editor_hint() else InputDevice.hint("interact")
-	var name_label = create_world_label("%s %s" % [display_furniture_name, hint_text], furniture_pos + Vector2(-10, -22), 18, furniture_color.lightened(0.4))
-	name_label.visible = false
-	area._name_label = name_label
-	area.tree_exiting.connect(func(): if is_instance_valid(name_label): name_label.queue_free())
-
 func _on_elevator_card_container_taken(_item_id: String = "") -> void:
 	elevator_card_found = true
 	AudioManager.stop_bgm(1.5)

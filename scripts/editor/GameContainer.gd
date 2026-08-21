@@ -44,7 +44,12 @@ class_name GameContainer
 var _container: Area2D = null  # 运行时创建的 FurnitureContainer
 
 func _ready() -> void:
-	_rebuild()
+	if Engine.is_editor_hint():
+		_rebuild()
+	else:
+		# 运行时延迟构建：_build_runtime 会向关卡添加世界标签 UI，
+		# 场景装载期间父节点忙碌会导致 add_child 失败
+		call_deferred("_rebuild")
 
 func _rebuild() -> void:
 	if not is_inside_tree():

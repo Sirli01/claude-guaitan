@@ -34,7 +34,11 @@ const ELEVATOR_DOOR_OPEN_TEX_PATH := "res://assets/sprites/打开的电梯门.pn
 var _door_visual: Node = null
 
 func _ready() -> void:
-	_rebuild()
+	if Engine.is_editor_hint():
+		_rebuild()
+	else:
+		# 运行时延迟构建：可能向关卡添加世界标签，场景装载期间会失败
+		call_deferred("_rebuild")
 
 func _rebuild() -> void:
 	if not is_inside_tree():

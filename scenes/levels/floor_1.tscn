@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+﻿[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/editor/GameWall.gd" id="1_wall"]
 [ext_resource type="Script" path="res://scripts/editor/GameFurniture.gd" id="2_furn"]
@@ -229,91 +229,91 @@ z_index = -10
 position = Vector2(0.0,-610.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(1840.0,20.0)
-wall_color = Color(0.12, 0.08, 0.06)
+wall_color = Color(0.12, 0.08, 0.06, 1)
 
 [node name="Wall1" type="StaticBody2D" parent="."]
 position = Vector2(0.0,730.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(1840.0,20.0)
-wall_color = Color(0.12, 0.08, 0.06)
+wall_color = Color(0.12, 0.08, 0.06, 1)
 
 [node name="Wall2" type="StaticBody2D" parent="."]
 position = Vector2(-910.0,0.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(20.0,1240.0)
-wall_color = Color(0.12, 0.08, 0.06)
+wall_color = Color(0.12, 0.08, 0.06, 1)
 
 [node name="Wall3" type="StaticBody2D" parent="."]
 position = Vector2(910.0,0.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(20.0,1240.0)
-wall_color = Color(0.12, 0.08, 0.06)
+wall_color = Color(0.12, 0.08, 0.06, 1)
 
 [node name="Wall4" type="StaticBody2D" parent="."]
 position = Vector2(-880.0,644.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(30.0,64.0)
-wall_color = Color(0.12, 0.08, 0.06)
+wall_color = Color(0.12, 0.08, 0.06, 1)
 
 [node name="Wall5" type="StaticBody2D" parent="."]
 position = Vector2(120.0,730.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(1560.0,60.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall6" type="StaticBody2D" parent="."]
 position = Vector2(690.0,610.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(360.0,100.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall7" type="StaticBody2D" parent="."]
 position = Vector2(-475.0,345.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(70.0,310.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall8" type="StaticBody2D" parent="."]
 position = Vector2(-55.0,345.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(70.0,310.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall9" type="StaticBody2D" parent="."]
 position = Vector2(285.0,-80.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(1250.0,200.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall10" type="StaticBody2D" parent="."]
 position = Vector2(-700.0,66.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(400.0,28.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall11" type="StaticBody2D" parent="."]
 position = Vector2(700.0,686.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(400.0,28.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall12" type="StaticBody2D" parent="."]
 position = Vector2(300.0,539.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(16.0,114.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall13" type="StaticBody2D" parent="."]
 position = Vector2(715.0,-50.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(390.0,260.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="Wall14" type="StaticBody2D" parent="."]
 position = Vector2(885.0,80.0)
 script = ExtResource("1_wall")
 wall_size = Vector2(50.0,16.0)
-wall_color = Color(0.1, 0.07, 0.05)
+wall_color = Color(0.1, 0.07, 0.05, 1)
 
 [node name="F0_柜子" type="StaticBody2D" parent="."]
 position = Vector2(-804.0,-556.0)

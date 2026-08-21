@@ -39,7 +39,8 @@ var _light: PointLight2D = null
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
-		_build_runtime()
+		# 延迟构建：可能向关卡添加节点，场景装载期间会失败
+		call_deferred("_build_runtime")
 	else:
 		queue_redraw()
 
