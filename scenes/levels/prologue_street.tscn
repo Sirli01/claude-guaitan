@@ -1,6 +1,640 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/prologue_street_scene.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/items/furniture_container.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/items/rest_bench.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/characters/player.tscn" id="4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/后景楼和马路.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/前景楼.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0004_路灯.png" id="7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0005_树.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0000_邮箱.png" id="9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0000_草丛.png" id="10"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0002_垃圾桶.png" id="11"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0001_长椅.png" id="12"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0006_消防栓.png" id="13"]
+[ext_resource type="Texture2D" path="res://assets/sprites/street/户外_0003_报刊架-.png" id="14"]
+
+[sub_resource type="Gradient" id="grad_lamp"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.25, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_lamp"]
+gradient = SubResource("grad_lamp")
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="grad_moon"]
+offsets = PackedFloat32Array(0, 0.357, 0.714)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.56, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_moon"]
+gradient = SubResource("grad_moon")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="grad_plight"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_plight"]
+gradient = SubResource("grad_plight")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="grad_adoor"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_adoor"]
+gradient = SubResource("grad_adoor")
+width = 32
+height = 32
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="grad_dust"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_dust"]
+gradient = SubResource("grad_dust")
+width = 8
+height = 8
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Curve" id="curve_alpha"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.2, 1), 0.0, 0.0, 0, 0, Vector2(0.8, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="CurveTexture" id="ctex_alpha"]
+curve = SubResource("curve_alpha")
+
+[sub_resource type="ParticleProcessMaterial" id="pmat_dust"]
+direction = Vector3(1, -0.3, 0)
+spread = 40.0
+initial_velocity_min = 8.0
+initial_velocity_max = 15.0
+gravity = Vector3(0, -2, 0)
+emission_shape = 3
+emission_box_extents = Vector3(500, 100, 0)
+scale_min = 0.5
+scale_max = 1.5
+color = Color(0.7, 0.75, 0.9, 0.3)
+alpha_curve = SubResource("ctex_alpha")
+
+[sub_resource type="RectangleShape2D" id="sh_wall_h"]
+size = Vector2(1220, 10)
+
+[sub_resource type="RectangleShape2D" id="sh_wall_v"]
+size = Vector2(10, 160)
+
+[sub_resource type="RectangleShape2D" id="sh_border"]
+size = Vector2(40, 160)
+
+[sub_resource type="RectangleShape2D" id="sh_home"]
+size = Vector2(24, 35)
+
+[sub_resource type="RectangleShape2D" id="sh_apt"]
+size = Vector2(30, 40)
+
+[sub_resource type="CircleShape2D" id="sh_interact"]
+radius = 18.0
+
+[sub_resource type="StyleBoxFlat" id="sb_stam_bg"]
+bg_color = Color(0.15, 0.12, 0.12, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="sb_stam_fill"]
+bg_color = Color(0.4, 0.8, 0.3, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="sb_san_bg"]
+bg_color = Color(0.12, 0.1, 0.15, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="sb_san_fill"]
+bg_color = Color(0.5, 0.4, 0.9, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [node name="PrologueStreet" type="Node2D"]
 script = ExtResource("1")
+
+[node name="ParallaxBG" type="ParallaxBackground" parent="."]
+unique_name_in_owner = true
+layer = -1
+
+[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBG"]
+motion_scale = Vector2(0.05, 0.05)
+
+[node name="Sky" type="ColorRect" parent="ParallaxBG/SkyLayer"]
+offset_left = -1200.0
+offset_top = -800.0
+offset_right = 1200.0
+offset_bottom = -200.0
+color = Color(0.08, 0.07, 0.14, 1)
+
+[node name="BackBuildings" type="Node2D" parent="."]
+
+[node name="Copy0" type="Sprite2D" parent="BackBuildings"]
+z_index = -8
+position = Vector2(-1600, -306.22)
+texture = ExtResource("5")
+centered = false
+texture_filter = 1
+
+[node name="Copy1" type="Sprite2D" parent="BackBuildings"]
+z_index = -8
+position = Vector2(-77.8, -306.22)
+texture = ExtResource("5")
+centered = false
+texture_filter = 1
+
+[node name="Copy2" type="Sprite2D" parent="BackBuildings"]
+z_index = -8
+position = Vector2(1444.4, -306.22)
+texture = ExtResource("5")
+centered = false
+texture_filter = 1
+
+[node name="Copy3" type="Sprite2D" parent="BackBuildings"]
+z_index = -8
+position = Vector2(2966.61, -306.22)
+texture = ExtResource("5")
+centered = false
+texture_filter = 1
+
+[node name="MoonLight" type="PointLight2D" parent="."]
+z_index = -1
+position = Vector2(200, -250)
+color = Color(0.55, 0.65, 0.85, 1)
+energy = 0.15
+texture = SubResource("gtex_moon")
+texture_scale = 10.0
+
+[node name="DustParticles" type="GPUParticles2D" parent="."]
+z_index = 2
+position = Vector2(0, -50)
+amount = 30
+lifetime = 6.0
+speed_scale = 0.5
+process_material = SubResource("pmat_dust")
+texture = SubResource("gtex_dust")
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="Tree0" type="Sprite2D" parent="Trees"]
+z_index = -2
+position = Vector2(-350, -110)
+scale = Vector2(0.328947, 0.328947)
+texture = ExtResource("8")
+centered = false
+texture_filter = 1
+
+[node name="Tree1" type="Sprite2D" parent="Trees"]
+z_index = -2
+position = Vector2(-100, -110)
+scale = Vector2(0.328947, 0.328947)
+texture = ExtResource("8")
+centered = false
+texture_filter = 1
+
+[node name="Tree2" type="Sprite2D" parent="Trees"]
+z_index = -2
+position = Vector2(150, -110)
+scale = Vector2(0.328947, 0.328947)
+texture = ExtResource("8")
+centered = false
+texture_filter = 1
+
+[node name="Tree3" type="Sprite2D" parent="Trees"]
+z_index = -2
+position = Vector2(350, -110)
+scale = Vector2(0.328947, 0.328947)
+texture = ExtResource("8")
+centered = false
+texture_filter = 1
+
+[node name="Props" type="Node2D" parent="."]
+
+[node name="MailboxProp" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(320, -40)
+scale = Vector2(0.143541, 0.143541)
+texture = ExtResource("9")
+centered = false
+texture_filter = 1
+
+[node name="GrassAProp" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(-200, -38)
+scale = Vector2(0.054795, 0.054795)
+texture = ExtResource("10")
+centered = false
+texture_filter = 1
+
+[node name="Trash1Prop" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(-50, -40)
+scale = Vector2(0.194805, 0.194805)
+texture = ExtResource("11")
+centered = false
+texture_filter = 1
+
+[node name="Trash2Prop" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(-380, -40)
+scale = Vector2(0.194805, 0.194805)
+texture = ExtResource("11")
+centered = false
+texture_filter = 1
+
+[node name="Bench1Prop" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(100, -23)
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("12")
+centered = false
+texture_filter = 1
+
+[node name="Bench2Prop" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(-300, -23)
+scale = Vector2(0.125, 0.125)
+texture = ExtResource("12")
+centered = false
+texture_filter = 1
+
+[node name="GrassBProp" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(430, -38)
+scale = Vector2(0.054795, 0.054795)
+texture = ExtResource("10")
+centered = false
+texture_filter = 1
+
+[node name="HydrantProp" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(220, -32)
+scale = Vector2(0.120219, 0.120219)
+texture = ExtResource("13")
+centered = false
+texture_filter = 1
+
+[node name="NewsstandProp" type="Sprite2D" parent="Props"]
+z_index = -2
+position = Vector2(0, -52)
+scale = Vector2(0.127659, 0.127659)
+texture = ExtResource("14")
+centered = false
+texture_filter = 1
+
+[node name="StreetLamps" type="Node2D" parent="."]
+
+[node name="Lamp0" type="Sprite2D" parent="StreetLamps"]
+position = Vector2(-450, -117)
+scale = Vector2(0.236726, 0.236726)
+texture = ExtResource("7")
+centered = false
+texture_filter = 1
+
+[node name="Lamp0Light" type="PointLight2D" parent="StreetLamps"]
+position = Vector2(-450, -63.5)
+color = Color(1, 0.88, 0.55, 1)
+energy = 0.25
+texture = SubResource("gtex_lamp")
+texture_scale = 3.5
+
+[node name="Lamp1" type="Sprite2D" parent="StreetLamps"]
+position = Vector2(-200, -117)
+scale = Vector2(0.236726, 0.236726)
+texture = ExtResource("7")
+centered = false
+texture_filter = 1
+
+[node name="Lamp1Light" type="PointLight2D" parent="StreetLamps"]
+position = Vector2(-200, -63.5)
+color = Color(1, 0.88, 0.55, 1)
+energy = 0.25
+texture = SubResource("gtex_lamp")
+texture_scale = 3.5
+
+[node name="Lamp2" type="Sprite2D" parent="StreetLamps"]
+position = Vector2(50, -117)
+scale = Vector2(0.236726, 0.236726)
+texture = ExtResource("7")
+centered = false
+texture_filter = 1
+
+[node name="Lamp2Light" type="PointLight2D" parent="StreetLamps"]
+position = Vector2(50, -63.5)
+color = Color(1, 0.88, 0.55, 1)
+energy = 0.25
+texture = SubResource("gtex_lamp")
+texture_scale = 3.5
+
+[node name="Lamp3" type="Sprite2D" parent="StreetLamps"]
+position = Vector2(250, -117)
+scale = Vector2(0.236726, 0.236726)
+texture = ExtResource("7")
+centered = false
+texture_filter = 1
+
+[node name="Lamp3Light" type="PointLight2D" parent="StreetLamps"]
+position = Vector2(250, -63.5)
+color = Color(1, 0.88, 0.55, 1)
+energy = 0.25
+texture = SubResource("gtex_lamp")
+texture_scale = 3.5
+
+[node name="Lamp4" type="Sprite2D" parent="StreetLamps"]
+position = Vector2(450, -117)
+scale = Vector2(0.236726, 0.236726)
+texture = ExtResource("7")
+centered = false
+texture_filter = 1
+
+[node name="Lamp4Light" type="PointLight2D" parent="StreetLamps"]
+position = Vector2(450, -63.5)
+color = Color(1, 0.88, 0.55, 1)
+energy = 0.25
+texture = SubResource("gtex_lamp")
+texture_scale = 3.5
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 4
+
+[node name="WallNorth" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -10)
+shape = SubResource("sh_wall_h")
+
+[node name="WallSouth" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 90)
+shape = SubResource("sh_wall_h")
+
+[node name="WallWest" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-605, 0)
+shape = SubResource("sh_wall_v")
+
+[node name="WallEast" type="CollisionShape2D" parent="Walls"]
+position = Vector2(605, 0)
+shape = SubResource("sh_wall_v")
+
+[node name="LeftBorder" type="Area2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-580, 0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftBorder"]
+shape = SubResource("sh_border")
+
+[node name="RightBorder" type="Area2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(580, 0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightBorder"]
+shape = SubResource("sh_border")
+
+[node name="Interactables" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Mailbox" type="Area2D" parent="Interactables"]
+position = Vector2(320, -10)
+collision_layer = 16
+script = ExtResource("2")
+furniture_name = "邮箱"
+contained_item_id = "flashlight"
+contained_item_name = "手电筒"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/Mailbox"]
+shape = SubResource("sh_interact")
+
+[node name="GrassA" type="Area2D" parent="Interactables"]
+position = Vector2(-200, -10)
+collision_layer = 16
+script = ExtResource("2")
+furniture_name = "草丛"
+contained_item_id = "sweets"
+contained_item_name = "糖果"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/GrassA"]
+shape = SubResource("sh_interact")
+
+[node name="Trash1" type="Area2D" parent="Interactables"]
+position = Vector2(-50, -10)
+collision_layer = 16
+script = ExtResource("2")
+furniture_name = "垃圾桶"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/Trash1"]
+shape = SubResource("sh_interact")
+
+[node name="Trash2" type="Area2D" parent="Interactables"]
+position = Vector2(-380, -10)
+collision_layer = 16
+script = ExtResource("2")
+furniture_name = "垃圾桶"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/Trash2"]
+shape = SubResource("sh_interact")
+
+[node name="Newsstand" type="Area2D" parent="Interactables"]
+position = Vector2(0, -10)
+collision_layer = 16
+script = ExtResource("2")
+furniture_name = "报刊架"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/Newsstand"]
+shape = SubResource("sh_interact")
+
+[node name="Hydrant" type="Area2D" parent="Interactables"]
+position = Vector2(220, -10)
+collision_layer = 16
+script = ExtResource("2")
+furniture_name = "消防栓"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/Hydrant"]
+shape = SubResource("sh_interact")
+
+[node name="GrassB" type="Area2D" parent="Interactables"]
+position = Vector2(430, -10)
+collision_layer = 16
+script = ExtResource("2")
+furniture_name = "草丛"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/GrassB"]
+shape = SubResource("sh_interact")
+
+[node name="Bench1" type="Area2D" parent="Interactables"]
+position = Vector2(100, -10)
+collision_layer = 16
+collision_mask = 1
+script = ExtResource("3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/Bench1"]
+shape = SubResource("sh_interact")
+
+[node name="Bench2" type="Area2D" parent="Interactables"]
+position = Vector2(-300, -10)
+collision_layer = 16
+collision_mask = 1
+script = ExtResource("3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/Bench2"]
+shape = SubResource("sh_interact")
+
+[node name="HomeEntrance" type="Area2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-410, -25)
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HomeEntrance"]
+shape = SubResource("sh_home")
+
+[node name="ApartmentEntrance" type="Area2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(530, -20)
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ApartmentEntrance"]
+shape = SubResource("sh_apt")
+
+[node name="ApartmentDoorLight" type="PointLight2D" parent="."]
+position = Vector2(530, -55)
+color = Color(1, 0.85, 0.5, 1)
+energy = 0.25
+texture = SubResource("gtex_adoor")
+texture_scale = 3.5
+
+[node name="FgBuildings" type="Node2D" parent="."]
+unique_name_in_owner = true
+z_index = 5
+
+[node name="Fg0" type="Sprite2D" parent="FgBuildings"]
+position = Vector2(-1600, -100)
+scale = Vector2(0.772059, 0.772059)
+texture = ExtResource("6")
+centered = false
+texture_filter = 1
+
+[node name="Fg1" type="Sprite2D" parent="FgBuildings"]
+position = Vector2(1418.75, -100)
+scale = Vector2(0.772059, 0.772059)
+texture = ExtResource("6")
+centered = false
+texture_filter = 1
+
+[node name="Fg2" type="Sprite2D" parent="FgBuildings"]
+position = Vector2(4437.5, -100)
+scale = Vector2(0.772059, 0.772059)
+texture = ExtResource("6")
+centered = false
+texture_filter = 1
+
+[node name="Ground" type="ColorRect" parent="FgBuildings"]
+offset_left = -1200.0
+offset_top = 323.0
+offset_right = 1200.0
+offset_bottom = 923.0
+color = Color(0.12, 0.1, 0.1, 1)
+
+[node name="Player" parent="." instance=ExtResource("4")]
+unique_name_in_owner = true
+position = Vector2(-400, 0)
+
+[node name="PointLight2D" type="PointLight2D" parent="Player"]
+color = Color(0.75, 0.8, 0.95, 1)
+energy = 0.25
+texture = SubResource("gtex_plight")
+texture_scale = 3.0
+
+[node name="HUDLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 5
+
+[node name="TopBar" type="HBoxContainer" parent="HUDLayer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 15.0
+offset_right = -30.0
+offset_bottom = 60.0
+grow_horizontal = 2
+
+[node name="FloorLabel" type="Label" parent="HUDLayer/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 30
+
+[node name="StatusVBox" type="VBoxContainer" parent="HUDLayer"]
+unique_name_in_owner = true
+offset_left = 30.0
+offset_top = 57.0
+offset_right = 240.0
+offset_bottom = 57.0
+theme_override_constants/separation = 6
+
+[node name="StaminaLabel" type="Label" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 0.5, 1)
+theme_override_font_sizes/font_size = 22
+
+[node name="StaminaBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 12)
+layout_mode = 2
+theme_override_styles/background = SubResource("sb_stam_bg")
+theme_override_styles/fill = SubResource("sb_stam_fill")
+show_percentage = false
+
+[node name="SanityLabel" type="Label" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.5, 0.9, 1)
+theme_override_font_sizes/font_size = 22
+
+[node name="SanityBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 12)
+layout_mode = 2
+theme_override_styles/background = SubResource("sb_san_bg")
+theme_override_styles/fill = SubResource("sb_san_fill")
+show_percentage = false
+
+[node name="InventoryLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 15
+process_mode = 3
+
+[editable path="Player"]
