@@ -2,8 +2,7 @@ extends Node2D
 ## 第二层→第三层 电梯内部场景（无耳塞分支，鹿可被拽入后）
 
 # === 可调节参数 ===
-const ELEV_SCALE_FACTOR: float = 1.2      # 电梯贴图额外缩放倍率
-const ELEV_OFFSET: Vector2 = Vector2(0, 0) # 电梯贴图位置偏移
+const ELEV_SCALE_FACTOR: float = 1.2      # 电梯贴图额外缩放倍率（场景中已烘焙，保留供参考）
 
 var _cam: Camera2D
 var _shaking: bool = false
@@ -26,7 +25,10 @@ func _ready() -> void:
 	var sfx_gen = preload("res://scripts/utils/procedural_sfx.gd")
 	_heel_sfx = sfx_gen.high_heel_step()
 
-	_build_elevator_interior()
+	# 绑定场景中的角色贴图与名牌（节点结构已在 .tscn 中定义）
+	_setup_characters()
+	_cam = %Camera
+	_cam.make_current()
 
 	var dlg_scene = load("res://scenes/ui/dialogue_ui.tscn")
 	add_child(dlg_scene.instantiate())
@@ -34,40 +36,33 @@ func _ready() -> void:
 	await get_tree().create_timer(1.0).timeout
 	_start_sequence()
 
-func _build_elevator_interior() -> void:
+## 为场景中的角色占位节点绑定贴图与名牌。
+func _setup_characters() -> void:
+	for entry in [["CharSister", "sister"], ["CharCool", "cool_npc"], ["CharCheerful", "cheerful_npc"], ["CharMale", "male_npc"]]:
+		_setup_character(get_node("%" + entry[0]), entry[1])
+
+## 配置单个角色：加载朝下贴图、按电梯比例放大并添加名牌。
+## [param node] 角色占位节点。[param char_id] 角色ID。
+func _setup_character(node: Node2D, char_id: String) -> void:
 	const S := 5.0
-	# 电梯场景贴图
-	var elevator_tex = load("res://assets/sprites/电梯.png")
-	var elev_scale = 140.0 / elevator_tex.get_width() * S * ELEV_SCALE_FACTOR
-	var elevator_sprite = Sprite2D.new()
-	elevator_sprite.texture = elevator_tex
-	elevator_sprite.centered = true
-	elevator_sprite.position = ELEV_OFFSET
-	elevator_sprite.scale = Vector2(elev_scale * 2, elev_scale * 2)
-	elevator_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	add_child(elevator_sprite)
+	var sprite = Sprite2D.new()
+	var down_path = GameConfig.CHARACTER_SPRITES.get(char_id, "")
+	var up_path = down_path.replace("idle_down", "idle_up") if down_path != "" else ""
+	if up_path != "" and ResourceLoader.exists(up_path):
+		sprite.texture = load(up_path)
+	else:
+		sprite.texture = GameManager.load_char_texture(char_id, 14, 18)
+	GameManager.fit_character_sprite(sprite, char_id)
+	sprite.scale *= S
+	node.add_child(sprite)
 
-	# 天花板灯
-	var light = PointLight2D.new()
-	light.position = Vector2(0, -70 * S * 2)
-	light.color = Color(0.85, 0.8, 0.65)
-	light.energy = 0.7
-	light.texture_scale = 1.8 * S * 2
-	light.texture = _create_light_texture()
-	add_child(light)
-
-	# 存活角色（无耳塞分支：余凡、沈薇已死）
-	_create_character(Vector2(-5 * S * 2, 40 * S * 2), "sister")
-	_create_character(Vector2(-40 * S * 2, 35 * S * 2), "cool_npc")
-	_create_character(Vector2(30 * S * 2, 38 * S * 2), "cheerful_npc")
-	_create_character(Vector2(-30 * S * 2, 10 * S * 2), "male_npc")
-
-	# 摄像机
-	_cam = Camera2D.new()
-	_cam.position = Vector2(0, 0)
-	_cam.zoom = Vector2(3.5 / S, 3.5 / S)
-	_cam.make_current()
-	add_child(_cam)
+	var display_name = GameManager.NAMES.get(char_id, char_id)
+	var label = Label.new()
+	label.text = display_name
+	label.position = Vector2(-14 * S * 2, (-GameManager.get_character_visual_height(char_id) - 8.0) * S * 2)
+	label.add_theme_font_size_override("font_size", int(5 * S * 2))
+	label.add_theme_color_override("font_color", GameManager.CHAR_COLORS.get(char_id, Color.WHITE).lightened(0.3))
+	node.add_child(label)
 
 func _process(_delta: float) -> void:
 	if _shaking and _cam:
@@ -150,46 +145,3 @@ func _shake_elevator(duration: float, intensity: float) -> void:
 		elapsed += get_process_delta_time()
 	_cam.position = original_pos
 
-func _add_rect(pos: Vector2, size: Vector2, color: Color) -> void:
-	var r = ColorRect.new()
-	r.color = color
-	r.position = pos
-	r.size = size
-	add_child(r)
-
-func _create_character(pos: Vector2, char_id: String) -> Node2D:
-	const S := 5.0
-	var node = Node2D.new()
-	node.position = pos
-	add_child(node)
-
-	var sprite = Sprite2D.new()
-	var down_path = GameConfig.CHARACTER_SPRITES.get(char_id, "")
-	var up_path = down_path.replace("idle_down", "idle_up") if down_path != "" else ""
-	if up_path != "" and ResourceLoader.exists(up_path):
-		sprite.texture = load(up_path)
-	else:
-		sprite.texture = GameManager.load_char_texture(char_id, 14, 18)
-	GameManager.fit_character_sprite(sprite, char_id)
-	sprite.scale *= S
-	node.add_child(sprite)
-
-	var display_name = GameManager.NAMES.get(char_id, char_id)
-	var label = Label.new()
-	label.text = display_name
-	label.position = Vector2(-14 * S * 2, (-GameManager.get_character_visual_height(char_id) - 8.0) * S * 2)
-	label.add_theme_font_size_override("font_size", int(5 * S * 2))
-	label.add_theme_color_override("font_color", GameManager.CHAR_COLORS.get(char_id, Color.WHITE).lightened(0.3))
-	node.add_child(label)
-
-	return node
-
-func _create_light_texture() -> ImageTexture:
-	var img = Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	var center = Vector2(64, 64)
-	for x in 128:
-		for y in 128:
-			var dist = Vector2(x, y).distance_to(center) / 64.0
-			var alpha = clampf(1.0 - dist, 0.0, 1.0)
-			img.set_pixel(x, y, Color(1, 1, 1, alpha * alpha))
-	return ImageTexture.create_from_image(img)

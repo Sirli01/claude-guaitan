@@ -1,19 +1,24 @@
 extends LevelBaseV2
 ## 结局 - 细思极恐的收尾
 ## "她在说谎"
+## 背景层/文字层/规则纸条层已在 .tscn 中定义，脚本只负责结局演出流程
+
+@onready var bg_layer: CanvasLayer = %BGLayer
+@onready var ui_layer: CanvasLayer = %UILayer
+@onready var rules_layer: CanvasLayer = %RulesLayer
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS  # 避免 rule_paper.open() 暂停影响本场景协程
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
 	GameManager.change_floor(GameManager.Floor.ENDING)
-	
+
 	# 确保音频状态干净（尤其是从开发者模式跳转时）
 	AudioManager.exit_silence_mode()
 	AudioManager._bgm_playlist_active = false
 	AudioManager._bgm_playlist.clear()
 	AudioManager.bgm_player.stop()
 	AudioManager.ambience_player.stop()
-	
+
 	# 直接播放结局BGM（绕过异步fade避免tween冲突）
 	var demo_bgm_path = "res://assets/audio/bgm/demo结尾.mp3"
 	if ResourceLoader.exists(demo_bgm_path):
@@ -22,28 +27,11 @@ func _ready() -> void:
 		AudioManager.bgm_player.play()
 		var fade_in = create_tween()
 		fade_in.tween_property(AudioManager.bgm_player, "volume_db", -5.0, 3.0)
-	
-	# 纯黑背景（覆盖全屏）
-	var bg_layer = CanvasLayer.new()
-	bg_layer.layer = -1
-	add_child(bg_layer)
-	var bg = ColorRect.new()
-	bg.color = Color(0, 0, 0)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg_layer.add_child(bg)
-	
-	# 创建CanvasLayer来显示结局文字
-	var ui_layer = CanvasLayer.new()
-	ui_layer.layer = 10
-	add_child(ui_layer)
-	
-	# 规则纸条UI（setup_ui未调用，手动初始化）
-	var rules_layer = CanvasLayer.new()
-	rules_layer.layer = 15
-	add_child(rules_layer)
+
+	# 规则纸条UI（setup_ui未调用，手动初始化；实例化已有 rule_paper_ui.tscn 场景）
 	rule_paper = load("res://scenes/ui/rule_paper_ui.tscn").instantiate()
 	rules_layer.add_child(rule_paper)
-	
+
 	await get_tree().create_timer(2.0).timeout
 	_play_ending(ui_layer)
 
