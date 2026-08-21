@@ -15,6 +15,7 @@ var is_open: bool = false
 var _phone_ui: Control = null
 
 
+## UI 初始化：构建背包格子并连接物品变更信号
 func _ready() -> void:
 	add_to_group("inventory_ui")
 	visible = false

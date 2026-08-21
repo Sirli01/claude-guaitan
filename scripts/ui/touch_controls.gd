@@ -16,6 +16,7 @@ var _btn_fingers: Dictionary = {}   # finger_index → btn dict
 
 # ── 生命周期 ──
 
+## 初始化层级与处理模式，非触屏设备直接自毁，触屏设备则构建虚拟控件。
 func _ready() -> void:
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS   # 暂停时也要响应菜单按钮
@@ -24,12 +25,15 @@ func _ready() -> void:
 		return
 	_build()
 
+## 判断当前运行环境是否为触屏设备。
+## [return] Android/iOS 或存在触摸屏时返回 true。
 func _is_touch() -> bool:
 	var n := OS.get_name()
 	return n == "Android" or n == "iOS" or DisplayServer.is_touchscreen_available()
 
 # ── UI 构建 ──
 
+## 按屏幕尺寸构建左下角虚拟摇杆与各操作按钮。
 func _build() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	var R := vp.x
@@ -49,6 +53,11 @@ func _build() -> void:
 	_add_btn(Vector2(R - 240, 80), 38.0, "open_inventory", "物品", Color(0.8, 0.5, 0.9, 0.45), false)
 	_add_btn(Vector2(80, 80), 38.0, "ui_cancel", "菜单", Color(0.7, 0.7, 0.7, 0.45), false)
 
+## 创建一个以 center 为圆心、指定半径和颜色的圆形面板。
+## [param center] 圆心坐标。
+## [param radius] 圆的半径（像素）。
+## [param color] 填充颜色。
+## [return] 新创建的 Panel 节点。
 func _circle_panel(center: Vector2, radius: float, color: Color) -> Panel:
 	var p := Panel.new()
 	p.position = center - Vector2(radius, radius)
@@ -64,6 +73,13 @@ func _circle_panel(center: Vector2, radius: float, color: Color) -> Panel:
 	p.add_theme_stylebox_override("panel", s)
 	return p
 
+## 在指定位置添加一个圆形操作按钮并登记到按钮列表。
+## [param center] 按钮中心坐标。
+## [param radius] 按钮半径（像素）。
+## [param action] 触发的输入动作名。
+## [param label_text] 按钮上显示的文字。
+## [param color] 按钮填充颜色。
+## [param is_hold] 是否为长按型按钮（按住持续触发动作）。
 func _add_btn(center: Vector2, radius: float, action: String, label_text: String, color: Color, is_hold: bool) -> void:
 	var node := _circle_panel(center, radius, color)
 	add_child(node)
@@ -79,6 +95,8 @@ func _add_btn(center: Vector2, radius: float, action: String, label_text: String
 
 # ── 输入处理 ──
 
+## 处理触摸按下/拖动/抬起事件驱动摇杆与按钮，并屏蔽控件区域的鼠标仿真点击。
+## [param event] 输入事件。
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -96,6 +114,9 @@ func _input(event: InputEvent) -> void:
 		if _in_zone(event.position):
 			get_viewport().set_input_as_handled()
 
+## 手指按下处理：优先判定摇杆区域，其次判定按钮区域并触发对应动作。
+## [param finger] 手指索引。
+## [param pos] 按下位置。
 func _finger_down(finger: int, pos: Vector2) -> void:
 	# 摇杆
 	if _joy_finger == -1 and pos.distance_to(_joy_pos) < JOY_RADIUS * 1.8:
@@ -115,6 +136,8 @@ func _finger_down(finger: int, pos: Vector2) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
+## 手指抬起处理：释放摇杆或按钮占用的手指并复位对应控件状态。
+## [param finger] 手指索引。
 func _finger_up(finger: int) -> void:
 	if finger == _joy_finger:
 		_joy_finger = -1
@@ -130,6 +153,9 @@ func _finger_up(finger: int) -> void:
 		_btn_fingers.erase(finger)
 		get_viewport().set_input_as_handled()
 
+## 判断某坐标是否落在摇杆或任一按钮的响应区域内。
+## [param pos] 待检测的坐标。
+## [return] 在控件区域内返回 true。
 func _in_zone(pos: Vector2) -> bool:
 	if pos.distance_to(_joy_pos) < JOY_RADIUS * 1.8:
 		return true
@@ -140,6 +166,8 @@ func _in_zone(pos: Vector2) -> bool:
 
 # ── 摇杆逻辑 ──
 
+## 根据手指位置更新摇杆旋钮偏移，并把归一化方向映射到四向移动动作。
+## [param pos] 当前手指位置。
 func _joy_update(pos: Vector2) -> void:
 	var diff := pos - _joy_pos
 	if diff.length() > JOY_RADIUS:
@@ -155,6 +183,7 @@ func _joy_update(pos: Vector2) -> void:
 		if norm.y < -DEAD_ZONE: Input.action_press("move_up", -norm.y)
 		if norm.y > DEAD_ZONE:  Input.action_press("move_down", norm.y)
 
+## 复位摇杆旋钮到中心并释放全部移动动作。
 func _joy_reset() -> void:
 	_joy_knob.position = _joy_pos - Vector2(KNOB_RADIUS, KNOB_RADIUS)
 	for a in ["move_left", "move_right", "move_up", "move_down"]:
@@ -162,6 +191,9 @@ func _joy_reset() -> void:
 
 # ── 动作事件模拟（用于非长按按钮，通过 call_deferred 避免递归）──
 
+## 以延迟方式合成并派发一个 InputEventAction，模拟非长按按钮的动作触发。
+## [param action] 输入动作名。
+## [param pressed] 是否为按下事件。
 func _fire(action: String, pressed: bool) -> void:
 	var ev := InputEventAction.new()
 	ev.action = action

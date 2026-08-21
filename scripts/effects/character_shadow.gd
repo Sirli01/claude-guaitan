@@ -13,9 +13,12 @@ var _lights: Array[PointLight2D] = []
 var _scan_timer: float = 0.0
 var _base_scale: Vector2 = Vector2.ONE
 
+## 设置投影所属的角色ID（决定碰撞尺寸来源）。
+## [param char_id] 角色ID。
 func setup(char_id: String) -> void:
 	_char_id = char_id
 
+## 初始化：创建阴影精灵、按宿主碰撞体计算基准缩放并刷新光源列表。
 func _ready() -> void:
 	_host = get_parent() as CharacterBody2D
 	_shadow_sprite = Sprite2D.new()
@@ -34,6 +37,8 @@ func _ready() -> void:
 	_refresh_lights()
 	_update_shadow_visual()
 
+## 每帧更新阴影视觉，并定期重新扫描场景中的点光源。
+## [param delta] 帧间隔（秒）。
 func _process(delta: float) -> void:
 	if _host == null or not is_instance_valid(_host):
 		return
@@ -43,18 +48,22 @@ func _process(delta: float) -> void:
 		_refresh_lights()
 	_update_shadow_visual()
 
+## 重新收集当前场景中所有可见且有效的 PointLight2D。
 func _refresh_lights() -> void:
 	_lights.clear()
 	var scene = get_tree().current_scene
 	if scene:
 		_collect_lights(scene)
 
+## 递归收集节点树中的点光源。
+## [param node] 遍历起点节点。
 func _collect_lights(node: Node) -> void:
 	if node is PointLight2D and node.visible and node.energy > 0.01:
 		_lights.append(node)
 	for child in node.get_children():
 		_collect_lights(child)
 
+## 根据最近光源计算阴影的位置、旋转、拉伸与透明度。
 func _update_shadow_visual() -> void:
 	var best_strength = 0.0
 	var best_dir = Vector2.ZERO
@@ -86,6 +95,8 @@ func _update_shadow_visual() -> void:
 	_shadow_sprite.scale = _base_scale * Vector2(1.0 + stretch, 1.0 - stretch * 0.3)
 	_shadow_sprite.modulate.a = SHADOW_ALPHA
 
+## 按角色ID返回对应的碰撞尺寸。
+## [return] 碰撞尺寸。
 func _get_collision_size() -> Vector2:
 	match _char_id:
 		"sister":
@@ -95,6 +106,8 @@ func _get_collision_size() -> Vector2:
 		_:
 			return GameManager.NPC_COLLISION_SIZE
 
+## 程序化生成椭圆形柔和阴影贴图。
+## [return] 生成的阴影纹理。
 func _make_shadow_texture() -> ImageTexture:
 	var img = Image.create(SHADOW_TEXTURE_SIZE.x, SHADOW_TEXTURE_SIZE.y, false, Image.FORMAT_RGBA8)
 	var center = Vector2(SHADOW_TEXTURE_SIZE.x * 0.5, SHADOW_TEXTURE_SIZE.y * 0.5)

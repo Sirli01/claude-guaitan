@@ -44,6 +44,7 @@ const FLOOR_1_WANDER_POINTS := [
 	Vector2(680, -260),
 ]
 
+## 第一层初始化：设置楼层状态、收集灯光与电梯门引用、布置NPC并启动入场剧情链。
 func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	GameManager.change_floor(GameManager.Floor.FLOOR_1)
@@ -136,9 +137,19 @@ func _on_director_relief() -> void:
 			var tw := create_tween()
 			tw.tween_property(light, "energy", light.energy, 2.0)
 
+## 在世界坐标处创建本地化的房间名称标签。
+## [param text] 房间名称（经 LocaleManager 翻译）。
+## [param pos] 标签的世界坐标。
 func _add_room_label(text: String, pos: Vector2) -> void:
 	create_world_label(LocaleManager.world_text(text), pos, 22, Color(0.3, 0.25, 0.2))
 
+## 在横向走廊上方搭建一个带朝走廊门的房间（墙体、碰撞与门）。
+## [param walls] 承载墙体节点的父节点。
+## [param top_left] 房间左上角坐标。
+## [param room_size] 房间尺寸。
+## [param door_center_x] 门中心的 X 坐标。
+## [param locked] 门是否上锁。
+## [param show_south_face] 是否绘制朝向走廊的南面墙（false 时贴图由外部绘制）。
 func _build_room_above_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_x: float, locked: bool = false, show_south_face: bool = true) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
 	var door_width = 44.0
@@ -176,6 +187,12 @@ func _build_room_above_corridor(walls: Node2D, top_left: Vector2, room_size: Vec
 	else:
 		add_door(walls, Vector2(door_center_x, top_left.y + room_size.y), Vector2(door_width, 8), locked, Vector2.UP)
 
+## 在横向走廊下方搭建一个带朝走廊门的房间（墙体、碰撞与门）。
+## [param walls] 承载墙体节点的父节点。
+## [param top_left] 房间左上角坐标。
+## [param room_size] 房间尺寸。
+## [param door_center_x] 门中心的 X 坐标。
+## [param locked] 门是否上锁。
 func _build_room_below_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_x: float, locked: bool = false) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
 	var door_width = 44.0
@@ -192,6 +209,12 @@ func _build_room_below_corridor(walls: Node2D, top_left: Vector2, room_size: Vec
 		add_visible_wall(walls, Vector2(right_start + right_width / 2.0, top_left.y), Vector2(right_width, 8), wall_color, true, true, false, Vector2.DOWN)
 	add_door(walls, Vector2(door_center_x, top_left.y), Vector2(door_width, 8), locked, Vector2.DOWN)
 
+## 在纵向走廊左侧搭建一个带朝走廊门的房间（墙体、碰撞与门）。
+## [param walls] 承载墙体节点的父节点。
+## [param top_left] 房间左上角坐标。
+## [param room_size] 房间尺寸。
+## [param door_center_y] 门中心的 Y 坐标。
+## [param locked] 门是否上锁。
 func _build_room_left_of_vertical_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_y: float, locked: bool = false) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
 	var door_height = 44.0
@@ -209,6 +232,12 @@ func _build_room_left_of_vertical_corridor(walls: Node2D, top_left: Vector2, roo
 		add_visible_wall(walls, Vector2(top_left.x + room_size.x, lower_start + lower_height / 2.0), Vector2(8, lower_height), wall_color, false, false, true, Vector2.RIGHT)
 	add_door(walls, Vector2(top_left.x + room_size.x, door_center_y), Vector2(8, door_height), locked, Vector2.LEFT)
 
+## 在纵向走廊右侧搭建一个带朝走廊门的房间（墙体、碰撞与门）。
+## [param walls] 承载墙体节点的父节点。
+## [param top_left] 房间左上角坐标。
+## [param room_size] 房间尺寸。
+## [param door_center_y] 门中心的 Y 坐标。
+## [param locked] 门是否上锁。
 func _build_room_right_of_vertical_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_y: float, locked: bool = false) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
 	var door_height = 44.0
@@ -226,6 +255,7 @@ func _build_room_right_of_vertical_corridor(walls: Node2D, top_left: Vector2, ro
 		add_visible_wall(walls, Vector2(top_left.x, lower_start + lower_height / 2.0), Vector2(8, lower_height), wall_color, false, false, true, Vector2.LEFT)
 	add_door(walls, Vector2(top_left.x, door_center_y), Vector2(8, door_height), locked, Vector2.RIGHT)
 
+## 放置仍需动态创建的灯光效果：闪烁走廊灯、环境灰尘与各房门门缝漏光。
 func _place_dynamic_lights() -> void:
 	# 房间灯光和走廊灯光已迁移到 .tscn 场景树（PointLight2D 节点）。
 	# 以下仅保留仍需动态创建的灯光效果。
@@ -247,6 +277,7 @@ func _place_dynamic_lights() -> void:
 	_door_leak_lights.append(add_door_light_leak(Vector2(411, -170), 18.0))   # 107门底
 	_door_leak_lights.append(add_door_light_leak(Vector2(260, 165), 24.0, "right"))  # 108门侧
 
+## 在玩家出生点附近生成五名同伴NPC并先设为不可见（黑暗中看不到）。
 func _spawn_npcs() -> void:
 	# 开手机后的第一眼先看到身边同伴，之后再沿蛇形走廊分散行动
 	cool_npc = create_npc_visual(Vector2(-352, 316), "cool_npc")
@@ -259,6 +290,7 @@ func _spawn_npcs() -> void:
 		if npc:
 			npc.visible = false
 
+## 入场演出：自言自语后点亮手机光、显现周围NPC，随后进入正式入场对话。
 func _phone_light_intro() -> void:
 	player.freeze_player()
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
@@ -286,6 +318,7 @@ func _phone_light_intro() -> void:
 	await get_tree().create_timer(1.0).timeout
 	_entry_dialogue()
 
+## 入场对话流程：NPC分头行动、规则纸条出现并展示、主角询问纸条。
 func _entry_dialogue() -> void:
 	DialogueManager.start_dialogue(StoryText.lines("floor_1", "entry"))
 	await DialogueManager.dialogue_ended
@@ -305,11 +338,13 @@ func _entry_dialogue() -> void:
 	DialogueManager.start_dialogue(StoryText.lines("floor_1", "rule_question"))
 	await DialogueManager.dialogue_ended
 
+## 为所有存活NPC开启手机光源。
 func _enable_npc_phone_lights() -> void:
 	for npc in [cool_npc, cheerful_npc, male_npc, female_npc, timid_npc]:
 		if npc and is_instance_valid(npc) and npc.is_alive:
 			npc.enable_phone_light()
 
+## 收集全部有效NPC并为每个启动独立的徘徊循环。
 func _start_npc_wandering() -> void:
 	_enable_npc_phone_lights()
 	var wandering_npcs: Array[Node2D] = []
@@ -326,6 +361,7 @@ func _start_npc_wandering() -> void:
 	for npc in wandering_npcs:
 		_wander_loop(npc)
 
+## 按是否已触发23点镜子事件，刷新五名NPC的闲聊故事对话。
 func _refresh_floor_1_npc_dialogues() -> void:
 	if _event_23_triggered:
 		set_npc_story_dialogue(cool_npc, "floor_1", "talk_post_mirror_cool")
@@ -340,6 +376,8 @@ func _refresh_floor_1_npc_dialogues() -> void:
 	set_npc_story_dialogue(female_npc, "floor_1", "talk_explore_female")
 	set_npc_story_dialogue(timid_npc, "floor_1", "talk_explore_timid")
 
+## NPC徘徊循环：走向随机点、随机停顿后递归继续，直到场景退出或NPC失效。
+## [param npc] 要徘徊的NPC节点。
 func _wander_loop(npc: Node2D) -> void:
 	if not is_instance_valid(npc) or not npc.is_inside_tree():
 		return
@@ -354,6 +392,9 @@ func _wander_loop(npc: Node2D) -> void:
 	if not _exiting and is_instance_valid(npc):
 		_wander_loop(npc)
 
+## 从徘徊点列表中选取距起点最近的点附近的相邻候选点之一。
+## [param origin] NPC当前位置。
+## [return] 选中的徘徊目标点坐标。
 func _random_wander_point(origin: Vector2) -> Vector2:
 	var nearest_index := 0
 	var nearest_distance := INF
@@ -374,6 +415,7 @@ func _random_wander_point(origin: Vector2) -> Vector2:
 		return FLOOR_1_WANDER_POINTS[nearest_index]
 	return FLOOR_1_WANDER_POINTS[candidate_indices[randi() % candidate_indices.size()]]
 
+## 23点异变事件：女伴走向镜子对视、断电熄灯并推进主线对话，之后给出找电梯卡提示。
 func _on_23_oclock() -> void:
 	if _event_23_triggered:
 		return
@@ -438,6 +480,7 @@ func _on_23_oclock() -> void:
 	else:
 		show_hint(LocaleManager.t("hint_need_card"))
 
+## 刷卡进电梯流程：开门、播放进电梯对话后转场到电梯内场景。
 func _enter_elevator() -> void:
 	player.freeze_player()
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
@@ -480,6 +523,9 @@ func debug_list_colliders_in_rect(rect: Rect2) -> void:
 	if found == 0:
 		push_warning("debug: no colliders intersecting %s" % rect)
 
+## 调试用：删除 Walls 下与指定矩形相交的所有矩形碰撞体。
+## [param rect] 检测范围矩形。
+## [return] 实际删除的碰撞体数量。
 func debug_remove_colliders_in_rect(rect: Rect2) -> int:
 	var walls_node := get_node_or_null("Walls")
 	if not walls_node:
@@ -506,6 +552,7 @@ func debug_remove_colliders_in_rect(rect: Rect2) -> int:
 	push_warning("debug: removed %d colliders intersecting %s" % [removed, rect])
 	return removed
 
+## 调试辅助：列出103房间附近疑似阻挡区域的碰撞体以便排查。
 func _debug_clear_103_area() -> void:
 	# Convenience: list colliders in likely blocking area for room 103
 	var probe = Rect2(Vector2(-280, 80), Vector2(300, 260))

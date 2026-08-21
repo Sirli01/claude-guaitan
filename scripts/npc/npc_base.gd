@@ -46,6 +46,7 @@ const NPC_STUCK_THRESHOLD: float = 0.8
 const NPC_STEER_DURATION: float = 1.2
 const NPC_FOOTSTEP_INTERVAL: float = 0.46
 
+## 初始化 NPC：加入分组、创建帧动画组件、寻路代理与手机灯光。
 func _ready() -> void:
 	add_to_group("npc")
 	add_to_group("interactable")
@@ -75,6 +76,8 @@ func _ready() -> void:
 	phone_light.texture = _make_npc_cone_texture(64, 60.0)
 	add_child(phone_light)
 
+## 每物理帧驱动 walk_to/跟随行为、动画、脚步声与卡墙绕行检测。
+## [param delta] 距上一帧的时间间隔（秒）。
 func _physics_process(delta: float) -> void:
 	if not is_alive:
 		_footstep_timer = 0.0
@@ -118,6 +121,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			_npc_stuck_timer = 0.0
 
+## 根据朝向更新手机灯光的位置与旋转。
 func _update_phone_light() -> void:
 	if not _phone_light_enabled or not phone_light or not phone_light.visible:
 		return
@@ -125,6 +129,7 @@ func _update_phone_light() -> void:
 	phone_light.rotation = dir.angle() + PI / 2.0
 	phone_light.position = dir * 10.0 + Vector2(0, -15)
 
+## 跟随行为：超出跟随距离时沿导航路径追近，卡墙时侧向绕行。
 func _follow_behavior() -> void:
 	var target_pos = follow_target.global_position + follow_offset
 	var dist = global_position.distance_to(target_pos)
@@ -154,6 +159,8 @@ func _follow_behavior() -> void:
 	else:
 		velocity = Vector2.ZERO
 
+## 按固定间隔在 NPC 所在位置播放脚步声。
+## [param delta] 距上一帧的时间间隔（秒）。
 func _update_footstep_audio(delta: float) -> void:
 	if velocity.length_squared() <= 1.0:
 		_footstep_timer = 0.0
@@ -164,10 +171,12 @@ func _update_footstep_audio(delta: float) -> void:
 	AudioManager.play_footstep_at_position(global_position, -15.0)
 	_footstep_timer = NPC_FOOTSTEP_INTERVAL
 
+## 与 NPC 交互：有对话数据时开始对话。
 func interact() -> void:
 	if not dialogue_data.is_empty():
 		DialogueManager.start_dialogue(dialogue_data)
 
+## 更新名字标签：玩家靠近且有对话时显示交互按键提示，否则隐藏。
 func _update_interaction_hint() -> void:
 	if not name_label:
 		return
@@ -189,11 +198,15 @@ func _update_interaction_hint() -> void:
 	name_label.text = "%s %s" % [npc_name, InputDevice.hint("interact")]
 	name_label.visible = show_prompt
 
+## 开始跟随指定目标。
+## [param target] 要跟随的目标节点。
+## [param offset] 相对目标的跟随偏移（用于队列站位）。
 func start_following(target: Node2D, offset: Vector2 = Vector2.ZERO) -> void:
 	is_following = true
 	follow_target = target
 	follow_offset = offset
 
+## 停止跟随并原地站定。
 func stop_following() -> void:
 	is_following = false
 	follow_target = null
@@ -211,6 +224,8 @@ func stop_walking() -> void:
 	velocity = Vector2.ZERO
 	walk_completed.emit()
 
+## walk_to 的每帧行为：直线走向目标，超时或抵达后停止。
+## [param delta] 距上一帧的时间间隔（秒）。
 func _walk_to_behavior(delta: float) -> void:
 	_walk_time += delta
 	if _walk_time > WALK_TIMEOUT:
@@ -223,21 +238,27 @@ func _walk_to_behavior(delta: float) -> void:
 	velocity = dir * walk_speed
 	_update_facing_from_vector(dir)
 
+## 根据移动方向更新朝向。
+## [param direction] 移动方向，零向量时保持不变。
 func _update_facing_from_vector(direction: Vector2) -> void:
 	if direction == Vector2.ZERO:
 		return
 	facing_direction = direction.normalized()
 
+## 启用 NPC 手机灯光。
 func enable_phone_light() -> void:
 	_phone_light_enabled = true
 	if phone_light:
 		phone_light.visible = true
 
+## 关闭 NPC 手机灯光。
 func disable_phone_light() -> void:
 	_phone_light_enabled = false
 	if phone_light:
 		phone_light.visible = false
 
+## NPC 死亡处理：标记死亡、通知 GameManager、掉落手机灯光并播放死亡动画。
+## [param death_type] 死亡类型，决定播放的死亡动画。
 func die(death_type: String = "generic") -> void:
 	is_alive = false
 	GameManager.kill_character(npc_id)
@@ -249,6 +270,7 @@ func die(death_type: String = "generic") -> void:
 	# 播放死亡动画
 	_play_death(death_type)
 
+## 在死亡位置留下一个持续发光、60 秒后渐隐消失的手机灯光。
 func _spawn_ground_light() -> void:
 	# 在NPC死亡位置留下一个持续发光的手机灯光
 	var parent = get_parent()
@@ -274,6 +296,8 @@ func _spawn_ground_light() -> void:
 	tween.tween_property(ground, "modulate:a", 0.0, 3.0)
 	tween.tween_callback(ground.queue_free)
 
+## 按死亡类型播放对应死亡动画，结束后销毁节点。
+## [param death_type] 死亡类型（如 high_heel、abyss_mouth）。
 func _play_death(death_type: String) -> void:
 	match death_type:
 		"high_heel":
@@ -296,9 +320,14 @@ func _play_death(death_type: String) -> void:
 			await tween.finished
 			queue_free()
 
+## 设置 NPC 的对话数据。
+## [param data] 对话数据数组。
 func set_dialogue(data: Array) -> void:
 	dialogue_data = data
 
+## 朝目标位置设置移动速度，接近目标时停下。
+## [param target_pos] 目标位置。
+## [param speed_override] 速度覆盖值，小于等于 0 时使用默认 walk_speed。
 func move_to_position(target_pos: Vector2, speed_override: float = -1.0) -> void:
 	var spd = speed_override if speed_override > 0 else walk_speed
 	var dir = (target_pos - global_position).normalized()
@@ -308,8 +337,15 @@ func move_to_position(target_pos: Vector2, speed_override: float = -1.0) -> void
 		velocity = Vector2.ZERO
 
 
+## 生成 NPC 手机锥形光纹理（委托 TextureUtils）。
+## [param size] 纹理边长（像素）。
+## [param angle_deg] 锥形张角（度）。
+## [return] 生成的锥形光纹理。
 func _make_npc_cone_texture(size: int, angle_deg: float) -> ImageTexture:
 	return TextureUtils.make_cone_texture(size, angle_deg)
 
+## 生成圆形光纹理（委托 TextureUtils）。
+## [param size] 纹理边长（像素）。
+## [return] 生成的圆形光纹理。
 func _make_circle_light_tex(size: int) -> ImageTexture:
 	return TextureUtils.make_circle_texture(size)

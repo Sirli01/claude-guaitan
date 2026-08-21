@@ -8,16 +8,21 @@ var _saved_player_pos: Vector2 = Vector2.ZERO  # 读档时恢复的玩家位置
 signal game_saved  # 存档成功信号
 
 # 自动存档：每次换楼层时存档
+## 初始化节点并连接换层自动存档与存档成功通知。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	GameManager.floor_changed.connect(_on_floor_changed)
 	game_saved.connect(_show_save_notification)
 
+## 楼层切换后延迟一帧执行自动存档。
+## [param _new_floor] 新楼层枚举值（未使用）。
 func _on_floor_changed(_new_floor: GameManager.Floor) -> void:
 	# 延迟一帧让场景完成切换
 	await get_tree().process_frame
 	save_game()
 
+## 响应快速存档/快速读档快捷键。
+## [param event] 引擎分发的输入事件。
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("quick_save"):
 		save_game()
@@ -50,9 +55,12 @@ const SCENE_NAMES := {
 	"ending": "结局",
 }
 
+## 检查存档文件是否存在。
+## [return] 存在返回 true。
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
+## 收集各系统当前状态写入存档文件，成功后发出 game_saved 信号。
 func save_game() -> void:
 	var scene_path := ""
 	var tree := get_tree()
@@ -96,6 +104,8 @@ func save_game() -> void:
 		push_warning("[SaveManager] 存档成功: " + scene_path)
 		game_saved.emit()
 
+## 读取存档并恢复各系统状态，随后切换到存档时的场景。
+## [return] 读档成功返回 true；无存档、数据无效或场景缺失返回 false。
 func load_game() -> bool:
 	if not has_save():
 		return false
@@ -155,6 +165,7 @@ func load_game() -> bool:
 	is_loading_save = false
 	return false
 
+## 等待新场景初始化完成后恢复玩家位置并清除读档标志。
 func _clear_loading_flag() -> void:
 	# 等两帧确保场景初始化完成
 	await get_tree().process_frame
@@ -169,11 +180,15 @@ func _clear_loading_flag() -> void:
 		_saved_player_pos = Vector2.ZERO
 	is_loading_save = false
 
+## 删除存档文件（存在时才执行）。
 func delete_save() -> void:
 	if has_save():
 		DirAccess.remove_absolute(SAVE_PATH)
 
 # ===== 开发者模式：跳转到任意场景 =====
+## 开发者模式：重置全部状态后按配置预置数据并跳转目标场景。
+## [param scene_key] SCENE_MAP 中的场景键名。
+## [param setup] 可选预置配置，支持 floor/items/rules/kill 等键。
 func dev_jump_to(scene_key: String, setup: Dictionary = {}) -> void:
 	# 先重置所有状态（不切换场景）
 	GameManager._reset_all_state()
@@ -198,6 +213,8 @@ func dev_jump_to(scene_key: String, setup: Dictionary = {}) -> void:
 		push_warning("[Dev] 跳转到: " + scene_key)
 
 # 预设开发者快捷配置
+## 返回各场景的开发者快捷跳转预设。
+## [return] 以场景键名为索引的预设配置字典。
 func dev_presets() -> Dictionary:
 	return {
 		"prologue_room": {},
@@ -231,6 +248,7 @@ func dev_presets() -> Dictionary:
 		},
 	}
 
+## 存档成功后弹出本地化的"已保存"提示通知。
 func _show_save_notification() -> void:
 	_show_notification(LocaleManager.t("saved"))
 

@@ -10,6 +10,8 @@ var cheerful_npc: Node2D
 ## 电梯贴图额外缩放倍率（场景中已烘焙，保留供参考）
 const ELEV_SCALE_FACTOR: float = 1.2
 
+## 本场景无玩家节点，自行处理对话推进输入。
+## [param event] 输入事件。
 func _input(event: InputEvent) -> void:
 	# 电梯场景没有player，需要自己处理对话推进
 	if DialogueManager.is_dialogue_active:
@@ -18,6 +20,7 @@ func _input(event: InputEvent) -> void:
 			DialogueManager.advance()
 			get_viewport().set_input_as_handled()
 
+## 初始化：设置演出状态、绑定角色、加载对话UI并启动电梯剧情。
 func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
 
@@ -69,10 +72,13 @@ func _setup_character(node: Node2D, char_id: String) -> void:
 	label.add_theme_color_override("font_color", GameManager.CHAR_COLORS.get(char_id, Color.WHITE).lightened(0.3))
 	node.add_child(label)
 
+## 电梯震动期间随机抖动摄像机偏移。
+## [param _delta] 帧间隔（未使用）。
 func _process(_delta: float) -> void:
 	if _shaking and _cam:
 		_cam.offset = Vector2(randf_range(-3.0, 3.0), randf_range(-3.0, 3.0))
 
+## 播放电梯运行声与震动，按怪物存活与否走对应分支，最后转入结局场景。
 func _start_elevator_dialogue() -> void:
 	# 电梯运行声
 	AudioManager.play_sfx(load("res://assets/audio/sfx/电梯运行声.wav"), 0.0)
@@ -87,6 +93,7 @@ func _start_elevator_dialogue() -> void:
 	await get_tree().create_timer(0.5).timeout
 	TransitionManager.transition_to_scene("res://scenes/levels/ending.tscn")
 
+## 怪物存活分支：撞击声+三段紧张对话。
 func _monster_alive_route() -> void:
 	# 怪物还在追——紧张版
 	await get_tree().create_timer(0.3).timeout
@@ -111,6 +118,7 @@ func _monster_alive_route() -> void:
 	DialogueManager.start_dialogue(StoryText.lines("ending", "elevator_alive_descent"))
 	await DialogueManager.dialogue_ended
 
+## 怪物已被消灭分支：两段平静对话。
 func _monster_dead_route() -> void:
 	# 怪物已消灭——平静版
 	await get_tree().create_timer(0.5).timeout

@@ -36,12 +36,16 @@ static func lines(chapter: String, event: String) -> Array:
 	if raw.is_empty():
 		push_warning("StoryText: 找不到对话 '%s'" % key)
 		return []
-	var result := []
+	var result: Array = []
 	for line in raw:
 		var emotion = line[2] if line.size() > 2 else ""
 		result.append(GameManager.say(line[0], line[1], emotion))
 	return result
 
+## Demo 演示用：按语言覆盖指定章节事件的台词。
+## [param key] "章节.事件" 形式的对话键。
+## [param raw] 原始台词数组。
+## [return] 覆盖后的台词数组；无覆盖时原样返回。
 static func _override_lines_for_demo(key: String, raw: Array) -> Array:
 	match _locale:
 		"en":

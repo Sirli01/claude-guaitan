@@ -51,6 +51,7 @@ class_name GamePickup
 
 var _pickup: Area2D = null  # 运行时创建的 SimplePickup
 
+## 节点就绪回调：编辑器中立即重建预览，运行时延迟构建。
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		_rebuild()
@@ -58,17 +59,21 @@ func _ready() -> void:
 		# 运行时延迟构建：可能向关卡添加世界标签，场景装载期间会失败
 		call_deferred("_rebuild")
 
+## 清空并重建拾取物的全部子节点。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
 	_clear_children()
 	_build()
 
+## 释放所有子节点并重置 SimplePickup 引用。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 	_pickup = null
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -76,6 +81,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 构建拾取物内容：编辑器走预览分支，运行时走完整构建分支。
 func _build() -> void:
 	var owner_node := _get_owner()
 
@@ -85,6 +91,8 @@ func _build() -> void:
 	else:
 		_build_runtime()
 
+## 在编辑器中构建贴图/色块预览、拾取范围与名称标签。
+## [param owner_node] 子节点归属的 owner 场景根节点。
 func _build_editor_preview(owner_node: Node) -> void:
 	# 视觉预览
 	if texture_path != "" and ResourceLoader.exists(texture_path):
@@ -124,6 +132,7 @@ func _build_editor_preview(owner_node: Node) -> void:
 	add_child(lbl)
 	lbl.set_owner(owner_node)
 
+## 运行时构建：创建 SimplePickup 交互区域、碰撞、视觉与世界标签，并附加闪烁动画。
 func _build_runtime() -> void:
 	# 创建 SimplePickup 实例
 	var SimplePickupScript = preload("res://scripts/items/simple_pickup.gd")
@@ -193,12 +202,15 @@ func _build_runtime() -> void:
 			tw.tween_property(visual_node, "modulate:a", 0.4, 1.5)
 			tw.tween_property(visual_node, "modulate:a", 1.0, 1.5)
 
+## 编辑器中绘制拾取范围圆圈轮廓。
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
 	# 编辑器中画拾取范围圆圈
 	draw_arc(Vector2.ZERO, pickup_radius, 0, TAU, 32, Color(0.4, 0.7, 1.0, 0.3), 1.0)
 
+## 向上遍历祖先查找关卡节点。
+## [return] 含 show_hint 方法的关卡节点，未找到返回 null。
 func _find_level() -> Node:
 	var p := get_parent()
 	while p:

@@ -21,6 +21,7 @@ class_name RoomLight
 
 var _detection_area: Area2D = null
 
+## 节点就绪回调：应用灯光类型，运行时延迟创建检测区域或灰尘粒子。
 func _ready() -> void:
 	_apply_type()
 	# 检测区域/灰尘粒子需要 add_child 到父节点，延迟到场景装载完成后再创建
@@ -30,6 +31,7 @@ func _ready() -> void:
 		if light_type == "dust":
 			call_deferred("_spawn_dust")
 
+## 按 light_type 配置纹理、颜色与能量，并启动对应效果（闪烁/损坏/灰尘）。
 func _apply_type() -> void:
 	# tscn 加载时 setter 会先于入树触发，等 _ready 再应用
 	if not is_inside_tree():
@@ -60,6 +62,7 @@ func _apply_type() -> void:
 			energy = 0.0
 			color = Color.WHITE
 
+## 创建玩家进出检测区域，维护关卡的玩家在灯下计数。
 func _setup_detection() -> void:
 	if _detection_area and is_instance_valid(_detection_area):
 		_detection_area.queue_free()
@@ -87,6 +90,8 @@ func _setup_detection() -> void:
 				level._player_in_light_count = maxi(level._player_in_light_count - 1, 0)
 	)
 
+## 向上遍历祖先查找关卡节点。
+## [return] 含 show_hint 方法的关卡节点，未找到返回 null。
 func _find_level() -> Node:
 	var p = get_parent()
 	while p:
@@ -95,6 +100,7 @@ func _find_level() -> Node:
 		p = p.get_parent()
 	return null
 
+## 启动闪烁灯光的循环动画。
 func _start_flicker() -> void:
 	var tw := create_tween().set_loops()
 	tw.tween_property(self, "energy", base_energy * 0.3, randf_range(0.05, 0.1))
@@ -106,6 +112,7 @@ func _start_flicker() -> void:
 	tw.tween_property(self, "energy", base_energy, 0.08)
 	tw.tween_interval(randf_range(2.0, 5.0))
 
+## 启动损坏灯光的偶发闪动循环动画。
 func _start_broken() -> void:
 	var tw := create_tween().set_loops()
 	tw.tween_interval(randf_range(4.0, 8.0))
@@ -115,6 +122,7 @@ func _start_broken() -> void:
 	tw.tween_property(self, "energy", 0.2, 0.02)
 	tw.tween_property(self, "energy", 0.0, 0.08)
 
+## 在父节点下创建漂浮灰尘粒子效果。
 func _spawn_dust() -> void:
 	var particles := GPUParticles2D.new()
 	particles.position = position
@@ -154,6 +162,9 @@ func _spawn_dust() -> void:
 	particles.texture = ImageTexture.create_from_image(img)
 	get_parent().add_child(particles)
 
+## 生成径向渐隐的圆形光斑纹理。
+## [param size] 纹理边长（像素）。
+## [return] 生成的圆形 ImageTexture。
 static func _make_circle_texture(size: int) -> ImageTexture:
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	var half := size / 2.0

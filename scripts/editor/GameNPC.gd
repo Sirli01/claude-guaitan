@@ -13,10 +13,12 @@ class_name GameNPC
 
 var _npc_body: CharacterBody2D = null
 
+## 编辑器中重绘 NPC 预览。
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		queue_redraw()
 
+## 仅在编辑器中绘制 NPC 圆点与名称标签。
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
@@ -28,6 +30,8 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	draw_string(font, Vector2(-20, -18), npc_id, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.WHITE)
 
+## 获取该 NPC 的预览颜色。
+## [return] 用于编辑器绘制的颜色。
 func _get_npc_color() -> Color:
 	if Engine.is_editor_hint():
 		# Try to get from GameManager if available

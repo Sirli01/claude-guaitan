@@ -37,6 +37,7 @@ class_name GameDoorLeak
 
 var _light: PointLight2D = null
 
+## 编辑器中重绘预览；运行时延迟构建漏光灯光。
 func _ready() -> void:
 	if not Engine.is_editor_hint():
 		# 延迟构建：可能向关卡添加节点，场景装载期间会失败
@@ -44,6 +45,7 @@ func _ready() -> void:
 	else:
 		queue_redraw()
 
+## 运行时创建门缝 PointLight2D 并附加呼吸闪烁动画。
 func _build_runtime() -> void:
 	# 创建门缝漏光（与 LevelBase.add_door_light_leak 逻辑一致）
 	_light = PointLight2D.new()
@@ -73,6 +75,7 @@ func _build_runtime() -> void:
 	tw.tween_property(_light, "energy", base_e * 0.6, randf_range(1.5, 3.0))
 	tw.tween_property(_light, "energy", base_e, randf_range(1.5, 3.0))
 
+## 仅在编辑器中绘制光线方向预览与标签。
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
@@ -94,6 +97,9 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	draw_string(font, Vector2(-20, -12), "LightLeak", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 0.9, 0.5, 0.5))
 
+## 生成径向渐隐的圆形光斑纹理。
+## [param size] 纹理边长（像素）。
+## [return] 生成的圆形光斑纹理。
 static func _make_circle_texture(size: int) -> ImageTexture:
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	var half := size / 2.0

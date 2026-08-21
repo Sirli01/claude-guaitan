@@ -37,6 +37,8 @@ signal event_started(event_id: String)
 signal event_ended(event_id: String)
 signal custom_action(action_type: String, action_data: Dictionary)
 
+## 检查条件并尝试触发事件。
+## [return] 是否成功触发。
 func try_trigger() -> bool:
 	## 检查条件并尝试触发事件，返回是否成功
 	if _running:
@@ -49,6 +51,8 @@ func try_trigger() -> bool:
 	execute()
 	return true
 
+## 校验 event_config 中的全部触发条件。
+## [return] 所有条件满足时为 true。
 func _check_conditions() -> bool:
 	var cond = event_config.get("conditions", {})
 	if cond.is_empty():
@@ -96,6 +100,7 @@ func _check_conditions() -> bool:
 	
 	return true
 
+## 顺序执行事件动作序列，期间发出开始/结束信号。
 func execute() -> void:
 	## 执行事件动作序列
 	_running = true
@@ -109,6 +114,8 @@ func execute() -> void:
 	_running = false
 	event_ended.emit(event_id)
 
+## 执行单个动作（对话/音效/BGM/等待/标记/道具/效果/演出等），未知类型转发 custom_action 信号。
+## [param action] 动作配置字典。
 func _execute_action(action: Dictionary) -> void:
 	var type: String = action.get("type", "")
 	match type:
@@ -197,6 +204,9 @@ func _execute_action(action: Dictionary) -> void:
 			# 未知类型交给关卡脚本处理（如 spawn_monster 等）
 			custom_action.emit(type, action)
 
+## 对当前摄像机施加衰减式屏幕震动。
+## [param intensity] 震动强度。
+## [param duration] 震动时长（秒）。
 func _do_screen_shake(intensity: float, duration: float) -> void:
 	var camera = get_viewport().get_camera_2d()
 	if not camera:

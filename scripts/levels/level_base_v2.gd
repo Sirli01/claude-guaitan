@@ -64,6 +64,8 @@ func _editor_set_owners(root: Node, owner: Node) -> void:
 		child.set_owner(owner)
 		_editor_set_owners(child, owner)
 
+## 每帧更新世界标签位置。
+## [param _delta] 帧间隔（未使用）。
 func _process(_delta: float) -> void:
 	# 更新灯光区域状态（理智恢复由 PlayerStats._process 统一处理）
 	if PlayerStats and "in_light_area" in PlayerStats:
@@ -81,6 +83,8 @@ static func fix_label_filter(node: Node) -> void:
 
 const PLAYER_SCENE := preload("res://scenes/characters/player.tscn")
 
+## 实例化玩家并完成配置（贴图/碰撞/交互区/相机/照明）。
+## [param pos] 出生位置。[param zoom] 相机缩放。[return] 玩家节点。
 func setup_player(pos: Vector2, zoom: float = 6.0) -> CharacterBody2D:
 	_camera_zoom_factor = zoom
 	player = PLAYER_SCENE.instantiate()
@@ -125,6 +129,8 @@ func setup_player(pos: Vector2, zoom: float = 6.0) -> CharacterBody2D:
 
 	return player
 
+## 创建到达电梯（玩家从该电梯进入本层，显示打开的门+碰撞阻挡）。
+## [param pos] 电梯中心位置。
 func _build_arrival_elevator(pos: Vector2) -> void:
 	# 到达电梯（玩家从这里出来，显示打开的门）
 	var door_center := pos + Vector2(0, -20)
@@ -146,6 +152,8 @@ func _build_arrival_elevator(pos: Vector2) -> void:
 	var elev_label_text = "电梯" if Engine.is_editor_hint() else LocaleManager.world_text("电梯")
 	var elev_label = create_world_label(elev_label_text, pos + Vector2(-14, -58), 14, Color(0.4, 0.4, 0.45))
 
+## 创建电梯门视觉（有贴图用贴图，否则用色块拼出双开门）。
+## [param center] 门中心。[param size] 门尺寸。[return] 视觉节点。
 func add_elevator_door_visual(center: Vector2, size: Vector2 = Vector2(72, 60)) -> Node:
 	var top_left := center - size * 0.5
 	if ResourceLoader.exists(ELEVATOR_DOOR_TEX_PATH):
@@ -178,6 +186,8 @@ func add_elevator_door_visual(center: Vector2, size: Vector2 = Vector2(72, 60)) 
 	fallback.add_child(door_top)
 	return fallback
 
+## 创建电梯门碰撞阻挡体。
+## [param center] 门中心。[param size] 门尺寸。[return] 静态碰撞体。
 func add_elevator_door_blocker(center: Vector2, size: Vector2 = Vector2(72, 60)) -> StaticBody2D:
 	var blocker = StaticBody2D.new()
 	blocker.collision_layer = 4
@@ -190,6 +200,8 @@ func add_elevator_door_blocker(center: Vector2, size: Vector2 = Vector2(72, 60))
 	blocker.add_child(blocker_col)
 	return blocker
 
+## 构建关卡 UI：楼层名、状态 HUD、规则纸条、背包、对话、氛围/黑暗层、触屏控件。
+## [param floor_name] 楼层显示名称（多语言键）。
 func setup_ui(floor_name: String) -> void:
 	_floor_name = floor_name
 	hud_layer = CanvasLayer.new()
@@ -263,6 +275,7 @@ func show_rule_paper_and_wait() -> void:
 		rule_paper.open()
 		await rule_paper.closed
 
+## 场景退出时清理：标记退出状态、终止循环动画、断开运行时信号
 func _exit_tree() -> void:
 	_exiting = true
 	# 杀掉所有无限循环tween
@@ -275,6 +288,7 @@ func _exit_tree() -> void:
 			entry["signal"].disconnect(entry["callable"])
 	_signal_callbacks.clear()
 
+## 修正本场景所有世界标签的纹理过滤（防止相机缩放导致模糊）
 func _apply_label_filter() -> void:
 	fix_label_filter(self)
 
@@ -288,15 +302,21 @@ func _init_world_label_ui() -> void:
 	_world_label_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_world_label_layer.add_child(_world_label_container)
 
+## 设置所有世界标签的显隐。
+## [param visible] 是否显示。
 func set_world_labels_visible(visible: bool) -> void:
 	if _world_label_container:
 		_world_label_container.visible = visible
 
+## 根据相机缩放计算世界标签的缩放倍数（缩放越大标签略放大，保持可读）
 func _world_label_scale_multiplier() -> float:
 	return clampf(1.0 + (_camera_zoom_factor - 1.0) * 0.22, 1.0, 1.45)
 
 ## 创建一个跟踪世界坐标的 UI 标签（不受相机缩放影响，文字清晰）
 ## font_size 为世界空间原始大小，内部使用较温和的缩放倍数，避免遮挡白模
+## 创建一个跟踪固定世界坐标的 UI 标签（不受相机缩放影响，文字清晰）。
+## [param text] 标签文本。[param world_pos] 世界坐标。[param font_size] 字号。
+## [param color] 文字颜色。[return] 创建的标签实例。
 func create_world_label(text: String, world_pos: Vector2, font_size: int = 18, color: Color = Color.WHITE) -> Label:
 	if not _world_label_layer:
 		_init_world_label_ui()
@@ -309,6 +329,9 @@ func create_world_label(text: String, world_pos: Vector2, font_size: int = 18, c
 	_tracked_labels.append({"label": lbl, "world_pos": world_pos})
 	return lbl
 
+## 创建一个跟随目标节点的 UI 标签（目标移动时标签跟随）。
+## [param text] 标签文本。[param target] 跟踪的目标节点。[param offset] 相对目标的偏移。
+## [param font_size] 字号。[param color] 文字颜色。[return] 创建的标签实例。
 func create_tracked_world_label(text: String, target: Node2D, offset: Vector2 = Vector2.ZERO, font_size: int = 18, color: Color = Color.WHITE) -> Label:
 	if not _world_label_layer:
 		_init_world_label_ui()
@@ -349,6 +372,7 @@ func _update_world_labels() -> void:
 		label.position = sp
 		i += 1
 
+## 根据 scene_audio_id 自动播放本关卡的 BGM 与环境音
 func _auto_play_audio() -> void:
 	if scene_audio_id == "":
 		return
@@ -359,12 +383,16 @@ func _auto_play_audio() -> void:
 	if amb:
 		AudioManager.play_ambience(amb)
 
+## 快捷播放音效（自动查 GameConfig）。
+## [param sfx_id] 音效 ID。
 func play_sfx(sfx_id: String) -> void:
 	## 快捷播放音效（自动查 GameConfig）
 	var stream = GameConfig.get_sfx(sfx_id)
 	if stream:
 		AudioManager.play_sfx(stream)
 
+## 显示底部操作提示（多条时向上堆叠，超时淡出）。
+## [param text] 提示内容。[param duration] 停留秒数。提示为瞬时 UI，故动态创建。
 func show_hint(text: String, duration: float = HINT_DURATION) -> void:
 	# 将已有提示上移
 	for entry in _hint_labels:
@@ -394,6 +422,8 @@ func show_hint(text: String, duration: float = HINT_DURATION) -> void:
 	tw.tween_property(label, "modulate:a", 0.0, HINT_FADE_TIME)
 	tw.tween_callback(_remove_hint.bind(entry))
 
+## 移除过期提示并让上方提示回落。
+## [param entry] show_hint 中登记的提示条目。
 func _remove_hint(entry: Dictionary) -> void:
 	var label: Label = entry.get("label")
 	var idx = _hint_labels.find(entry)
@@ -407,18 +437,25 @@ func _remove_hint(entry: Dictionary) -> void:
 		if is_instance_valid(lbl):
 			lbl.position.y += HINT_LINE_HEIGHT
 
+## 开启黑暗环境（未被光源照亮的区域变暗）。
+## [param brightness] 黑暗强度（0-1，越小越暗）。[param fade_time] 过渡时长。
 func enable_darkness(brightness: float = 0.15, fade_time: float = 2.0) -> void:
 	## 开启黑暗环境（未被光源照亮的区域变暗）
 	if darkness:
 		darkness.fade_to_dark(brightness, fade_time)
 	PlayerStats.darkness_environment = true
 
+## 关闭黑暗环境（恢复全亮）。
+## [param fade_time] 过渡时长。
 func disable_darkness(fade_time: float = 1.0) -> void:
 	## 关闭黑暗环境（恢复全亮）
 	if darkness:
 		darkness.fade_to_bright(fade_time)
 	PlayerStats.darkness_environment = false
 
+## 在房间内放置暖色灯光。
+## [param pos] 灯光位置。[param energy] 亮度。[param scale] 照射范围。
+## [return] 创建的灯光节点。
 func add_room_light(pos: Vector2, energy: float = 1.8, scale: float = 2.5) -> PointLight2D:
 	## 在房间内放置暖色灯光
 	var light = PointLight2D.new()
@@ -434,6 +471,9 @@ func add_room_light(pos: Vector2, energy: float = 1.8, scale: float = 2.5) -> Po
 	_add_light_detection_area(pos, scale * 32.0)
 	return light
 
+## 在走廊放置冷白灯光。
+## [param pos] 灯光位置。[param energy] 亮度。[param scale] 照射范围。
+## [return] 创建的灯光节点。
 func add_corridor_light(pos: Vector2, energy: float = 1.2, scale: float = 1.8) -> PointLight2D:
 	## 在走廊放置冷白灯光
 	var light = PointLight2D.new()
@@ -449,6 +489,9 @@ func add_corridor_light(pos: Vector2, energy: float = 1.2, scale: float = 1.8) -
 	_add_light_detection_area(pos, scale * 32.0)
 	return light
 
+## 走廊闪烁灯 — 随机明暗跳动，制造不安氛围。
+## [param pos] 灯光位置。[param energy] 亮度。[param scale] 照射范围。
+## [return] 创建的灯光节点。
 func add_flickering_light(pos: Vector2, energy: float = 1.2, scale: float = 1.8) -> PointLight2D:
 	## 走廊闪烁灯 — 随机明暗跳动，制造不安氛围
 	var light = add_corridor_light(pos, energy, scale)
@@ -466,6 +509,9 @@ func add_flickering_light(pos: Vector2, energy: float = 1.2, scale: float = 1.8)
 		_loop_tweens.append(tw)
 	return light
 
+## 损坏灯 — 完全熄灭，只有非常微弱的残光偶尔闪一下。
+## [param pos] 灯光位置。[param scale] 照射范围。
+## [return] 创建的灯光节点。
 func add_broken_light(pos: Vector2, scale: float = 1.8) -> PointLight2D:
 	## 损坏灯 — 完全熄灭，只有非常微弱的残光偶尔闪一下
 	var light = PointLight2D.new()
@@ -487,6 +533,8 @@ func add_broken_light(pos: Vector2, scale: float = 1.8) -> PointLight2D:
 		_loop_tweens.append(tw)
 	return light
 
+## 为灯光创建玩家进出检测区域（用于理智恢复判定：玩家在光圈内计数）。
+## [param pos] 检测区位置。[param radius] 检测半径。
 func _add_light_detection_area(pos: Vector2, radius: float) -> void:
 	var area = Area2D.new()
 	area.position = pos
@@ -507,6 +555,8 @@ func _add_light_detection_area(pos: Vector2, radius: float) -> void:
 			_player_in_light_count = maxi(_player_in_light_count - 1, 0)
 	)
 
+## 生成圆形径向渐变灯光纹理（带缓存）。
+## [param size] 纹理边长（64 或 32）。[return] 缓存的纹理实例。
 func _make_circle_light_texture(size: int) -> ImageTexture:
 	# 使用缓存避免重复生成（灯光纹理只有 64 和 32 两种尺寸）
 	if size == 64:
@@ -519,12 +569,16 @@ func _make_circle_light_texture(size: int) -> ImageTexture:
 		return _cached_circle_texture_32
 	return TextureUtils.make_circle_texture(size)
 
+## 启用体力系统并显示体力条
 func enable_stamina() -> void:
 	## 快捷启用体力系统
 	PlayerStats.stamina_enabled = true
 	if _stamina_bar:
 		_stamina_bar.visible = true
 
+## 环境灰尘粒子 — 在特定区域（角落、阁楼）飘浮细小灰尘。
+## [param pos] 粒子区域中心。[param area_size] 发射区域大小。
+## [return] 创建的粒子节点。
 func add_dust_ambient(pos: Vector2, area_size: Vector2 = Vector2(60, 40)) -> GPUParticles2D:
 	## 环境灰尘粒子 — 在特定区域（角落、阁楼）飘浮细小灰尘
 	var particles = GPUParticles2D.new()
@@ -566,6 +620,10 @@ func add_dust_ambient(pos: Vector2, area_size: Vector2 = Vector2(60, 40)) -> GPU
 	add_child(particles)
 	return particles
 
+## 门缝漏光 — 关闭的门底部/侧边透出一线暗黄光（带呼吸闪烁）。
+## [param pos] 漏光位置。[param width] 光带长度。
+## [param direction] 方向："bottom"(门底), "left"(左侧), "right"(右侧)。
+## [return] 创建的漏光灯光节点。
 func add_door_light_leak(pos: Vector2, width: float = 30.0, direction: String = "bottom") -> PointLight2D:
 	## 门缝漏光 — 关闭的门底部/侧边透出一线暗黄光
 	## direction: "bottom"(门底), "left"(左侧), "right"(右侧)
@@ -601,6 +659,9 @@ func add_door_light_leak(pos: Vector2, width: float = 30.0, direction: String = 
 		_loop_tweens.append(tw)
 	return light
 
+## 创建地板区域（走廊/房间贴图平铺，无贴图时退化为色块）。
+## [param top_left] 区域左上角。[param size] 区域大小。
+## [param color] 无贴图时的颜色。[param floor_type] 类型："corridor" 或 "room"。
 func add_floor_zone(top_left: Vector2, size: Vector2, color: Color, floor_type: String = "") -> void:
 	var tex_path: String = ""
 	if floor_type == "corridor":
@@ -624,6 +685,8 @@ func add_floor_zone(top_left: Vector2, size: Vector2, color: Color, floor_type: 
 		zone.color = color
 		add_child(zone)
 
+## 创建纯碰撞墙体（无视觉，加入导航阻挡组）。
+## [param parent] 挂载父节点。[param pos] 碰撞中心。[param size] 碰撞尺寸。
 func add_wall(parent: Node2D, pos: Vector2, size: Vector2) -> void:
 	var shape = CollisionShape2D.new()
 	shape.position = pos
@@ -633,6 +696,10 @@ func add_wall(parent: Node2D, pos: Vector2, size: Vector2) -> void:
 	parent.add_child(shape)
 	parent.add_to_group("nav_obstacle")  # 供导航网格烘焙使用
 
+## 创建带视觉面的墙体（碰撞+顶面色块+正面/侧面贴图+遮光体）。
+## [param parent] 挂载父节点。[param pos] 墙中心。[param size] 墙尺寸。
+## [param color] 顶面颜色。[param show_cap] 是否显示顶面。[param show_front_face] 水平墙是否显示正面。
+## [param show_side_face] 竖向墙是否显示侧面。[param face_normal] 面朝向法线。[param face_z_index] 视觉层级。
 func add_visible_wall(
 		parent: Node2D,
 		pos: Vector2,
@@ -682,6 +749,9 @@ func add_visible_wall(
 	occluder.occluder = poly
 	add_child(occluder)
 
+## 创建墙体顶面色块。
+## [param top_left] 左上角。[param size] 尺寸。[param color] 颜色。[param z_index] 层级。
+## [return] 色块节点。
 func _make_wall_rect(top_left: Vector2, size: Vector2, color: Color, z_index: int) -> ColorRect:
 	var rect = ColorRect.new()
 	rect.position = top_left
@@ -691,6 +761,8 @@ func _make_wall_rect(top_left: Vector2, size: Vector2, color: Color, z_index: in
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return rect
 
+## 获取或创建深度排序层（玩家/NPC/家具的 y-sort 容器）。
+## [return] 深度排序层节点。
 func _ensure_depth_sort_layer() -> Node2D:
 	if _depth_sort_layer and is_instance_valid(_depth_sort_layer):
 		return _depth_sort_layer
@@ -701,6 +773,8 @@ func _ensure_depth_sort_layer() -> Node2D:
 	add_child(_depth_sort_layer)
 	return _depth_sort_layer
 
+## 根据家具名称推断标准家具种类（床/桌/柜/沙发/椅）。
+## [param label_text] 家具名称。[return] 种类键，无法识别返回空串。
 func _resolve_standard_furniture_kind(label_text: String) -> String:
 	if label_text == "床头柜" or label_text == "衣柜" or label_text.contains("柜"):
 		return "cabinet"
@@ -714,6 +788,10 @@ func _resolve_standard_furniture_kind(label_text: String) -> String:
 		return "bed"
 	return ""
 
+## 创建带贴图的家具视觉精灵（按显示尺寸缩放并贴到占位区底部）。
+## [param texture_path] 贴图路径。[param pos] 占位左上角。[param footprint_size] 占位尺寸。
+## [param display_size] 显示尺寸。[param texture_size] 贴图原始尺寸。
+## [param texture_offset_y] 纹理纵向偏移。[param modulate] 着色。
 func _add_textured_furniture_visual(texture_path: String, pos: Vector2, footprint_size: Vector2, display_size: Vector2, texture_size: Vector2, texture_offset_y: float, modulate: Color = Color.WHITE) -> void:
 	var spr = Sprite2D.new()
 	spr.texture = load(texture_path)
@@ -724,6 +802,9 @@ func _add_textured_furniture_visual(texture_path: String, pos: Vector2, footprin
 	spr.modulate = modulate
 	_ensure_depth_sort_layer().add_child(spr)
 
+## 创建家具碰撞体（静态刚体，阻挡玩家）。
+## [param pos] 左上角位置。[param display_size] 显示尺寸。
+## [param collision_size] 碰撞尺寸（默认等于显示尺寸）。
 func _add_textured_furniture_body(pos: Vector2, display_size: Vector2, collision_size: Vector2 = Vector2.ZERO) -> void:
 	if collision_size == Vector2.ZERO:
 		collision_size = display_size
@@ -738,6 +819,10 @@ func _add_textured_furniture_body(pos: Vector2, display_size: Vector2, collision
 	body.position = pos
 	add_child(body)
 
+## 创建标准贴图家具（床/桌/柜/沙发/椅按名称自动匹配贴图）。
+## [param pos] 左上角位置。[param size] 占位尺寸。
+## [param label_text] 家具名称。[param color] 无贴图时的色块颜色。
+## [return] 是否成功使用贴图家具（false 表示需退化为色块）。
 func add_standard_furniture(pos: Vector2, size: Vector2, label_text: String, color: Color) -> bool:
 	const BED_TEX    = "res://assets/sprites/_0005_单人床.png"
 	const DESK_TEX   = "res://assets/sprites/_0006_桌子1.png"
@@ -797,6 +882,9 @@ func add_standard_furniture(pos: Vector2, size: Vector2, label_text: String, col
 			return false
 	return true
 
+## 创建家具（优先使用标准贴图家具，否则退化为色块+名称标签）。
+## [param pos] 左上角位置。[param size] 占位尺寸。
+## [param label_text] 家具名称。[param color] 色块颜色。
 func _add_furniture(pos: Vector2, size: Vector2, label_text: String, color: Color) -> void:
 	if add_standard_furniture(pos, size, label_text, color):
 		return
@@ -809,6 +897,8 @@ func _add_furniture(pos: Vector2, size: Vector2, label_text: String, color: Colo
 	var furn_label_text = label_text if Engine.is_editor_hint() else LocaleManager.world_text(label_text)
 	create_world_label(furn_label_text, pos + Vector2(2, -12), 18, Color(0.35, 0.3, 0.25))
 
+## 创建电梯卡拾取物（贴图视觉+闪烁动画+靠近提示）。
+## [param pos] 拾取物位置。[return] 创建的拾取区域。
 func create_elevator_card_pickup(pos: Vector2) -> Area2D:
 	var card_area = Area2D.new()
 	card_area.set_script(load("res://scripts/items/simple_pickup.gd"))
@@ -858,9 +948,12 @@ func create_elevator_card_pickup(pos: Vector2) -> Area2D:
 
 	return card_area
 
+## 创建水平墙正面贴图（默认朝下/朝向玩家）。
 func _add_horizontal_wall_face(pos: Vector2, size: Vector2, color: Color, face_z_index: int = 0) -> void:
 	_add_horizontal_wall_face_dir(pos, size, color, 1.0, face_z_index)
 
+## 创建水平墙正面贴图（可指定朝向）。
+## [param dir_sign] 朝向符号：1 朝下，-1 朝上。
 func _add_horizontal_wall_face_dir(pos: Vector2, size: Vector2, color: Color, dir_sign: float, face_z_index: int = 0) -> void:
 	var face_h: float = 48.0  # 和门贴图显示高度一致
 	var spr := Sprite2D.new()
@@ -874,9 +967,12 @@ func _add_horizontal_wall_face_dir(pos: Vector2, size: Vector2, color: Color, di
 	spr.z_index = face_z_index
 	add_child(spr)
 
+## 创建竖向墙侧面贴图（默认朝右）。
 func _add_vertical_wall_face(pos: Vector2, size: Vector2, color: Color, face_z_index: int = 0) -> void:
 	_add_vertical_wall_face_dir(pos, size, color, 1.0, face_z_index)
 
+## 创建竖向墙侧面贴图（可指定朝向）。
+## [param dir_sign] 朝向符号：1 朝右，-1 朝左。
 func _add_vertical_wall_face_dir(pos: Vector2, size: Vector2, color: Color, dir_sign: float, face_z_index: int = 0) -> void:
 	var face_w: float = WALL_SIDE_FACE_DEPTH  # 5.0 场景单位
 	var spr := Sprite2D.new()
@@ -888,6 +984,9 @@ func _add_vertical_wall_face_dir(pos: Vector2, size: Vector2, color: Color, dir_
 	spr.z_index = face_z_index
 	add_child(spr)
 
+## 创建 NPC 视觉节点（精灵+名牌+碰撞，挂载 npc_base 脚本）。
+## [param pos] 出生位置。[param npc_id] 角色 ID。
+## [return] NPC 节点。
 func create_npc_visual(pos: Vector2, npc_id: String) -> CharacterBody2D:
 	var display_name = GameManager.NAMES.get(npc_id, npc_id)
 	var color = GameManager.CHAR_COLORS.get(npc_id, Color(0.5, 0.5, 0.5))
@@ -931,10 +1030,14 @@ func create_npc_visual(pos: Vector2, npc_id: String) -> CharacterBody2D:
 	
 	return npc
 
+## 为 NPC 设置剧情对话内容。
+## [param npc] NPC 节点。[param chapter] 剧本章节。[param event] 事件键。
 func set_npc_story_dialogue(npc: CharacterBody2D, chapter: String, event: String) -> void:
 	if npc and is_instance_valid(npc):
 		npc.set_dialogue(StoryText.lines(chapter, event))
 
+## 创建玩家触发区域（检测玩家进入，用于剧情/切场景触发）。
+## [param pos] 区域中心。[param size] 区域尺寸。[return] 创建的触发区域。
 func create_trigger_area(pos: Vector2, size: Vector2) -> Area2D:
 	var area = Area2D.new()
 	area.position = pos
@@ -1095,6 +1198,9 @@ func add_door(walls_parent: Node2D, pos: Vector2, size: Vector2, locked: bool = 
 # 在房间上方放置不透明遮罩，玩家进入时揭开，离开时盖回
 # 同时在房间内看不到外部（外部遮罩）
 
+## 注册房间天花板遮罩（玩家进入时揭开，离开时盖回）。
+## [param room_id] 房间标识。[param top_left] 房间左上角。[param room_size] 房间尺寸。
+## [param room_rect_override] 可选覆盖检测区域。
 func add_room_ceiling(room_id: String, top_left: Vector2, room_size: Vector2, room_rect_override: Rect2 = Rect2()) -> void:
 	# 确保遮罩已初始化
 	_ensure_masks_ready()
@@ -1129,6 +1235,7 @@ func add_room_ceiling(room_id: String, top_left: Vector2, room_size: Vector2, ro
 	)
 	_room_ceilings[room_id] = {"ceiling": ceiling, "rect": room_rect}
 
+## 初始化房间外部遮罩（上下左右四块半透明矩形，首次进入房间时创建）
 func _ensure_masks_ready() -> void:
 	if _mask_top != null:
 		return
@@ -1154,6 +1261,8 @@ func _ensure_masks_ready() -> void:
 	_mask_right.light_mask = 0
 	add_child(_mask_right)
 
+## 玩家进入房间：揭开该房间天花板并遮挡外部视野。
+## [param room_id] 房间标识。
 func _enter_room(room_id: String) -> void:
 	if not _room_detection_enabled:
 		return
@@ -1167,6 +1276,8 @@ func _enter_room(room_id: String) -> void:
 	# 遮挡房间外部
 	_show_outside_mask(data["rect"])
 
+## 玩家离开房间：盖回天花板并移除外部遮罩。
+## [param room_id] 房间标识。
 func _exit_room(room_id: String) -> void:
 	if _current_room_id != room_id:
 		return
@@ -1178,6 +1289,8 @@ func _exit_room(room_id: String) -> void:
 	# 移除外部遮罩
 	_hide_outside_mask()
 
+## 显示房间外部遮罩（房间四周变暗，聚焦房间内部）。
+## [param room_rect] 房间矩形。
 func _show_outside_mask(room_rect: Rect2) -> void:
 	var M = 800.0
 	var rx = room_rect.position.x
@@ -1203,6 +1316,7 @@ func _show_outside_mask(room_rect: Rect2) -> void:
 	tw.tween_property(_mask_left, "color:a", 1.0, 0.3)
 	tw.tween_property(_mask_right, "color:a", 1.0, 0.3)
 
+## 淡出并隐藏房间外部遮罩
 func _hide_outside_mask() -> void:
 	var tw = create_tween()
 	tw.set_parallel(true)
@@ -1211,11 +1325,15 @@ func _hide_outside_mask() -> void:
 	tw.tween_property(_mask_left, "color:a", 0.0, 0.3)
 	tw.tween_property(_mask_right, "color:a", 0.0, 0.3)
 
+## 生成圆形灯光纹理（委托 TextureUtils 工具类）。
+## [param size] 纹理边长（像素）。[return] 生成的圆形渐变纹理。
 func _make_light_texture(size: int) -> ImageTexture:
 	return TextureUtils.make_circle_texture(size)
 
 # ====== 状态HUD ======
 
+## 构建状态 HUD（体力条+理智条+手电电量+异常状态图标）。
+## [param parent] 挂载的 CanvasLayer。
 func _setup_status_hud(parent: CanvasLayer) -> void:
 	# 体力条 + 理智条 + 异常状态图标
 	var status_vbox = VBoxContainer.new()
@@ -1379,6 +1497,8 @@ func _setup_status_hud(parent: CanvasLayer) -> void:
 	InventoryManager.item_removed.connect(_flashlight_item_cb)
 	_signal_callbacks.append({"signal": InventoryManager.item_removed, "callable": _flashlight_item_cb})
 
+## 语言切换时刷新状态 HUD 的多语言文本。
+## [param _locale] 新语言代码（未使用）。
 func _on_locale_changed_status(_locale: String) -> void:
 	if _floor_text_label:
 		_floor_text_label.text = LocaleManager.world_text(_floor_name)
@@ -1389,6 +1509,7 @@ func _on_locale_changed_status(_locale: String) -> void:
 	if _battery_label:
 		_battery_label.text = LocaleManager.t("stat_battery")
 
+## 重建异常状态图标容器（清空后由状态系统按需重新添加）
 func _refresh_status_icons() -> void:
 	if not _status_container:
 		return
@@ -1486,6 +1607,8 @@ func discover_scene_nodes() -> void:
 			child.spawn_npc(self)
 
 ## 设置家具交互（搜索容器）
+## 为家具创建搜索容器交互区（含物品时才创建）。
+## [param furn] 场景中的家具节点。
 func _setup_furniture_interaction(furn: GameFurniture) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -1518,6 +1641,8 @@ func _setup_furniture_interaction(furn: GameFurniture) -> void:
 	area.tree_exiting.connect(func(): if is_instance_valid(name_label): name_label.queue_free())
 
 ## 注册天花板到房间天花板系统
+## 注册场景中的 GameCeiling 节点到天花板系统并创建进出检测区。
+## [param ceil_node] 天花板节点。
 func _register_ceiling(ceil_node: GameCeiling) -> void:
 	if Engine.is_editor_hint():
 		return

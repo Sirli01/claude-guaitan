@@ -7,6 +7,8 @@ const ELEV_SCALE_FACTOR: float = 1.2      # 电梯贴图额外缩放倍率（场
 var _cam: Camera2D
 var _shaking: bool = false
 
+## 本场景无玩家节点，自行处理对话推进输入。
+## [param event] 输入事件。
 func _input(event: InputEvent) -> void:
 	if DialogueManager.is_dialogue_active:
 		if event.is_action_pressed("dialogue_advance") or \
@@ -14,6 +16,7 @@ func _input(event: InputEvent) -> void:
 			DialogueManager.advance()
 			get_viewport().set_input_as_handled()
 
+## 初始化：设置演出状态、绑定角色、加载对话UI并启动电梯对话。
 func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
 
@@ -58,10 +61,13 @@ func _setup_character(node: Node2D, char_id: String) -> void:
 	label.add_theme_color_override("font_color", GameManager.CHAR_COLORS.get(char_id, Color.WHITE).lightened(0.3))
 	node.add_child(label)
 
+## 电梯震动期间随机抖动摄像机偏移。
+## [param _delta] 帧间隔（未使用）。
 func _process(_delta: float) -> void:
 	if _shaking and _cam:
 		_cam.offset = Vector2(randf_range(-3.0, 3.0), randf_range(-3.0, 3.0))
 
+## 播放电梯运行声与震动、执行一层→二层对话，到达后转入第二层场景。
 func _start_dialogue() -> void:
 	# 电梯运行声 + 轻微震动
 	AudioManager.play_sfx(load("res://assets/audio/sfx/电梯运行声.wav"), 0.0)

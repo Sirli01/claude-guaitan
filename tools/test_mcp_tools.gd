@@ -24,6 +24,7 @@ func _run() -> void:
 	print("=== 测试完成 ===")
 
 
+## 测试 Director 系统：验证张力、阶段切换与高峰计数。
 func test_director_system() -> void:
 	print("\n--- 测试 Director 系统 ---")
 
@@ -51,6 +52,7 @@ func test_director_system() -> void:
 	print("  新总高峰次数: ", director.total_peaks)
 
 
+## 测试 GameManager：验证状态、楼层与角色存活数据读写。
 func test_game_manager() -> void:
 	print("\n--- 测试 GameManager ---")
 
@@ -76,6 +78,7 @@ func test_game_manager() -> void:
 	gm.set_state(old_state)  # 恢复原状态
 
 
+## 测试角色系统：验证存活角色的状态修改与恢复。
 func test_character_system() -> void:
 	print("\n--- 测试角色系统 ---")
 
@@ -98,6 +101,7 @@ func test_character_system() -> void:
 	gm.alive_characters["cool_npc"] = old_status  # 恢复
 
 
+## 测试事件系统：验证事件标记与已发现规则的增删。
 func test_event_system() -> void:
 	print("\n--- 测试事件系统 ---")
 
@@ -126,6 +130,7 @@ func test_event_system() -> void:
 	gm.discovered_rules.pop_back()  # 清理
 
 
+## 测试物品系统：验证背包添加与清理测试物品。
 func test_inventory_system() -> void:
 	print("\n--- 测试物品系统 ---")
 

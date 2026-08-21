@@ -11,10 +11,13 @@ var current_locale: String = "zh"
 
 const SUPPORTED_LOCALES := ["zh", "en", "ja"]
 
+## 启动时从配置文件读取上次保存的语言设置。
 func _ready() -> void:
 	_load_locale()
 
 # ─── 持久化 ──────────────────────────────────────────────
+## 切换当前语言并持久化保存，同时同步 StoryText 的语言状态。
+## [param locale] 目标语言代码（zh/en/ja），不支持时忽略。
 func set_locale(locale: String) -> void:
 	if locale not in SUPPORTED_LOCALES:
 		return
@@ -23,11 +26,13 @@ func set_locale(locale: String) -> void:
 	_save_locale()
 	locale_changed.emit(locale)
 
+## 将当前语言写入用户配置文件。
 func _save_locale() -> void:
 	var cfg: ConfigFile = ConfigFile.new()
 	cfg.set_value("settings", "locale", current_locale)
 	cfg.save("user://settings.cfg")
 
+## 从用户配置文件读取语言设置，无效值时保持默认 zh。
 func _load_locale() -> void:
 	var cfg: ConfigFile = ConfigFile.new()
 	if cfg.load("user://settings.cfg") == OK:
@@ -37,39 +42,61 @@ func _load_locale() -> void:
 			StoryText._locale = saved
 
 # ─── 通用 UI 字符串 ───────────────────────────────────────
+## 翻译通用 UI 字符串。
+## [param key] UI 文本键名。
+## [return] 当前语言文本；缺失时回退中文，再缺失返回 key 本身。
 func t(key: String) -> String:
 	var table = _UI.get(current_locale, _UI["zh"])
 	return table.get(key, _UI["zh"].get(key, key))
 
 # ─── 按键说明（整组返回）────────────────────────────────
+## 获取当前语言的按键说明列表。
+## [return] 由 {action, desc} 字典组成的数组。
 func key_bindings() -> Array:
 	return _KEY_BINDINGS.get(current_locale, _KEY_BINDINGS["zh"])
 
 # ─── 游戏提示（整组返回）────────────────────────────────
+## 获取当前语言的游戏提示列表。
+## [return] 提示文本数组。
 func gameplay_tips() -> Array:
 	return _GAMEPLAY_TIPS.get(current_locale, _GAMEPLAY_TIPS["zh"])
 
 # ─── 道具名/描述覆写（zh 返回空字典，表示用原始数据）────
+## 获取道具在当前语言下的名称与描述覆写。
+## [param item_id] 道具 ID。
+## [return] 含 name/description 的字典；中文或无覆写数据时返回空字典。
 func item_locale(item_id: String) -> Dictionary:
 	if current_locale == "zh":
 		return {}
 	return _ITEMS.get(current_locale, {}).get(item_id, {})
 
 # ─── 死亡界面信息 ─────────────────────────────────────────
+## 获取死亡界面的标题、副标题与颜色信息。
+## [param cause] 死亡原因标识。
+## [return] 含 title/subtitle/color 的字典；未知原因回退精神崩溃条目。
 func death_info(cause: String) -> Dictionary:
 	var table = _DEATH_INFO.get(current_locale, _DEATH_INFO["zh"])
 	return table.get(cause, table.get("insanity", {}))
 
 # ─── 手机聊天 locale 数据 ─────────────────────────────────
+## 获取手机聊天记录在当前语言下的本地化数据。
+## [param chat_id] 聊天记录 ID。
+## [return] 含 contact_name/messages 的字典；中文或无数据时返回空字典。
 func phone_chat_locale(chat_id: String) -> Dictionary:
 	if current_locale == "zh":
 		return {}
 	return _PHONE_CHAT.get(current_locale, {}).get(chat_id, {})
 
+## 翻译世界物体/地点名称。
+## [param text] 中文原文。
+## [return] 当前语言译名；缺失时回退中文原文。
 func world_text(text: String) -> String:
 	var table = _WORLD_TEXT.get(current_locale, _WORLD_TEXT["zh"])
 	return table.get(text, _WORLD_TEXT["zh"].get(text, text))
 
+## 生成物体被搜索后的显示名称（附加"已搜索"标记）。
+## [param name] 物体中文名。
+## [return] 按当前语言拼接后的标签文本。
 func searched_label(name: String) -> String:
 	var display_name = world_text(name)
 	match current_locale:
@@ -80,6 +107,9 @@ func searched_label(name: String) -> String:
 		_:
 			return "%s（已搜索）" % display_name
 
+## 生成搜索容器无物时的提示文本。
+## [param name] 容器中文名。
+## [return] 按当前语言生成的提示文本。
 func container_empty_text(name: String) -> String:
 	var display_name = world_text(name)
 	match current_locale:
@@ -90,6 +120,10 @@ func container_empty_text(name: String) -> String:
 		_:
 			return "搜索了%s……什么都没有。" % display_name
 
+## 生成从容器中找到物品时的提示文本。
+## [param name] 容器中文名。
+## [param item_name] 找到的物品名称。
+## [return] 按当前语言生成的提示文本。
 func container_found_text(name: String, item_name: String) -> String:
 	var display_name = world_text(name)
 	match current_locale:
@@ -102,6 +136,10 @@ func container_found_text(name: String, item_name: String) -> String:
 			var connector = "" if suffix in ["底", "下", "中", "旁"] else "里"
 			return "从%s%s找到了「%s」！" % [display_name, connector, item_name]
 
+## 生成用钥匙开门的结果文本（万能钥匙会卡在门里）。
+## [param required_key] 门所需的钥匙 ID。
+## [param key_name] 实际使用的钥匙名称。
+## [return] 按当前语言生成的结果文本。
 func door_unlocked_text(required_key: String, key_name: String) -> String:
 	match current_locale:
 		"en":
@@ -117,6 +155,7 @@ func door_unlocked_text(required_key: String, key_name: String) -> String:
 				return "用%s打开了门……但钥匙拔不出来了。" % key_name
 			return "用%s打开了门！" % key_name
 
+## 生成门锁住需要钥匙的提示文本。
 func door_need_key_text() -> String:
 	match current_locale:
 		"en":
@@ -126,6 +165,7 @@ func door_need_key_text() -> String:
 		_:
 			return "门锁住了……需要钥匙。"
 
+## 生成拾取物品的交互提示文本（含按键提示）。
 func pickup_prompt_text() -> String:
 	match current_locale:
 		"en":
@@ -135,6 +175,7 @@ func pickup_prompt_text() -> String:
 		_:
 			return "按%s拾取" % InputDevice.get_hint("interact")
 
+## 生成长椅坐下休息的交互提示文本。
 func bench_prompt_text() -> String:
 	match current_locale:
 		"en":
@@ -144,6 +185,7 @@ func bench_prompt_text() -> String:
 		_:
 			return "长椅 %s 坐下休息" % InputDevice.hint("interact")
 
+## 生成休息中的状态文本。
 func bench_resting_text() -> String:
 	match current_locale:
 		"en":
@@ -153,6 +195,7 @@ func bench_resting_text() -> String:
 		_:
 			return "休息中……（方向键中断）"
 
+## 生成无需休息时的提示文本。
 func bench_no_need_text() -> String:
 	match current_locale:
 		"en":
@@ -162,6 +205,7 @@ func bench_no_need_text() -> String:
 		_:
 			return "已经不需要休息了。"
 
+## 生成坐下休息时的叙述文本。
 func bench_sit_text() -> String:
 	match current_locale:
 		"en":
@@ -171,6 +215,7 @@ func bench_sit_text() -> String:
 		_:
 			return "坐在长椅上稍作休息……"
 
+## 生成起身时的叙述文本。
 func bench_stood_up_text() -> String:
 	match current_locale:
 		"en":
@@ -180,6 +225,7 @@ func bench_stood_up_text() -> String:
 		_:
 			return "站了起来。"
 
+## 生成休息恢复后的叙述文本。
 func bench_recovered_text() -> String:
 	match current_locale:
 		"en":
@@ -189,6 +235,7 @@ func bench_recovered_text() -> String:
 		_:
 			return "精神多了。"
 
+## 生成踢贩卖机的交互提示文本。
 func vending_kick_prompt_text() -> String:
 	match current_locale:
 		"en":

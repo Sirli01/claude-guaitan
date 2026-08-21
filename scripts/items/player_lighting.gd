@@ -58,6 +58,7 @@ var _phone_texture: ImageTexture
 var _flashlight_texture: ImageTexture
 var _dust_particles: GPUParticles2D  # 手电筒光束灰尘
 
+## 初始化照明：预生成光纹理、创建锥形/圆形光源与灰尘粒子并监听物品变化。
 func _ready() -> void:
 	_player = get_parent() as CharacterBody2D
 	
@@ -96,6 +97,8 @@ func _ready() -> void:
 	InventoryManager.item_added.connect(_on_item_changed)
 	InventoryManager.item_removed.connect(_on_item_changed)
 
+## 每帧更新光源位置朝向、手电筒耗电与低电闪烁、火柴倒计时及强光源状态上报。
+## [param delta] 距上一帧的时间间隔（秒）。
 func _process(delta: float) -> void:
 	# 更新锥形光方向
 	if _player and _cone_light.visible:
@@ -145,6 +148,9 @@ func _process(delta: float) -> void:
 	# 更新强光源状态给 PlayerStats（用于黑暗理智流失判定）
 	PlayerStats.has_strong_light = (current_mode == LightMode.FLASHLIGHT or _match_active or (current_mode == LightMode.PHONE and phone_has_power))
 
+## 根据朝向计算手持光源锚点（模拟握持高度与左右偏移）。
+## [param dir] 玩家面朝方向。
+## [return] 光源相对玩家的局部坐标。
 func _get_light_anchor(dir: Vector2) -> Vector2:
 	var char_height = GameManager.get_character_visual_height("sister")
 	if absf(dir.x) > absf(dir.y):
@@ -153,12 +159,16 @@ func _get_light_anchor(dir: Vector2) -> Vector2:
 		return Vector2(HELD_LIGHT_SIDE_OFFSET * 0.5, -char_height * HELD_LIGHT_RAISED_HEIGHT_RATIO)
 	return Vector2(HELD_LIGHT_SIDE_OFFSET * 0.6, -char_height * 0.44)
 
+## 物品变化时同步照明：手电筒被移除则回退到手机模式。
+## [param item_id] 发生变化的物品 ID。
 func _on_item_changed(item_id: String) -> void:
 	if item_id != "flashlight":
 		return
 	if current_mode == LightMode.FLASHLIGHT and not InventoryManager.has_item("flashlight"):
 		_apply_phone_mode()
 
+## 切换手电筒开关；火柴燃烧中、无手电筒或无电量时不切换。
+## [return] 切换成功返回 true，否则 false。
 func toggle_flashlight() -> bool:
 	if _match_active:
 		return false
@@ -172,6 +182,8 @@ func toggle_flashlight() -> bool:
 	_apply_flashlight_mode()
 	return true
 
+## 启用/禁用个人照明（环形光与手持光源整体开关）。
+## [param enabled] true 恢复当前模式照明，false 隐藏所有光源。
 func set_personal_light_enabled(enabled: bool) -> void:
 	_personal_light_enabled = enabled
 	if _player and _player.point_light:
@@ -205,6 +217,7 @@ func use_match() -> void:
 	if _dust_particles:
 		_dust_particles.visible = false
 
+## 熄灭火柴并恢复点燃前的照明模式。
 func _extinguish_match() -> void:
 	_match_active = false
 	_match_timer = 0.0
@@ -216,6 +229,7 @@ func _extinguish_match() -> void:
 		_apply_phone_mode()
 	_mode_before_match = current_mode
 
+## 切换到手机照明模式：手机有电时显示锥形冷光，没电则无光源。
 func _apply_phone_mode() -> void:
 	current_mode = LightMode.PHONE
 	if _dust_particles:
@@ -237,6 +251,7 @@ func _apply_phone_mode() -> void:
 		# 手机没电，无光源
 		_cone_light.visible = false
 
+## 切换到手电筒模式：应用高亮长距参数、增强环形光并显示光束灰尘。
 func _apply_flashlight_mode() -> void:
 	current_mode = LightMode.FLASHLIGHT
 	InputDevice.vibrate_medium()
@@ -301,6 +316,8 @@ func add_battery(amount: float) -> void:
 	if current_mode == LightMode.PHONE and InventoryManager.has_item("flashlight") and flashlight_battery > 0 and not _match_active:
 		_apply_flashlight_mode()
 
+## 获取手电筒剩余电量百分比。
+## [return] 电量比例（0~1），电量上限无效时返回 0。
 func get_battery_percent() -> float:
 	return flashlight_battery / max_battery if max_battery > 0 else 0.0
 
@@ -322,6 +339,8 @@ func disable_phone_power() -> void:
 	if current_mode == LightMode.PHONE:
 		_cone_light.visible = false
 
+## 创建手电筒光束中飘浮的灰尘粒子节点。
+## [return] 配置好的 GPUParticles2D 实例。
 func _create_beam_dust() -> GPUParticles2D:
 	## 手电筒光束中飘浮的灰尘粒子
 	var particles = GPUParticles2D.new()

@@ -83,6 +83,11 @@ static func _calc_scene_bounds(root: Node) -> Rect2:
 		return Rect2()
 	return Rect2(min_pos, max_pos - min_pos)
 
+## 递归累加可见节点的边界范围（跳过 CanvasLayer、粒子、灯光等）。
+## [param node] 当前遍历节点。
+## [param min_pos] 累计最小坐标。
+## [param max_pos] 累计最大坐标。
+## [return] 更新后的 [min_pos, max_pos] 数组。
 static func _calc_bounds_recursive(node: Node, min_pos: Vector2, max_pos: Vector2) -> Array:
 	if node is CanvasLayer or node is GPUParticles2D or node is PointLight2D or node is CanvasModulate:
 		return [min_pos, max_pos]
@@ -173,6 +178,9 @@ static func _restore_nodes_after_capture(root: Node, hidden: Dictionary) -> void
 	for sprite in hidden["character_sprites"]:
 		sprite.visible = true
 
+## 向上查找拥有 set_world_labels_visible 方法的关卡根节点。
+## [param node] 起始节点。
+## [return] 关卡根节点，找不到时为 null。
 static func _find_level_root(node: Node) -> Node:
 	var n: Node = node
 	while n:
@@ -181,6 +189,11 @@ static func _find_level_root(node: Node) -> Node:
 		n = n.get_parent()
 	return null
 
+## 递归收集黑暗层、氛围层与点光源节点。
+## [param node] 当前遍历节点。
+## [param dark] 收集 CanvasModulate 的数组。
+## [param atmo] 收集 AtmosphereLayer 的数组。
+## [param lights] 收集 PointLight2D 的数组。
 static func _find_nodes_by_type(node: Node, dark: Array, atmo: Array, lights: Array) -> void:
 	if node is CanvasModulate:
 		dark.append(node)
@@ -191,6 +204,10 @@ static func _find_nodes_by_type(node: Node, dark: Array, atmo: Array, lights: Ar
 	for child in node.get_children():
 		_find_nodes_by_type(child, dark, atmo, lights)
 
+## 递归收集可见的 UI 层与 NPC 名牌标签。
+## [param node] 当前遍历节点。
+## [param ui_nodes] 收集 CanvasLayer 的数组。
+## [param npc_labels] 收集 NPC Label 的数组。
 static func _find_ui_nodes(node: Node, ui_nodes: Array[CanvasItem], npc_labels: Array[Label]) -> void:
 	if node is CanvasLayer and node.visible:
 		ui_nodes.append(node)
@@ -199,12 +216,18 @@ static func _find_ui_nodes(node: Node, ui_nodes: Array[CanvasItem], npc_labels: 
 	for child in node.get_children():
 		_find_ui_nodes(child, ui_nodes, npc_labels)
 
+## 递归收集角色（CharacterBody2D 子级）的 Sprite2D。
+## [param node] 当前遍历节点。
+## [param sprites] 收集到的精灵数组。
 static func _find_character_sprites(node: Node, sprites: Array[CanvasItem]) -> void:
 	if node is Sprite2D and node.get_parent() is CharacterBody2D and node.visible:
 		sprites.append(node)
 	for child in node.get_children():
 		_find_character_sprites(child, sprites)
 
+## 递归收集天花板色块（高 z_index 且不受光照的 ColorRect）。
+## [param node] 当前遍历节点。
+## [param ceilings] 收集到的天花板节点数组。
 static func _find_ceilings(node: Node, ceilings: Array) -> void:
 	if node is CanvasLayer:
 		return

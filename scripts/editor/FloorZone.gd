@@ -20,21 +20,25 @@ class_name FloorZone
 
 var _visual: Node = null
 
+## 置于底层并构建地板视觉。
 func _ready() -> void:
 	z_index = -10
 	_rebuild()
 
+## 清除并重建地板视觉（属性变更时调用）。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
 	_clear_visual()
 	_build_visual()
 
+## 移除当前地板视觉节点。
 func _clear_visual() -> void:
 	if _visual and is_instance_valid(_visual):
 		_visual.queue_free()
 		_visual = null
 
+## 根据地板类型构建平铺纹理或纯色地板，编辑器中设置 owner。
 func _build_visual() -> void:
 	if floor_size.x <= 0 or floor_size.y <= 0:
 		return

@@ -12,6 +12,7 @@ var _name_label: Label
 var _level: Node  # 引用关卡场景（用于show_hint）
 var auto_collect: bool = false  # true = 走近自动拾取（无需按E），用于掉落物
 
+## 初始化：加入可交互组并连接进出检测信号。
 func _ready() -> void:
 	add_to_group("interactable")
 	body_entered.connect(_on_body_entered)
@@ -19,6 +20,8 @@ func _ready() -> void:
 	# 延迟一帧检查是否已有玩家在范围内（生成时重叠不触发 body_entered）
 	call_deferred("_check_initial_overlap")
 
+## 玩家靠近时显示名称提示，auto_collect 时直接拾取。
+## [param body] 进入区域的物体。
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		if auto_collect:
@@ -30,10 +33,13 @@ func _on_body_entered(body: Node2D) -> void:
 			_name_label.text = "%s %s" % [display_name, InputDevice.hint("interact")]
 			_name_label.visible = true
 
+## 玩家离开时隐藏名称提示。
+## [param body] 离开区域的物体。
 func _on_body_exited(body: Node2D) -> void:
 	if body.is_in_group("player") and _name_label:
 		_name_label.visible = false
 
+## 延迟检查生成时已与玩家重叠的情况，补发进入逻辑。
 func _check_initial_overlap() -> void:
 	# 等两帧物理帧确保重叠检测完全就绪（过场动画中途生成时1帧不够）
 	await get_tree().physics_frame
@@ -49,6 +55,7 @@ func _check_initial_overlap() -> void:
 			if player_node.interaction_area.get_overlapping_areas().has(self) and not player_node.nearby_interactables.has(self):
 				player_node.nearby_interactables.append(self)
 
+## 执行拾取：入包、播放音效与震动、显示提示后自毁。
 func interact() -> void:
 	InventoryManager.add_item(item_id)
 	AudioManager.play_pickup_sfx()

@@ -71,6 +71,7 @@ class_name RoomTemplateV2
 var _initialized: bool = false
 
 
+## 就绪时应用全部房间属性并初始化音频。
 func _ready() -> void:
 	_initialized = true
 	_update_room_size()

@@ -36,15 +36,19 @@ var _memory_countdown: float = 0.0
 
 var _player_ref: Node2D = null
 
+## 延迟缓存玩家引用，等待场景加载完成。
 func _ready() -> void:
 	# 延迟获取玩家引用（等场景完全加载）
 	call_deferred("_cache_player")
 
+## 从 player 分组查找并缓存玩家节点引用。
 func _cache_player() -> void:
 	var players := get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
 		_player_ref = players[0]
 
+## 每帧更新视线/听觉感知，推进或衰减检测进度并发送信号。
+## [param delta] 帧间隔时间（秒）。
 func _process(delta: float) -> void:
 	if _player_ref == null or not is_instance_valid(_player_ref):
 		_cache_player()

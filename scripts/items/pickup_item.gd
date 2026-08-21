@@ -10,6 +10,7 @@ extends Area2D
 
 var _player_nearby: bool = false
 
+## 初始化交互分组、信号连接与提示文字。
 func _ready() -> void:
 	add_to_group("interactable")
 	body_entered.connect(_on_body_entered)
@@ -18,6 +19,8 @@ func _ready() -> void:
 		hint_label.text = hint_text if hint_text != "" else LocaleManager.pickup_prompt_text()
 		hint_label.visible = false
 
+## 玩家进入范围时显示拾取提示。
+## [param body] 进入区域的物理体。
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		_player_nearby = true
@@ -25,12 +28,15 @@ func _on_body_entered(body: Node2D) -> void:
 			hint_label.text = hint_text if hint_text != "" else LocaleManager.pickup_prompt_text()
 			hint_label.visible = true
 
+## 玩家离开范围时隐藏拾取提示。
+## [param body] 离开区域的物理体。
 func _on_body_exited(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		_player_nearby = false
 		if hint_label:
 			hint_label.visible = false
 
+## 拾取物品：加入背包、应用效果、震动反馈并播放淡出动画后自毁。
 func interact() -> void:
 	if item_id.is_empty():
 		return

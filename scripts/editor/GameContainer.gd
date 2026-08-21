@@ -43,6 +43,7 @@ class_name GameContainer
 
 var _container: Area2D = null  # 运行时创建的 FurnitureContainer
 
+## 节点就绪回调：编辑器中立即重建预览，运行时延迟构建。
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		_rebuild()
@@ -51,17 +52,21 @@ func _ready() -> void:
 		# 场景装载期间父节点忙碌会导致 add_child 失败
 		call_deferred("_rebuild")
 
+## 清空并重建容器的全部子节点。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
 	_clear_children()
 	_build()
 
+## 释放所有子节点并重置 FurnitureContainer 引用。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 	_container = null
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -69,6 +74,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 构建容器视觉（贴图或色块）；编辑器额外显示名称标签，运行时转交 _build_runtime。
 func _build() -> void:
 	var owner_node := _get_owner()
 
@@ -109,6 +115,7 @@ func _build() -> void:
 	else:
 		_build_runtime()
 
+## 运行时构建：创建 FurnitureContainer 交互区域、碰撞与世界标签。
 func _build_runtime() -> void:
 	# 创建 FurnitureContainer
 	var ContainerScript = preload("res://scripts/items/furniture_container.gd")
@@ -150,6 +157,7 @@ func _build_runtime() -> void:
 		lbl.visible = false
 		_container._name_label = lbl
 
+## 编辑器中绘制交互范围轮廓。
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
@@ -158,6 +166,8 @@ func _draw() -> void:
 		Rect2(-container_size / 2 - Vector2(5, 5), container_size + Vector2(10, 10)),
 		Color(0.8, 0.6, 0.2, 0.2), false, 1.0)
 
+## 向上遍历祖先查找关卡节点。
+## [return] 含 show_hint 方法的关卡节点，未找到返回 null。
 func _find_level() -> Node:
 	var p := get_parent()
 	while p:

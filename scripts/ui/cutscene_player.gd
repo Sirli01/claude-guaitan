@@ -27,6 +27,7 @@ var _current_step: int = 0
 var _steps: Array = []
 var _text_finished: bool = false
 
+## 初始化：构建背景、插图区、文字面板等演出UI。
 func _ready() -> void:
 	layer = 50  # 在游戏UI之上
 	visible = false
@@ -92,6 +93,8 @@ func _ready() -> void:
 	_advance_hint.visible = false
 	_text_panel.add_child(_advance_hint)
 
+## 处理推进输入：文字未显示完则快速显示全文，已显示完则进入下一步。
+## [param event] 输入事件。
 func _input(event: InputEvent) -> void:
 	if not _is_playing:
 		return
@@ -106,6 +109,9 @@ func _input(event: InputEvent) -> void:
 			_text_finished = true
 			_advance_hint.visible = true
 
+## 播放剧情演出（步骤字段说明见函数内注释）。
+## [param steps] 步骤数组，每步可含 image/text/speaker/duration/fade_in/fade_out。
+## [param auto] 是否按 duration 自动推进（false 时需按键推进）。
 func play_cutscene(steps: Array, auto: bool = false) -> void:
 	## 播放剧情演出
 	## steps: 步骤数组，每步可包含：
@@ -123,6 +129,8 @@ func play_cutscene(steps: Array, auto: bool = false) -> void:
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
 	_show_step(_current_step)
 
+## 显示指定步骤：处理淡入、插图、说话人与逐字文本，必要时定时自动推进。
+## [param index] 步骤索引，越界时结束演出。
 func _show_step(index: int) -> void:
 	if index >= _steps.size():
 		_end_cutscene()
@@ -178,6 +186,7 @@ func _show_step(index: int) -> void:
 		await get_tree().create_timer(duration).timeout
 		_advance_step()
 
+## 淡出当前步骤并推进到下一步。
 func _advance_step() -> void:
 	var fade_out = 0.3
 	if _current_step < _steps.size():
@@ -190,12 +199,14 @@ func _advance_step() -> void:
 	_current_step += 1
 	_show_step(_current_step)
 
+## 结束演出：隐藏界面、恢复游戏状态并发送完成信号。
 func _end_cutscene() -> void:
 	_is_playing = false
 	visible = false
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	cutscene_finished.emit()
 
+## 跳过整个剧情演出。
 func skip_cutscene() -> void:
 	## 跳过整个剧情演出
 	_end_cutscene()

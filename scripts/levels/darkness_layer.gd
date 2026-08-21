@@ -11,15 +11,21 @@ class_name DarknessLayer
 
 var _base_brightness: float = 0.15
 
+## 初始化为默认的暗灰蓝环境色。
 func _ready() -> void:
 	# 默认环境色：很暗的灰蓝色（模拟无光源环境）
 	color = Color(_base_brightness, _base_brightness, _base_brightness * 1.1)
 
+## 设置基础环境亮度（0=纯黑，1=全亮）。
+## [param brightness] 目标亮度（0.0~1.0）。
 func set_darkness(brightness: float) -> void:
 	## 设置基础环境亮度（0.0=纯黑, 1.0=全亮）
 	_base_brightness = clampf(brightness, 0.0, 1.0)
 	color = Color(_base_brightness, _base_brightness, _base_brightness * 1.1)
 
+## 在指定时间内渐变到目标亮度。
+## [param target_brightness] 目标亮度（0.0~1.0）。
+## [param duration] 渐变时长（秒）。
 func fade_to_dark(target_brightness: float, duration: float = 2.0) -> void:
 	## 渐变到目标亮度
 	var target = clampf(target_brightness, 0.0, 1.0)
@@ -27,10 +33,16 @@ func fade_to_dark(target_brightness: float, duration: float = 2.0) -> void:
 	var tw = create_tween()
 	tw.tween_property(self, "color", target_color, duration)
 
+## 渐变恢复全亮。
+## [param duration] 渐变时长（秒）。
 func fade_to_bright(duration: float = 1.0) -> void:
 	## 恢复全亮
 	fade_to_dark(1.0, duration)
 
+## 灯光闪烁效果（恐怖氛围），结束后回到基础亮度。
+## [param duration] 闪烁总时长（秒）。
+## [param min_bright] 最小亮度。
+## [param max_bright] 最大亮度。
 func pulse_flicker(duration: float = 3.0, min_bright: float = 0.05, max_bright: float = 0.2) -> void:
 	## 灯光闪烁效果（恐怖氛围）
 	var tw = create_tween()

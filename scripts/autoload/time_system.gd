@@ -6,6 +6,7 @@ var game_hour: int = 20
 var game_minute: int = 0
 var is_forbidden_time: bool = false
 
+## 设为常驻处理，暂停界面也能响应。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -15,9 +16,12 @@ func set_time(hour: int, minute: int = 0) -> void:
 	game_minute = minute
 	is_forbidden_time = (game_hour >= 23 or game_hour < 7)
 
+## 判断当前是否处于禁止时段（23:00~7:00）。
+## [return] 处于禁止时段时为 true。
 func is_in_forbidden_period() -> bool:
 	return game_hour >= 23 or game_hour < 7
 
+## 重置时间为默认的 20:00 并解除禁止标记。
 func reset() -> void:
 	game_hour = 20
 	game_minute = 0

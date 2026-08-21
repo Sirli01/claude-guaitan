@@ -14,11 +14,14 @@ var _item_taken: bool = false  # 物品是否已被拿走
 var search_action_method: String = ""  # 无物品时触发的场景回调
 var post_take_action_method: String = ""  # 拿到物品后触发的场景回调
 
+## 初始化交互分组并连接进入/离开信号。
 func _ready() -> void:
 	add_to_group("interactable")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
+## 玩家进入范围时显示名称提示并注册到玩家的可交互列表。
+## [param body] 进入区域的物理体。
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and _name_label:
 		if _searched and (_item_taken or contained_item_id == ""):
@@ -29,11 +32,14 @@ func _on_body_entered(body: Node2D) -> void:
 		if not body.nearby_interactables.has(self):
 			body.nearby_interactables.append(self)
 
+## 玩家离开范围时隐藏提示并从可交互列表移除。
+## [param body] 离开区域的物理体。
 func _on_body_exited(body: Node2D) -> void:
 	if body.is_in_group("player") and _name_label:
 		_name_label.visible = false
 		body.nearby_interactables.erase(self)
 
+## 搜索容器：空容器显示提示或回调场景，有物品则直接获得并触发后续回调。
 func interact() -> void:
 	_searched = true
 	if contained_item_id == "" and not _item_taken and search_action_method != "" and _level and _level.has_method(search_action_method):

@@ -48,21 +48,26 @@ const KIND_TEXTURES := {
 
 var _visual_node: Node = null
 
+## 节点就绪回调：设置碰撞层并重建家具。
 func _ready() -> void:
 	collision_layer = 4  # walls layer
 	_rebuild()
 
+## 清空并重建家具的碰撞与视觉。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
 	_clear_children()
 	_build()
 
+## 释放所有子节点并重置视觉节点引用。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 	_visual_node = null
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -70,6 +75,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 构建家具：碰撞体与视觉（自定义贴图 > 标准种类贴图 > 色块），编辑器额外显示名称标签。
 func _build() -> void:
 	if furniture_size.x <= 0 or furniture_size.y <= 0:
 		return

@@ -39,10 +39,12 @@ const WALL_SIDE_FACE_DEPTH: float = 5.0
 
 var _built: bool = false
 
+## 节点就绪回调：设置碰撞层并重建墙体。
 func _ready() -> void:
 	collision_layer = 4  # walls layer
 	_rebuild()
 
+## 清空并重建墙体的碰撞、视觉与遮挡器。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
@@ -51,10 +53,13 @@ func _rebuild() -> void:
 	_build()
 	_built = true
 
+## 释放所有子节点。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -62,6 +67,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 构建墙体：碰撞体、顶视色块、正/侧面贴图、光照遮挡器，并标记为导航障碍。
 func _build() -> void:
 	var size := wall_size
 	if size.x <= 0 or size.y <= 0:
@@ -136,6 +142,9 @@ func _build() -> void:
 	# Mark as nav obstacle
 	add_to_group("nav_obstacle")
 
+## 为水平墙添加正面视觉（贴图或色块回退）。
+## [param size] 墙体尺寸。
+## [param dir_sign] 正面朝向符号（1 或 -1，决定上下偏移方向）。
 func _add_horizontal_face(size: Vector2, dir_sign: float) -> void:
 	var face_h := 48.0
 	var owner_node = _get_owner()
@@ -162,6 +171,9 @@ func _add_horizontal_face(size: Vector2, dir_sign: float) -> void:
 		if Engine.is_editor_hint():
 			face.set_owner(owner_node)
 
+## 为竖向墙添加侧面视觉（贴图或色块回退）。
+## [param size] 墙体尺寸。
+## [param dir_sign] 侧面朝向符号（1 或 -1，决定左右偏移方向）。
 func _add_vertical_face(size: Vector2, dir_sign: float) -> void:
 	var face_w := WALL_SIDE_FACE_DEPTH
 	var owner_node = _get_owner()

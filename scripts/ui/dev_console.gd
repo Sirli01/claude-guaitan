@@ -8,22 +8,28 @@ var _invincible := false
 
 # ── 生命周期 ──
 
+## 初始化控制台层级与处理模式，构建UI后默认隐藏。
 func _ready() -> void:
 	layer = 200
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 	_panel.visible = false
 
+## 监听 F3 键切换开发者控制台的显示与隐藏。
+## [param event] 输入事件。
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F3:
 		_toggle()
 		get_viewport().set_input_as_handled()
 
+## 无敌模式开启时每帧把体力与理智回满。
+## [param _delta] 帧间隔时间（未使用）。
 func _process(_delta: float) -> void:
 	if _invincible:
 		PlayerStats.stamina = PlayerStats.max_stamina
 		PlayerStats.sanity = PlayerStats.max_sanity
 
+## 切换控制台显示状态，并在打开时暂停游戏、关闭时恢复。
 func _toggle() -> void:
 	_visible = not _visible
 	_panel.visible = _visible
@@ -31,6 +37,7 @@ func _toggle() -> void:
 
 # ── UI 构建 ──
 
+## 构建控制台全部界面：场景跳转、道具给予、属性调节与快捷功能按钮。
 func _build_ui() -> void:
 	_panel = PanelContainer.new()
 	_panel.position = Vector2(920, 120)
@@ -128,6 +135,12 @@ func _build_ui() -> void:
 
 # ── UI 辅助 ──
 
+## 在指定父控件下创建一个带字号与颜色的标签。
+## [param parent] 父容器控件。
+## [param text] 标签文字。
+## [param size] 字体大小。
+## [param color] 字体颜色。
+## [return] 新创建的 Label 节点。
 func _add_label(parent: Control, text: String, size: int, color: Color) -> Label:
 	var l = Label.new()
 	l.text = text
@@ -136,17 +149,28 @@ func _add_label(parent: Control, text: String, size: int, color: Color) -> Label
 	parent.add_child(l)
 	return l
 
+## 在指定父控件下添加一条水平分隔线。
+## [param parent] 父容器控件。
 func _add_separator(parent: Control) -> void:
 	var s = HSeparator.new()
 	s.add_theme_constant_override("separation", 8)
 	parent.add_child(s)
 
+## 在指定父控件下创建指定列数的网格容器。
+## [param parent] 父容器控件。
+## [param columns] 网格列数。
+## [return] 新创建的 GridContainer 节点。
 func _add_grid(parent: Control, columns: int) -> GridContainer:
 	var g = GridContainer.new()
 	g.columns = columns
 	parent.add_child(g)
 	return g
 
+## 创建一个统一样式（底色、圆角、悬停提亮）的功能按钮并绑定点击回调。
+## [param text] 按钮文字。
+## [param color] 按钮底色。
+## [param callback] 点击时调用的回调。
+## [return] 新创建的 Button 节点。
 func _make_btn(text: String, color: Color, callback: Callable) -> Button:
 	var b = Button.new()
 	b.text = text
@@ -163,6 +187,14 @@ func _make_btn(text: String, color: Color, callback: Callable) -> Button:
 	b.pressed.connect(callback)
 	return b
 
+## 添加一个场景跳转按钮：重置全局状态、发放道具/规则、击杀指定角色后切换场景。
+## [param parent] 父容器控件。
+## [param label] 按钮文字。
+## [param scene_path] 目标场景文件路径。
+## [param floor_id] 跳转后的楼层ID。
+## [param items] 进入场景前添加到背包的道具ID列表。
+## [param kill] 需要标记死亡的角色ID列表。
+## [param rules] 进入场景前注册的规则文本列表。
 func _add_scene_btn(parent: Control, label: String, scene_path: String, floor_id, items: Array, kill: Array = [], rules: Array = []) -> void:
 	var btn = _make_btn(label, Color(0.15, 0.25, 0.4), func():
 		_toggle()
@@ -180,16 +212,26 @@ func _add_scene_btn(parent: Control, label: String, scene_path: String, floor_id
 		get_tree().change_scene_to_file(scene_path))
 	parent.add_child(btn)
 
+## 添加一个道具按钮，点击后将对应道具加入背包并弹出提示。
+## [param parent] 父容器控件。
+## [param label] 按钮显示的道具中文名。
+## [param item_id] 道具ID。
 func _add_item_btn(parent: Control, label: String, item_id: String) -> void:
 	var btn = _make_btn(label, Color(0.15, 0.35, 0.2), func():
 		InventoryManager.add_item(item_id)
 		_show_toast("已添加: " + label))
 	parent.add_child(btn)
 
+## 添加一个属性调节/快捷功能按钮，点击时执行传入回调。
+## [param parent] 父容器控件。
+## [param label] 按钮文字。
+## [param callback] 点击时调用的回调。
 func _add_stat_btn(parent: Control, label: String, callback: Callable) -> void:
 	var btn = _make_btn(label, Color(0.35, 0.2, 0.15), callback)
 	parent.add_child(btn)
 
+## 在屏幕右上角弹出一条短暂提示文字，停留后自动淡出销毁。
+## [param text] 提示内容。
 func _show_toast(text: String) -> void:
 	var l = Label.new()
 	l.text = text
@@ -202,6 +244,7 @@ func _show_toast(text: String) -> void:
 	tw.tween_property(l, "modulate:a", 0.0, 1.5).set_delay(0.8)
 	tw.tween_callback(l.queue_free)
 
+## 调用当前场景的 debug_skip_to_soul_swap 直接跳到换魂剧情，不支持时弹提示。
 func _run_scene_debug_skip() -> void:
 	var scene = get_tree().current_scene
 	if scene == null or not scene.has_method("debug_skip_to_soul_swap"):
@@ -211,6 +254,8 @@ func _run_scene_debug_skip() -> void:
 	get_tree().paused = false
 	scene.call_deferred("debug_skip_to_soul_swap")
 
+## 递归遍历节点树并终止所有正在处理的补间动画，防止场景切换时崩溃。
+## [param node] 起始遍历的节点。
 func _kill_all_tweens(node: Node) -> void:
 	if node == null:
 		return

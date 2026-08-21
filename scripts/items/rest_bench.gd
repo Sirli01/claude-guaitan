@@ -7,20 +7,26 @@ var _name_label: Label
 var _is_resting: bool = false
 var _sit_offset := Vector2(0, -4)  # 玩家坐下时相对长椅的位置偏移
 
+## 初始化交互分组并连接进入/离开信号。
 func _ready() -> void:
 	add_to_group("interactable")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
+## 玩家靠近时显示休息提示。
+## [param body] 进入区域的物理体。
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and _name_label:
 		_name_label.text = LocaleManager.bench_prompt_text()
 		_name_label.visible = true
 
+## 玩家离开时隐藏休息提示。
+## [param body] 离开区域的物理体。
 func _on_body_exited(body: Node2D) -> void:
 	if body.is_in_group("player") and _name_label:
 		_name_label.visible = false
 
+## 坐下休息：冻结玩家并在 2 秒内恢复全部体力，按方向键可中途打断。
 func interact() -> void:
 	if _is_resting:
 		return

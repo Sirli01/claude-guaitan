@@ -22,6 +22,7 @@ extends Control
 @onready var fullscreen_check: CheckButton = $SettingsPanel/VBox/FullscreenCheck
 
 
+## 主菜单初始化：绑定按钮事件、应用多语言并播放标题 BGM
 func _ready() -> void:
 	start_btn.pressed.connect(_on_start)
 	continue_btn.pressed.connect(_on_continue)

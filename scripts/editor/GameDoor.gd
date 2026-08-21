@@ -20,12 +20,14 @@ class_name GameDoor
 
 var _built_runtime: bool = false
 
+## 节点就绪回调：仅在编辑器中重建预览，运行时由关卡脚本统一触发。
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		_rebuild()
 	# 运行时由 LevelBaseV2.discover_scene_nodes() 统一触发重建，
 	# 避免场景装载期间父节点忙碌导致 add_child 失败
 
+## 清空子节点后按环境重建：编辑器构建预览，运行时仅构建一次。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
@@ -36,10 +38,13 @@ func _rebuild() -> void:
 		_built_runtime = true
 		_build_runtime()
 
+## 释放所有子节点。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -47,6 +52,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 在编辑器中构建门框、门扇与上锁图标预览。
 func _build_editor_preview() -> void:
 	var owner_node = _get_owner()
 	var is_vertical := door_size.x < door_size.y
@@ -99,6 +105,7 @@ func _build_editor_preview() -> void:
 		add_child(lbl)
 		lbl.set_owner(owner_node)
 
+## 运行时构建：委托关卡 add_door 创建门系统，无关卡时回退为简单门。
 func _build_runtime() -> void:
 	# Find the LevelBase parent to use its add_door method
 	var level = _find_level()
@@ -109,6 +116,7 @@ func _build_runtime() -> void:
 		# Fallback: build a simple door
 		_build_simple_door()
 
+## 回退方案：直接创建带碰撞和色块视觉的简易门。
 func _build_simple_door() -> void:
 	var door_body := StaticBody2D.new()
 	door_body.collision_layer = 4
@@ -125,6 +133,8 @@ func _build_simple_door() -> void:
 	door_rect.z_index = 11
 	add_child(door_rect)
 
+## 向上遍历祖先查找关卡节点。
+## [return] 含 show_hint 方法的关卡节点，未找到返回 null。
 func _find_level() -> Node:
 	var p = get_parent()
 	while p:
@@ -133,6 +143,9 @@ func _find_level() -> Node:
 		p = p.get_parent()
 	return null
 
+## 查找关卡下的 Walls 节点，不存在则创建。
+## [param level] 关卡节点。
+## [return] Walls 容器节点。
 func _find_or_create_walls(level: Node) -> Node2D:
 	var walls := level.get_node_or_null("Walls")
 	if walls:

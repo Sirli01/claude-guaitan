@@ -19,20 +19,25 @@ class_name GameCeiling
 
 var _ceiling_rect: ColorRect = null
 
+## 节点就绪回调：重建天花板遮罩与检测区域。
 func _ready() -> void:
 	_rebuild()
 
+## 清空并重建天花板遮罩、房间进出检测区域与编辑器标签。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
 	_clear_children()
 	_build()
 
+## 释放所有子节点并重置天花板引用。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 	_ceiling_rect = null
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -40,6 +45,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 构建天花板色块与检测区域，运行时绑定玩家进出房间的回调。
 func _build() -> void:
 	if ceiling_size.x <= 0 or ceiling_size.y <= 0:
 		return
@@ -98,6 +104,8 @@ func _build() -> void:
 		add_child(lbl)
 		lbl.set_owner(owner_node)
 
+## 向上遍历祖先查找关卡节点。
+## [return] 含 show_hint 方法的关卡节点，未找到返回 null。
 func _find_level() -> Node:
 	var p = get_parent()
 	while p:

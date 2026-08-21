@@ -81,6 +81,7 @@ enum Phase { EXPLORE, MALE_DEATH, MONSTER_CHASE, SOUL_SWAP_CUTSCENE, MONSTER_CON
 var current_phase: Phase = Phase.EXPLORE
 var elevator_card_found: bool = false
 
+## 初始化第三层：注册楼层、预生成音效、构建怪物与场景元素，启用全游戏最暗的黑暗与「禁止跑步」规则，并启动入场流程。
 func _ready() -> void:
 	# 编辑器模式：几何与灯光已在 .tscn 中定义，无需生成
 	if Engine.is_editor_hint():
@@ -201,6 +202,7 @@ func _add_floor_cracks() -> void:
 		crack.size = Vector2(randi_range(30, 60), 3)
 		add_child(crack)
 
+## 按存活状态生成本层NPC：夏桐、林佳语与周锐。
 func _spawn_npcs() -> void:
 	if GameManager.is_character_alive("cool_npc"):
 		cool_npc = create_npc_visual(Vector2(30, 230), "cool_npc")
@@ -211,11 +213,13 @@ func _spawn_npcs() -> void:
 	if GameManager.is_character_alive("male_npc"):
 		male_npc = create_npc_visual(Vector2(15, 205), "male_npc")
 
+## 为所有存活NPC点亮手机灯光。
 func _enable_npc_phone_lights() -> void:
 	for npc in [cool_npc, cheerful_npc, male_npc]:
 		if npc and is_instance_valid(npc) and npc.is_alive:
 			npc.enable_phone_light()
 
+## 根据当前剧情阶段刷新各NPC的故事对话（入场介绍、探索、逃离与胜利各有不同台词）。
 func _refresh_floor_3_npc_dialogues() -> void:
 	if current_phase == Phase.EXPLORE and male_npc and is_instance_valid(male_npc) and not _entry_monster_seen:
 		set_npc_story_dialogue(cool_npc, "floor_3", "talk_intro_cool")
@@ -234,6 +238,7 @@ func _refresh_floor_3_npc_dialogues() -> void:
 		set_npc_story_dialogue(cool_npc, "floor_3", "talk_victory_cool")
 		set_npc_story_dialogue(cheerful_npc, "floor_3", "talk_victory_cheerful")
 
+## 构建人形怪物：闪烁红眼、脉动红光与导航寻路代理，激活后将在黑暗中缓步追杀玩家。
 func _build_monster() -> void:
 	humanoid_monster = CharacterBody2D.new()
 	humanoid_monster.position = Vector2(0, -260)
@@ -298,11 +303,13 @@ func _build_monster() -> void:
 	_monster_nav_agent.avoidance_enabled = false
 	humanoid_monster.add_child(_monster_nav_agent)
 
+## 深渊巨口的预留构建入口（跑步触发的检测实际由 _physics_process 完成）。
 func _build_abyss_mouths() -> void:
 	# 地板下的深渊巨口触发区域（整个走廊都是）
 	# 只有跑步时才会触发
 	pass  # 在_physics_process中检测
 
+## 搭建离开第三层的电梯：门体视觉与交互区，靠近时按有无电梯卡显示不同提示。
 func _build_elevator() -> void:
 	var elevator_area = create_trigger_area(Vector2(-380, 220), Vector2(30, 40))
 	
@@ -357,6 +364,8 @@ func interact() -> void:
 	interact_script.reload()
 	elev_interact.set_script(interact_script)
 
+## 每帧驱动本层核心逻辑：怪物入镜触发发现剧情、玩家跑步致死检测、怪物导航追踪与距离音效、追逐战中巨口的追击与胜负判定。
+## [param delta] 帧间隔时间（秒）。
 func _physics_process(delta: float) -> void:
 	# === 怪物进入视野 → 触发发现剧情 ===
 	if not _entry_monster_seen and humanoid_monster and player and player.camera:
@@ -540,6 +549,7 @@ func _physics_process(delta: float) -> void:
 		if chase_timer >= chase_duration:
 			_chase_survive()
 
+## 入场短对话：电梯开门众人感受压抑气氛，结束后NPC跟随玩家、怪物开始从走廊深处逼近。
 func _entry_intro() -> void:
 	# 入场短对话（电梯开门，感受气氛）
 	player.freeze_player()
@@ -566,6 +576,7 @@ func _entry_intro() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	player.unfreeze_player()
 
+## 发现怪物的剧情：众人瞥见走廊深处的人影，周锐当场崩溃逃跑，引出他的死亡事件。
 func _entry_sequence() -> void:
 	# 看到怪物时触发（从_physics_process调用）
 	player.freeze_player()
@@ -578,6 +589,7 @@ func _entry_sequence() -> void:
 	current_phase = Phase.MALE_DEATH
 	_male_panic_event()
 
+## 周锐死后的探索阶段：启用跑步致死检测、剩余NPC跟随玩家，并提示寻找电梯卡但绝不能跑。
 func _after_male_death_explore() -> void:
 	# 男伴死后进入探索阶段
 	current_phase = Phase.EXPLORE
@@ -600,6 +612,7 @@ func _after_male_death_explore() -> void:
 	show_hint(LocaleManager.t("hint_f3_find_card_no_run"))
 
 # === 玩家跑步 → 死亡 ===
+## 玩家违反「禁止跑步」被深渊巨口吞噬的死亡演出：若规则已由周锐之死揭示则直接游戏结束，否则先播放黑屏旁白让规则浮现。
 func _player_run_death() -> void:
 	player_run_death_active = false
 	player.freeze_player()
@@ -695,6 +708,7 @@ func _player_run_death() -> void:
 		GameManager.go_to_game_over("abyss")
 
 # 等待玩家点击（鼠标或确认键）
+## 轮询等待玩家点击鼠标或按下确认键以继续剧情。
 func _wait_for_click() -> void:
 	# 跳过当前帧残留输入
 	await get_tree().process_frame
@@ -708,6 +722,9 @@ func _wait_for_click() -> void:
 		await get_tree().process_frame
 
 # === 生成吞噬用大嘴视觉（用于男伴死亡/玩家死亡）===
+## 在指定位置生成深渊巨口的视觉表现（优先使用贴图，否则程序化绘制牙齿与咽喉，含红光脉动与弹出动画）。
+## [param pos] 巨口出现的世界坐标。
+## [return] 创建出的巨口节点。
 func _create_abyss_mouth_visual(pos: Vector2) -> Node2D:
 	var mouth = Node2D.new()
 	mouth.position = pos + Vector2(0, 10)
@@ -789,10 +806,12 @@ func _create_abyss_mouth_visual(pos: Vector2) -> Node2D:
 	
 	return mouth
 
+## 预留的灯光布置接口（本层灯光已在场景中定义，无需额外处理）。
 func _place_lights() -> void:
 	pass
 
 # === 探索阶段物品 ===
+## 放置探索阶段的氛围物件：地板血迹及其触发区，玩家踏入即触发血迹剧情。
 func _place_exploration_items() -> void:
 	# --- 血迹 ---
 	var blood = ColorRect.new()
@@ -820,6 +839,7 @@ func _place_exploration_items() -> void:
 	
 	# 日记和电梯卡已改为房间内搜索获取。
 
+## 搜出残破日记的剧情：暂停怪物行动，播放日记对话后恢复探索。
 func _on_diary_found() -> void:
 	player.freeze_player()
 	var was_monster_active = monster_active
@@ -832,6 +852,7 @@ func _on_diary_found() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	player.unfreeze_player()
 
+## 踩到血迹的剧情：暂停怪物行动，播放血迹对话后恢复探索。
 func _on_blood_found() -> void:
 	player.freeze_player()
 	var was_monster_active = monster_active
@@ -845,6 +866,7 @@ func _on_blood_found() -> void:
 	player.unfreeze_player()
 
 # === 拿到卡后 ===
+## 拿到电梯卡后的关键分支：背包里有绳子则想到借刀杀鬼的灵魂互换计划，否则只能徒步冲向电梯逃生。
 func _card_found_monster_chase() -> void:
 	player.freeze_player()
 	player_run_death_active = false
@@ -886,6 +908,7 @@ func _card_found_monster_chase() -> void:
 		player.unfreeze_player()
 		show_hint(LocaleManager.t("hint_f3_walk_to_elevator"), 8.0)
 
+## 周锐恐慌逃跑被深渊巨口吞噬的剧情事件：他拔腿狂奔仍被破地而出的巨口吞食、掉落304钥匙，规则「禁止跑步」随他的死才正式揭示。
 func _male_panic_event() -> void:
 	if male_npc:
 		male_npc.stop_following()
@@ -957,6 +980,7 @@ func _male_panic_event() -> void:
 	# 进入探索阶段
 	_after_male_death_explore()
 
+## 触发灵魂互换过场：怪物追上玩家的瞬间冻结全场、切换换魂BGM，开始绑绳仪式。
 func _trigger_soul_swap_cutscene() -> void:
 	if current_phase != Phase.MONSTER_CHASE:
 		return
@@ -973,6 +997,7 @@ func _trigger_soul_swap_cutscene() -> void:
 	
 	_soul_swap_with_rope()
 
+## 绑绳换魂仪式：两名NPC贴近玩家身边模拟以绳相连，对话确认后消耗绳子并执行真正的换魂。
 func _soul_swap_with_rope() -> void:
 	# NPC贴近玩家身边模拟绑绳
 	var tween_npc = create_tween()
@@ -990,6 +1015,7 @@ func _soul_swap_with_rope() -> void:
 	await get_tree().create_timer(1.0).timeout
 	_perform_soul_swap()
 
+## 主角与怪物换魂的核心演出：镜头平移至怪物、闭眼黑屏完成灵魂互换，睁眼时玩家已在怪物体内，随即进入操控阶段。
 func _perform_soul_swap() -> void:
 	DialogueManager.start_dialogue(StoryText.lines("floor_3", "perform_swap"))
 	await DialogueManager.dialogue_ended
@@ -1018,6 +1044,7 @@ func _perform_soul_swap() -> void:
 	_monster_run_sequence()
 
 
+## 玩家附身怪物躯体：移除原怪物节点、玩家变身为怪物外观并站到其原位，同时解除体力、理智与黑暗的限制。
 func _enter_monster_body() -> void:
 	# 记录怪物当前位置，玩家附身后站在怪物原地
 	var monster_pos = humanoid_monster.global_position if humanoid_monster else player.global_position
@@ -1060,6 +1087,7 @@ func _enter_monster_body() -> void:
 	if player_lighting:
 		player_lighting.visible = false
 
+## 附身后的操控阶段：创建倒计时HUD并交代计划，放开玩家操作，等其按下奔跑键即召唤巨口开始逃亡。
 func _monster_run_sequence() -> void:
 	# === 追逐战开始 ===
 	
@@ -1078,6 +1106,7 @@ func _monster_run_sequence() -> void:
 	
 	_waiting_for_shift = true
 
+## 在走廊铺设地板突起与残骸障碍物，既是探索期的地形细节，也是追逐战中的阻挡点。
 func _build_corridor_obstacles() -> void:
 	# 走廊中的障碍物（地板突起/残骸），从一开始就存在
 	# 混合竖向和横向障碍物
@@ -1120,6 +1149,7 @@ func _build_corridor_obstacles() -> void:
 		
 		chase_obstacles.append(obs)
 
+## 在玩家逃跑方向的身后生成追逐战巨口（含呼吸脉动与红光），它无视墙壁直线追击玩家。
 func _spawn_chase_mouth() -> void:
 	chase_mouth = CharacterBody2D.new()
 	# 巨口固定在玩家逃跑方向的身后刷新
@@ -1220,6 +1250,7 @@ func _spawn_chase_mouth() -> void:
 		glow_tw.parallel().tween_property(eye_left, "modulate:a", 1.0, 0.2)
 		glow_tw.parallel().tween_property(eye_right, "modulate:a", 1.0, 0.2)
 
+## 创建追逐战的倒计时HUD：顶部红色剩余秒数与底部坚持到天亮的提示文字。
 func _create_chase_hud() -> void:
 	var canvas = CanvasLayer.new()
 	canvas.layer = 10
@@ -1248,6 +1279,7 @@ func _create_chase_hud() -> void:
 	hint_label.add_theme_color_override("font_color", Color(0.6, 0.3, 0.3))
 	canvas.add_child(hint_label)
 
+## 刷新追逐战倒计时显示，最后5秒开始闪烁制造紧张感。
 func _update_chase_hud() -> void:
 	if chase_countdown_label:
 		var remaining = chase_duration - chase_timer
@@ -1257,6 +1289,7 @@ func _update_chase_hud() -> void:
 		if remaining <= 5.0:
 			chase_countdown_label.modulate.a = 0.5 + 0.5 * sin(chase_timer * 8.0)
 
+## 移除追逐战倒计时HUD并清空引用。
 func _remove_chase_hud() -> void:
 	if chase_countdown_label:
 		var hud = get_node_or_null("ChaseHUD")
@@ -1265,6 +1298,7 @@ func _remove_chase_hud() -> void:
 		chase_countdown_label = null
 
 # === 追逐战：被巨口吞噬（失败）===
+## 追逐战失败结局：玩家被巨口追上吞噬，画面冲击后进入游戏结束界面。
 func _chase_caught() -> void:
 	chase_active = false
 	_remove_chase_hud()
@@ -1277,6 +1311,7 @@ func _chase_caught() -> void:
 	GameManager.go_to_game_over("chase_caught")
 
 # === 追逐战：撑过20秒（成功）===
+## 追逐战成功结局：撑过20秒后巨口冲至脚下，却只吞掉了玩家附身的怪物躯壳——07:00灵魂回归人体，进入胜利剧情。
 func _chase_survive() -> void:
 	chase_active = false
 	_remove_chase_hud()
@@ -1353,6 +1388,7 @@ func _chase_survive() -> void:
 	current_phase = Phase.DAWN_RETURN
 	_victory_sequence()
 
+## 胜利剧情：换魂归来后的对话收尾，恢复跑步致死规则并提示全员前往电梯离开第三层。
 func _victory_sequence() -> void:
 	DialogueManager.start_dialogue(StoryText.lines("floor_3", "victory"))
 	await DialogueManager.dialogue_ended
@@ -1364,6 +1400,7 @@ func _victory_sequence() -> void:
 	player.unfreeze_player()
 	show_hint(LocaleManager.t("hint_f3_return_elevator"))
 
+## 进入电梯剧情：招呼NPC跑向电梯汇合、插卡开门，记录怪物存活状态后切换到电梯内部场景。
 func _enter_elevator() -> void:
 	player.freeze_player()
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
@@ -1411,6 +1448,11 @@ func _enter_elevator() -> void:
 	# 切换到电梯内部场景
 	TransitionManager.transition_to_scene("res://scenes/levels/elevator_interior.tscn")
 
+## 在指定位置放置可拾取的地面道具，附带名称标签与闪烁提示。
+## [param pos] 道具世界坐标。
+## [param item_id] 物品ID。
+## [param item_name] 物品显示名。
+## [param color] 道具视觉颜色。
 func _place_room_item(pos: Vector2, item_id: String, item_name: String, color: Color) -> void:
 	var area = Area2D.new()
 	area.set_script(load("res://scripts/items/simple_pickup.gd"))
@@ -1487,6 +1529,8 @@ func _place_container(furniture_pos: Vector2, furniture_size: Vector2,
 	area._name_label = name_label
 	area.tree_exiting.connect(func(): if is_instance_valid(name_label): name_label.queue_free())
 
+## 程序化生成径向渐变的圆形光斑贴图，作为缺少光晕素材时的兜底光源纹理。
+## [return] 生成的光斑纹理。
 func _create_light_texture() -> ImageTexture:
 	var size := 128
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
@@ -1499,6 +1543,8 @@ func _create_light_texture() -> ImageTexture:
 			img.set_pixel(x, y, Color(1, 1, 1, a * a))
 	return ImageTexture.create_from_image(img)
 
+## 在周锐死亡处掉落304房间钥匙拾取物（钥匙贴图、交互标签与闪烁提示），需按E拾取。
+## [param pos] 钥匙掉落的世界坐标。
 func _spawn_dropped_key(pos: Vector2) -> void:
 	var area = Area2D.new()
 	area.set_script(load("res://scripts/items/simple_pickup.gd"))
@@ -1552,6 +1598,8 @@ func _spawn_dropped_key(pos: Vector2) -> void:
 	# 避免"踩在道具上拾取不了"的问题
 	_deferred_check_overlap(area)
 
+## 判断人形怪物是否完整出现在玩家相机视野内（四周留20px边距确保全身可见）。
+## [return] 怪物全身可见时为 true。
 func _is_monster_on_screen() -> bool:
 	if not humanoid_monster or not player or not player.camera:
 		return false
@@ -1588,6 +1636,8 @@ func _deferred_check_overlap(pickup_area: Area2D) -> void:
 		CONNECT_ONE_SHOT
 	)
 
+## 为精灵应用阴影扭曲着色器，使怪物及附身状态的玩家呈现晃动扭曲的诡异质感。
+## [param sprite] 要应用扭曲材质的精灵节点。
 func _apply_shadow_distortion(sprite: Sprite2D) -> void:
 	if sprite == null or sprite.texture == null:
 		return
@@ -1597,6 +1647,7 @@ func _apply_shadow_distortion(sprite: Sprite2D) -> void:
 	material.shader = shader
 	sprite.material = material
 
+## 调试功能：清理现场、补齐绳子与电梯卡并处理各NPC状态，直接跳转到灵魂互换演出。
 func debug_skip_to_soul_swap() -> void:
 	if current_phase in [Phase.SOUL_SWAP_CUTSCENE, Phase.MONSTER_CONTROL, Phase.DAWN_RETURN]:
 		return
@@ -1640,6 +1691,8 @@ func _on_elevator_card_container_taken(_item_id: String = "") -> void:
 	AudioManager.stop_bgm(1.5)
 	_card_found_monster_chase()
 
+## 在走廊右侧搭建故障贩卖机：碰撞体、破损外观与可踢踹的交互区。
+## [param _walls] 兼容基类签名的参数（未使用）。
 func _build_vending_machine(_walls: Node2D) -> void:
 	# 贩卖机视觉（走廊右侧）
 	var vm_body = StaticBody2D.new()
@@ -1694,6 +1747,8 @@ func _build_vending_machine(_walls: Node2D) -> void:
 	interact.set_meta("hint_label", hint_label)
 	interact.set_meta("interact_callback", Callable(self, "_kick_vending_machine").bind(vm_body))
 
+## 踹贩卖机的交互逻辑：消耗体力、播放机体晃动，并按踢的次数递减的概率随机掉落补给。
+## [param vm_body] 贩卖机的碰撞体节点。
 func _kick_vending_machine(vm_body: Node2D) -> void:
 	_vending_kicks += 1
 	# 消耗体力

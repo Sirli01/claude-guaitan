@@ -29,6 +29,7 @@ var _open_progress: float = 0.0:
 		_open_progress = clampf(value, 0.0, 1.0)
 		_apply_open_progress()
 
+## 初始化门：读取元数据配置、设置碰撞掩码并连接身体进出信号。
 func _ready() -> void:
 	_door_pivot = get_meta("door_pivot") if has_meta("door_pivot") else null
 	_door_body = get_meta("door_body") if has_meta("door_body") else null
@@ -48,10 +49,12 @@ func _ready() -> void:
 	_apply_open_progress()
 	_sync_interaction_state()
 
+## 从元数据刷新所需钥匙与锁定状态（支持运行时动态修改）。
 func _refresh_meta_state() -> void:
 	_required_key = get_meta("required_key") if has_meta("required_key") else _required_key
 	_locked = get_meta("locked") if has_meta("locked") else _locked
 
+## 玩家交互：未锁直接开门；已锁且有钥匙则解锁开门，否则提示需要钥匙。
 func interact() -> void:
 	_refresh_meta_state()
 	if not _locked:
@@ -62,6 +65,8 @@ func interact() -> void:
 	else:
 		_show_level_hint(LocaleManager.door_need_key_text())
 
+## 实体进入门区时计数；若为玩家且门未锁则自动开门。
+## [param body] 进入门区的物理体（玩家或 NPC）。
 func _on_body_entered(body: Node) -> void:
 	# 统计进入门区的可移动实体（玩家或NPC），但仅玩家触发开门
 	if not (body.is_in_group("player") or body.is_in_group("npc")):
@@ -73,6 +78,8 @@ func _on_body_entered(body: Node) -> void:
 		if not _locked:
 			_open_door(body)
 
+## 实体离开门区时更新计数，无人停留且未锁时自动关门。
+## [param body] 离开门区的物理体（玩家或 NPC）。
 func _on_body_exited(body: Node) -> void:
 	# 统计离开门区的玩家/NPC，保证门在有任何实体停留时不关闭
 	if not (body.is_in_group("player") or body.is_in_group("npc")):
@@ -84,6 +91,8 @@ func _on_body_exited(body: Node) -> void:
 	if not _locked and _body_inside_count == 0:
 		_close_door()
 
+## 解锁房门：消耗对应钥匙、清除锁标识并随即自动开门。
+## [param opener] 触发解锁的节点，用于决定开门方向。
 func _unlock_door(opener: Node = null) -> void:
 	_refresh_meta_state()
 	_locked = false
@@ -99,6 +108,8 @@ func _unlock_door(opener: Node = null) -> void:
 	InventoryManager.remove_item(_required_key)
 	_open_door(opener)
 
+## 打开房门：播放开门音效并按开启者方位决定开门方向。
+## [param opener] 触发开门的节点，用于决定开门方向。
 func _open_door(opener: Node = null) -> void:
 	if _locked or _is_open:
 		return
@@ -108,6 +119,7 @@ func _open_door(opener: Node = null) -> void:
 	_sync_interaction_state()
 	_animate_to(1.0, OPEN_DURATION)
 
+## 关闭房门：播放关门音效并将门动画收回关闭状态。
 func _close_door() -> void:
 	if _locked or not _is_open or _body_inside_count > 0:
 		return
@@ -116,12 +128,16 @@ func _close_door() -> void:
 	_sync_interaction_state()
 	_animate_to(0.0, CLOSE_DURATION)
 
+## 用补间动画将门的开启进度平滑过渡到目标值。
+## [param target] 目标进度（0=关，1=开）。
+## [param duration] 动画时长（秒）。
 func _animate_to(target: float, duration: float) -> void:
 	if _anim_tween and _anim_tween.is_valid():
 		_anim_tween.kill()
 	_anim_tween = create_tween()
 	_anim_tween.tween_property(self, "_open_progress", target, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
+## 按开启进度应用门的表现：门板淡出成残影、门缝透光并关闭碰撞。
 func _apply_open_progress() -> void:
 	var is_sprite_door := is_instance_valid(_door_visual) and _door_visual is Sprite2D
 	# 统一改成“门板淡出 + 碰撞关闭”，不再让任何门发生扇叶旋转推人。
@@ -137,6 +153,7 @@ func _apply_open_progress() -> void:
 		var gap_alpha := 1.0 if is_sprite_door else GAP_ALPHA
 		_door_gap.modulate = Color(1.0, 1.0, 1.0, lerpf(0.0, gap_alpha, _open_progress))
 
+## 更新交互提示标签：玩家在附近且门需要操作时显示按键提示。
 func _sync_hint() -> void:
 	if not is_instance_valid(_hint_label):
 		return
@@ -146,6 +163,7 @@ func _sync_hint() -> void:
 	else:
 		_hint_label.visible = false
 
+## 同步可交互状态：玩家在附近且门待操作时加入 interactable 组。
 func _sync_interaction_state() -> void:
 	if _player_inside_count > 0 and (_locked or not _is_open):
 		add_to_group("interactable")
@@ -153,10 +171,15 @@ func _sync_interaction_state() -> void:
 		remove_from_group("interactable")
 	_sync_hint()
 
+## 通过关卡场景显示提示文本。
+## [param text] 提示内容。
 func _show_level_hint(text: String) -> void:
 	if _level and _level.has_method("show_hint"):
 		_level.show_hint(text)
 
+## 计算门板开启角度：向远离开启者的一侧摆动。
+## [param opener] 触发开门的节点，用于判断其位于门的哪一侧。
+## [return] 门板相对关闭状态的旋转角（弧度）。
 func _resolve_open_angle(opener: Node = null) -> float:
 	var actor = opener if opener is Node2D else _get_player_actor()
 	var desired_swing_side = _room_side_normal
@@ -167,8 +190,13 @@ func _resolve_open_angle(opener: Node = null) -> float:
 	var closed_direction = Vector2.DOWN if _door_vertical else Vector2.RIGHT
 	return wrapf(desired_swing_side.angle() - closed_direction.angle(), -PI, PI)
 
+## 获取场景中的玩家节点。
+## [return] 玩家 Node2D，不存在时返回 null。
 func _get_player_actor() -> Node2D:
 	return get_tree().get_first_node_in_group("player") as Node2D
 
+## 判断节点是否为可操作门的玩家。
+## [param body] 待判断的节点。
+## [return] 是玩家时返回 true。
 func _is_door_user(body: Node) -> bool:
 	return body.is_in_group("player")

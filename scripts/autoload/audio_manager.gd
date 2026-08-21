@@ -27,6 +27,7 @@ var _bgm_playlist_pause: float = 3.0  # 曲间停顿秒数
 var _bgm_playlist_fade: float = 1.5   # 渐变时长
 var _bgm_playlist_active: bool = false
 
+## 初始化：创建 BGM、环境音与 SFX 播放器池，并预加载常用音效。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_click_sfx = _load_optional_stream("res://assets/audio/sfx/ui_click.mp3")
@@ -52,6 +53,9 @@ func _ready() -> void:
 		add_child(player)
 		sfx_players.append(player)
 
+## 淡出旧 BGM 后切换到新曲目并淡入。
+## [param stream] 要播放的新音频流。
+## [param fade_duration] 淡出/淡入时长（秒）。
 func play_bgm(stream: AudioStream, fade_duration: float = 1.0) -> void:
 	if is_silence_mode:
 		return
@@ -66,6 +70,8 @@ func play_bgm(stream: AudioStream, fade_duration: float = 1.0) -> void:
 	_bgm_tween = create_tween()
 	_bgm_tween.tween_property(bgm_player, "volume_db", -5.0, fade_duration)
 
+## 淡出并停止当前 BGM。
+## [param fade_duration] 淡出时长（秒）。
 func stop_bgm(fade_duration: float = 1.0) -> void:
 	if _bgm_tween and _bgm_tween.is_valid():
 		_bgm_tween.kill()
@@ -74,6 +80,9 @@ func stop_bgm(fade_duration: float = 1.0) -> void:
 	await _bgm_tween.finished
 	bgm_player.stop()
 
+## 从空闲的 SFX 播放器池中取一个播放器播放音效。
+## [param stream] 要播放的音频流。
+## [param volume_db] 播放音量（分贝）。
 func play_sfx(stream: AudioStream, volume_db: float = 0.0) -> void:
 	for player in sfx_players:
 		if not player.playing:
@@ -82,39 +91,53 @@ func play_sfx(stream: AudioStream, volume_db: float = 0.0) -> void:
 			player.play()
 			return
 
+## 尝试加载音频资源，路径不存在时不报错。
+## [param path] 资源路径。
+## [return] 加载到的 AudioStream；路径不存在时返回 null。
 func _load_optional_stream(path: String) -> AudioStream:
 	if ResourceLoader.exists(path):
 		return load(path)
 	return null
 
+## 播放 UI 点击音效。
 func play_ui_click(volume_db: float = -10.0) -> void:
 	if ui_click_sfx:
 		play_sfx(ui_click_sfx, volume_db)
 
+## 播放打开系统界面（如暂停菜单）的音效。
 func play_system_open(volume_db: float = -8.0) -> void:
 	if system_open_sfx:
 		play_sfx(system_open_sfx, volume_db)
 
+## 播放拾取道具音效。
 func play_pickup_sfx(volume_db: float = -6.0) -> void:
 	if pickup_sfx:
 		play_sfx(pickup_sfx, volume_db)
 
+## 播放非定位的脚步声音效。
 func play_footstep(volume_db: float = -12.0) -> void:
 	if footstep_sfx:
 		play_sfx(footstep_sfx, volume_db)
 
+## 在指定世界坐标播放脚步声（带空间感）。
+## [param pos] 世界坐标位置。
+## [param volume_db] 播放音量（分贝）。
 func play_footstep_at_position(pos: Vector2, volume_db: float = -14.0) -> void:
 	if footstep_sfx:
 		play_sfx_at_position(pos, footstep_sfx, volume_db)
 
+## 播放开门音效。
 func play_door_open(volume_db: float = -9.0) -> void:
 	if door_open_sfx:
 		play_sfx(door_open_sfx, volume_db)
 
+## 播放关门音效。
 func play_door_close(volume_db: float = -11.0) -> void:
 	if door_close_sfx:
 		play_sfx(door_close_sfx, volume_db)
 
+## 递归遍历节点树，为所有未绑定的 BaseButton 自动挂接点击音效。
+## [param root] 遍历起始节点。
 func wire_button_clicks(root: Node) -> void:
 	if root == null:
 		return
@@ -127,29 +150,37 @@ func wire_button_clicks(root: Node) -> void:
 				child.pressed.connect(_on_ui_button_pressed)
 		wire_button_clicks(child)
 
+## 按钮 pressed 信号回调：播放 UI 点击音效。
 func _on_ui_button_pressed() -> void:
 	play_ui_click()
 
+## CheckButton toggled 信号回调：播放 UI 点击音效。
 func _on_ui_toggle_changed(_on: bool) -> void:
 	play_ui_click()
 
+## 播放循环环境音。
+## [param stream] 环境音音频流。
 func play_ambience(stream: AudioStream) -> void:
 	if is_silence_mode:
 		return
 	ambience_player.stream = stream
 	ambience_player.play()
 
+## 停止当前环境音。
 func stop_ambience() -> void:
 	ambience_player.stop()
 
+## 进入死寂模式：立即停掉 BGM 与环境音，并屏蔽后续播放请求。
 func enter_silence_mode() -> void:
 	is_silence_mode = true
 	stop_bgm(0.1)
 	stop_ambience()
 
+## 退出死寂模式，恢复正常播放。
 func exit_silence_mode() -> void:
 	is_silence_mode = false
 
+## 停止全部 BGM、环境音与 SFX。
 func stop_all() -> void:
 	bgm_player.stop()
 	ambience_player.stop()
@@ -157,6 +188,10 @@ func stop_all() -> void:
 		player.stop()
 
 # 播放一次性2D位置音效（有左右声道空间感，使用对象池）
+## 在场景指定位置播放一次性 2D 定位音效（使用对象池复用播放器）。
+## [param pos] 世界坐标位置。
+## [param stream] 要播放的音频流。
+## [param volume_db] 播放音量（分贝）。
 func play_sfx_at_position(pos: Vector2, stream: AudioStream, volume_db: float = 0.0) -> void:
 	var tree = get_tree()
 	if not tree or not tree.current_scene:
@@ -192,11 +227,14 @@ func play_playlist(tracks: Array[AudioStream], pause: float = 3.0, fade: float =
 		bgm_player.finished.connect(_on_playlist_track_finished)
 	_play_playlist_current()
 
+## 停止 BGM 播放列表轮播并清空队列。
+## [param fade] 淡出时长（秒）。
 func stop_playlist(fade: float = 1.0) -> void:
 	_bgm_playlist_active = false
 	_bgm_playlist.clear()
 	stop_bgm(fade)
 
+## 播放列表当前曲目（静音起播并渐入）。
 func _play_playlist_current() -> void:
 	if not _bgm_playlist_active or _bgm_playlist.is_empty():
 		return
@@ -209,6 +247,7 @@ func _play_playlist_current() -> void:
 	var tw = create_tween()
 	tw.tween_property(bgm_player, "volume_db", -5.0, _bgm_playlist_fade)
 
+## 曲目播完回调：按设定停顿后自动切到下一首（循环）。
 func _on_playlist_track_finished() -> void:
 	if not _bgm_playlist_active or _bgm_playlist.is_empty():
 		return
@@ -262,6 +301,8 @@ func connect_director() -> void:
 		Director.peak_reached.connect(_on_director_peak)
 		Director.relief_started.connect(_on_director_relief)
 
+## Director 张力变化回调：张力超过阈值时逐步加重低通混音。
+## [param t] 当前张力值（0.0 ~ 1.0）。
 func _on_director_tension_changed(t: float) -> void:
 	# 张力 > 0.7 时开始轻微混音
 	if t > 0.7:
@@ -269,10 +310,12 @@ func _on_director_tension_changed(t: float) -> void:
 	else:
 		set_audio_muffle(0.0, 1.0)
 
+## Director 高峰回调：短暂加重低通混音。
 func _on_director_peak() -> void:
 	# 高峰时短暂加重混音
 	set_audio_muffle(0.5, 0.3)
 
+## Director 缓释回调：缓慢恢复清晰音质。
 func _on_director_relief() -> void:
 	# 释放时缓慢恢复清晰
 	set_audio_muffle(0.0, 3.0)

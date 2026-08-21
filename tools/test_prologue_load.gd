@@ -17,6 +17,7 @@ const CHECKS := [
 	},
 ]
 
+## 逐个校验 CHECKS 中的场景：全部通过以 0 退出，否则输出错误并以 1 退出。
 func _init() -> void:
 	var failed := false
 	for check in CHECKS:

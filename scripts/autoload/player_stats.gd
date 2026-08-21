@@ -42,9 +42,12 @@ var in_light_area: bool = false          # 是否处于灯光区域（由 LevelB
 const DARKNESS_SANITY_DRAIN: float = 1.5  # 黑暗中仅手机光时每秒理智流失
 const LIGHT_SANITY_RECOVER: float = 0.8  # 有强光源或处于灯光区域时每秒理智恢复
 
+## 初始化节点，设置暂停时仍可继续处理。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+## 每帧驱动体力消耗/恢复与黑暗环境的理智变化。
+## [param delta] 距上一帧的时间间隔（秒）。
 func _process(delta: float) -> void:
 	if get_tree().paused:
 		return
@@ -62,6 +65,8 @@ func _process(delta: float) -> void:
 
 # ====== 体力值（Stamina）======
 
+## 根据移动/跑步状态结算体力消耗，站立时按低体力加速规则恢复。
+## [param delta] 距上一帧的时间间隔（秒）。
 func _process_stamina(delta: float) -> void:
 	var drain := 0.0
 	var panic_mult := PANIC_STAMINA_MULTIPLIER if is_panic else 1.0
@@ -79,6 +84,8 @@ func _process_stamina(delta: float) -> void:
 
 	change_stamina(-drain * delta)
 
+## 增减体力值并进行脱力判定。
+## [param amount] 变化量，负数消耗、正数恢复，结果钳制在 [0, max_stamina]。
 func change_stamina(amount: float) -> void:
 	var old = stamina
 	stamina = clampf(stamina + amount, 0.0, max_stamina)
@@ -92,6 +99,8 @@ func change_stamina(amount: float) -> void:
 		is_exhausted = false
 		exhaustion_ended.emit()
 
+## 直接设置体力值并同步清除脱力状态。
+## [param value] 目标体力值，自动钳制到 [0, max_stamina]。
 func set_stamina(value: float) -> void:
 	stamina = clampf(value, 0.0, max_stamina)
 	stamina_changed.emit(stamina, max_stamina)
@@ -100,6 +109,8 @@ func set_stamina(value: float) -> void:
 		is_exhausted = false
 		exhaustion_ended.emit()
 
+## 获取当前体力百分比。
+## [return] 体力占最大值的比例（0.0~1.0），max_stamina 为 0 时返回 0.0。
 func get_stamina_percent() -> float:
 	return stamina / max_stamina if max_stamina > 0 else 0.0
 
@@ -110,6 +121,8 @@ func update_movement_state(moving: bool, running: bool) -> void:
 
 # ====== 理智值（Sanity）======
 
+## 扣除理智值，归零时触发精神崩溃死亡信号。
+## [param amount] 扣除量，结果钳制在 [0, max_sanity]。
 func reduce_sanity(amount: float) -> void:
 	## 扣除理智（供怪物攻击、惊吓事件调用）
 	var old = sanity
@@ -120,6 +133,8 @@ func reduce_sanity(amount: float) -> void:
 	if sanity <= 0 and old > 0:
 		game_over_insanity.emit()
 
+## 恢复理智值。
+## [param amount] 恢复量，结果钳制在 [0, max_sanity]。
 func restore_sanity(amount: float) -> void:
 	## 恢复理智（安全道具、特定事件）
 	var old = sanity
@@ -128,14 +143,19 @@ func restore_sanity(amount: float) -> void:
 		sanity_changed.emit(sanity, max_sanity)
 	_check_panic_state()
 
+## 直接设置理智值并刷新恐慌状态。
+## [param value] 目标理智值，自动钳制到 [0, max_sanity]。
 func set_sanity(value: float) -> void:
 	sanity = clampf(value, 0.0, max_sanity)
 	sanity_changed.emit(sanity, max_sanity)
 	_check_panic_state()
 
+## 获取当前理智百分比。
+## [return] 理智占最大值的比例（0.0~1.0），max_sanity 为 0 时返回 0.0。
 func get_sanity_percent() -> float:
 	return sanity / max_sanity if max_sanity > 0 else 0.0
 
+## 检查理智是否跌破恐慌阈值并同步恐慌状态切换信号。
 func _check_panic_state() -> void:
 	var should_panic = get_sanity_percent() < PANIC_THRESHOLD
 	if should_panic != is_panic:
@@ -146,6 +166,8 @@ func _check_panic_state() -> void:
 
 # ====== 物品效果处理（由 InventoryManager 调用）======
 
+## 遍历并应用物品效果列表。
+## [param effects] 效果字典数组，每项格式: {"type": "stamina|sanity", "value": 数值}。
 func apply_item_effects(effects: Array) -> void:
 	## 处理物品的效果列表
 	## 效果格式: {"type": "stamina|sanity", "value": 数值}
@@ -163,6 +185,7 @@ func apply_item_effects(effects: Array) -> void:
 
 # ====== 重置 ======
 
+## 将所有状态重置为初始值（开始新游戏时调用）。
 func reset() -> void:
 	stamina = max_stamina
 	sanity = max_sanity

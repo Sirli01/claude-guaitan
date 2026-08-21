@@ -7,6 +7,7 @@ extends LevelBaseV2
 @onready var ui_layer: CanvasLayer = %UILayer
 @onready var rules_layer: CanvasLayer = %RulesLayer
 
+## 结局场景入口：清理音频状态、播放结局 BGM 并启动演出流程
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS  # 避免 rule_paper.open() 暂停影响本场景协程
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
@@ -69,6 +70,8 @@ func _show_text_block(ui_layer: CanvasLayer, lines: Array) -> void:
 	await fade.finished
 	container.queue_free()
 
+## 播放结局演出：电梯独白 → 规则纸条"她在说谎" → Demo End 致谢。
+## [param ui_layer] 结局文字层。
 func _play_ending(ui_layer: CanvasLayer) -> void:
 	# ===== 电梯中：主角掏出纸条 =====
 	await _show_text_block(ui_layer, [

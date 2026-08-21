@@ -21,6 +21,7 @@ var _sanity_pulse_tween: Tween
 var _distortion_rect: ColorRect  # 低理智扭曲
 var _interference_rect: ColorRect  # 怪物信号干扰
 
+## 初始化各全屏效果层（暗角/迷雾/闪屏/噪点/理智暗角/扭曲/干扰）。
 func _ready() -> void:
 	layer = 90  # 在大多数UI之上
 	add_to_group("atmosphere_layer")
@@ -78,6 +79,10 @@ func _ready() -> void:
 
 # ====== 暗角 ======
 
+## 设置暗角效果的强度与颜色，带淡入淡出过渡。
+## [param intensity] 暗角强度，0 为关闭，1 为最暗。
+## [param color] 暗角颜色。
+## [param fade_time] 过渡时长（秒）。
 func set_vignette(intensity: float = 0.5, color: Color = Color.BLACK, fade_time: float = 1.0) -> void:
 	## intensity: 0=无暗角, 1=全黑
 	if intensity <= 0:
@@ -94,6 +99,9 @@ func set_vignette(intensity: float = 0.5, color: Color = Color.BLACK, fade_time:
 	var tw = create_tween()
 	tw.tween_property(_vignette_rect, "modulate:a", 1.0, fade_time)
 
+## 创建径向渐变暗角着色器材质。
+## [param intensity] 暗角强度（0~1）。
+## [return] 配置好的 ShaderMaterial。
 func _make_vignette_material(intensity: float) -> ShaderMaterial:
 	var shader = Shader.new()
 	shader.code = """
@@ -113,6 +121,10 @@ void fragment() {
 
 # ====== 迷雾 ======
 
+## 设置全屏迷雾的颜色与浓度，带淡入淡出过渡。
+## [param color] 迷雾颜色。
+## [param density] 迷雾浓度，0 为关闭。
+## [param fade_time] 过渡时长（秒）。
 func set_fog(color: Color = Color(0.1, 0.08, 0.06), density: float = 0.2, fade_time: float = 2.0) -> void:
 	if density <= 0:
 		if _fog_rect.visible:
@@ -128,15 +140,23 @@ func set_fog(color: Color = Color(0.1, 0.08, 0.06), density: float = 0.2, fade_t
 
 # ====== 恐怖闪屏 ======
 
+## 恐怖闪屏：指定颜色瞬间亮起后快速淡出。
+## [param color] 闪屏颜色。
+## [param duration] 淡出时长（秒）。
+## [param intensity] 初始亮度（0~1）。
 func flash_scare(color: Color = Color.RED, duration: float = 0.15, intensity: float = 0.8) -> void:
 	_flash_rect.color = color
 	_flash_rect.modulate.a = intensity
 	var tw = create_tween()
 	tw.tween_property(_flash_rect, "modulate:a", 0.0, duration).set_ease(Tween.EASE_IN)
 
+## 白色闪屏（常用于转场）。
+## [param duration] 淡出时长（秒）。
 func flash_white(duration: float = 0.3) -> void:
 	flash_scare(Color.WHITE, duration, 1.0)
 
+## 黑屏过渡：先短暂全黑再淡出。
+## [param duration] 总时长（秒）。
 func flash_black(duration: float = 0.5) -> void:
 	_flash_rect.color = Color.BLACK
 	_flash_rect.modulate.a = 1.0
@@ -146,6 +166,9 @@ func flash_black(duration: float = 0.5) -> void:
 
 # ====== 心跳效果（屏幕边缘脉冲红光）======
 
+## 心跳效果：屏幕边缘红光按指定 BPM 节奏脉冲。
+## [param duration] 效果持续时长（秒）。
+## [param bpm] 心跳频率（次/分钟）。
 func pulse_heartbeat(duration: float = 5.0, bpm: float = 80.0) -> void:
 	if _heartbeat_tween and _heartbeat_tween.is_valid():
 		_heartbeat_tween.kill()
@@ -165,6 +188,7 @@ func pulse_heartbeat(duration: float = 5.0, bpm: float = 80.0) -> void:
 	_heartbeat_tween.tween_property(_vignette_rect, "modulate:a", 0.0, 0.5)
 	_heartbeat_tween.tween_callback(func(): _vignette_rect.visible = false)
 
+## 停止心跳效果并隐藏暗角层。
 func stop_heartbeat() -> void:
 	if _heartbeat_tween and _heartbeat_tween.is_valid():
 		_heartbeat_tween.kill()
@@ -173,6 +197,9 @@ func stop_heartbeat() -> void:
 
 # ====== 噪点/静电 ======
 
+## 设置噪点/静电效果强度，带淡入淡出过渡。
+## [param intensity] 噪点强度，0 为关闭。
+## [param fade_time] 过渡时长（秒）。
 func set_grain(intensity: float = 0.15, fade_time: float = 0.5) -> void:
 	if intensity <= 0:
 		if _grain_rect.visible:
@@ -186,6 +213,9 @@ func set_grain(intensity: float = 0.15, fade_time: float = 0.5) -> void:
 	var tw = create_tween()
 	tw.tween_property(_grain_rect, "modulate:a", 1.0, fade_time)
 
+## 创建随机噪点着色器材质。
+## [param intensity] 噪点强度（0~1）。
+## [return] 配置好的 ShaderMaterial。
 func _make_grain_material(intensity: float) -> ShaderMaterial:
 	var shader = Shader.new()
 	shader.code = """
@@ -203,6 +233,9 @@ void fragment() {
 
 # ====== 色调偏移 ======
 
+## 设置整体画面色调偏移，传入白色表示还原。
+## [param tint] 色调颜色。
+## [param fade_time] 过渡时长（秒）。
 func set_color_grade(tint: Color = Color(0.9, 0.85, 1.0), fade_time: float = 1.0) -> void:
 	## 整体画面色调偏移（冷色=蓝调恐怖，暖色=压抑感）
 	if tint == Color.WHITE:
@@ -212,6 +245,9 @@ func set_color_grade(tint: Color = Color(0.9, 0.85, 1.0), fade_time: float = 1.0
 
 # ====== 屏幕震动 ======
 
+## 屏幕震动：让当前相机按衰减强度随机抖动。
+## [param intensity] 震动幅度（像素）。
+## [param duration] 震动持续时长（秒）。
 func screen_shake(intensity: float = 5.0, duration: float = 0.5) -> void:
 	var camera = get_viewport().get_camera_2d()
 	if not camera:
@@ -229,6 +265,8 @@ func screen_shake(intensity: float = 5.0, duration: float = 0.5) -> void:
 
 # ====== 一键清除所有效果 ======
 
+## 一键清除所有氛围效果并恢复默认状态。
+## [param fade_time] 各效果淡出的时长（秒）。
 func clear_all(fade_time: float = 1.0) -> void:
 	stop_heartbeat()
 	set_sanity_vignette(false)
@@ -241,6 +279,8 @@ func clear_all(fade_time: float = 1.0) -> void:
 
 # ====== 理智暗角（Sanity Vignette）======
 
+## 开关恐慌模式的理智暗角脉冲遮罩。
+## [param enabled] true 开启循环脉冲，false 淡出关闭。
 func set_sanity_vignette(enabled: bool) -> void:
 	## 恐慌模式：屏幕边缘暗红/黑色脉冲遮罩
 	if enabled:
@@ -259,6 +299,8 @@ func set_sanity_vignette(enabled: bool) -> void:
 			tw.tween_property(_sanity_vignette_rect, "modulate:a", 0.0, 0.5)
 			tw.tween_callback(func(): _sanity_vignette_rect.visible = false)
 
+## 创建理智暗角着色器材质（暗红到黑色的径向渐变环）。
+## [return] 配置好的 ShaderMaterial。
 func _make_sanity_vignette_material() -> ShaderMaterial:
 	var shader = Shader.new()
 	shader.code = """
@@ -278,6 +320,9 @@ void fragment() {
 
 # ====== 低理智画面扭曲 ======
 
+## 设置低理智时的画面水波扭曲强度。
+## [param intensity] 扭曲强度，0 为关闭，1 为最强。
+## [param fade_time] 过渡时长（秒）。
 func set_distortion(intensity: float = 0.3, fade_time: float = 1.0) -> void:
 	## 理智低时画面波纹扭曲（intensity 0~1）
 	if intensity <= 0:
@@ -292,6 +337,9 @@ func set_distortion(intensity: float = 0.3, fade_time: float = 1.0) -> void:
 	var tw = create_tween()
 	tw.tween_property(_distortion_rect, "modulate:a", 1.0, fade_time)
 
+## 创建屏幕空间水波扭曲着色器材质（含边缘增强与色差）。
+## [param intensity] 扭曲强度（0~1）。
+## [return] 配置好的 ShaderMaterial。
 func _make_distortion_material(intensity: float) -> ShaderMaterial:
 	var shader = Shader.new()
 	shader.code = """
@@ -323,6 +371,9 @@ void fragment() {
 
 # ====== 怪物信号干扰 ======
 
+## 设置怪物靠近时的 TV 信号干扰效果强度。
+## [param intensity] 干扰强度，0 为关闭，1 为最强。
+## [param fade_time] 过渡时长（秒）。
 func set_interference(intensity: float = 0.5, fade_time: float = 0.3) -> void:
 	## 怪物靠近时的TV信号干扰效果（噪点+扫描线+色偏）
 	if intensity <= 0:
@@ -337,9 +388,14 @@ func set_interference(intensity: float = 0.5, fade_time: float = 0.3) -> void:
 	var tw = create_tween()
 	tw.tween_property(_interference_rect, "modulate:a", 1.0, fade_time)
 
+## 停止怪物信号干扰效果（淡出）。
+## [param fade_time] 淡出时长（秒）。
 func stop_interference(fade_time: float = 0.5) -> void:
 	set_interference(0, fade_time)
 
+## 创建 TV 干扰着色器材质（扫描线+噪点+水平错位+色偏）。
+## [param intensity] 干扰强度（0~1）。
+## [return] 配置好的 ShaderMaterial。
 func _make_interference_material(intensity: float) -> ShaderMaterial:
 	var shader = Shader.new()
 	shader.code = """

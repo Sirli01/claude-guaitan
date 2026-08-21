@@ -103,6 +103,7 @@ func restore_floor_entry_inventory() -> void:
 	InventoryManager.item_counts = _floor_entry_item_counts.duplicate()
 	InventoryManager.inventory_changed.emit()
 
+## 初始化管理器：保证暂停状态下仍能处理游戏流程。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -261,16 +262,27 @@ func _reset_state_for_floor(floor_id: Floor) -> void:
 			}
 
 # ====== 对话快捷方法（自动通过ID查找显示名称）======
+## 构造一条对话台词数据。
+## [param who] 说话人角色ID（自动映射为显示名称）。
+## [param text] 台词内容。
+## [param emotion] 情绪标记（可选）。
+## [return] 包含 speaker/text/emotion 的台词字典。
 func say(who: String, text: String, emotion: String = "") -> Dictionary:
 	return {"speaker": NAMES.get(who, who), "text": text, "emotion": emotion}
 
 # ====== 美术素材加载（有素材用素材，没素材用色块）======
+## 获取角色贴图路径：优先 GameConfig 配置，其次本文件 SPRITE_PATHS。
+## [param char_id] 角色ID。
+## [return] 贴图资源路径，未配置时为空字符串。
 static func get_character_sprite_path(char_id: String) -> String:
 	var config_path = GameConfig.CHARACTER_SPRITES.get(char_id, "")
 	if config_path != "":
 		return config_path
 	return SPRITE_PATHS.get(char_id, "")
 
+## 获取角色帧序列目录（manifest.json 所在目录）。
+## [param char_id] 角色ID。
+## [return] 帧目录路径，未配置时为空字符串。
 static func get_character_frames_root(char_id: String) -> String:
 	var sprite_path = get_character_sprite_path(char_id)
 	if sprite_path == "":
@@ -280,6 +292,9 @@ static func get_character_frames_root(char_id: String) -> String:
 		return sprite_dir.get_base_dir()
 	return sprite_dir
 
+## 获取角色帧序列目录的绝对路径。
+## [param char_id] 角色ID。
+## [return] 绝对路径，未配置时为空字符串。
 static func get_character_frames_root_absolute(char_id: String) -> String:
 	var frames_root = get_character_frames_root(char_id)
 	if frames_root == "":
@@ -289,6 +304,11 @@ static func get_character_frames_root_absolute(char_id: String) -> String:
 # 纹理缓存（避免重复加载同一角色纹理）
 static var _texture_cache: Dictionary = {}
 
+## 加载角色纹理（带缓存）：有素材用素材，否则生成占位色块。
+## [param char_id] 角色ID。
+## [param width] 占位色块宽度（像素）。
+## [param height] 占位色块高度（像素）。
+## [return] 角色纹理。
 static func load_char_texture(char_id: String, width: int, height: int) -> Texture2D:
 	# 检查缓存
 	if _texture_cache.has(char_id):
@@ -305,6 +325,9 @@ static func load_char_texture(char_id: String, width: int, height: int) -> Textu
 	_texture_cache[char_id] = texture
 	return texture
 
+## 获取角色的视觉高度。
+## [param char_id] 角色ID。
+## [return] 视觉高度（像素）。
 static func get_character_visual_height(char_id: String) -> float:
 	match char_id:
 		"sister":
@@ -314,6 +337,9 @@ static func get_character_visual_height(char_id: String) -> float:
 		_:
 			return NPC_VISUAL_HEIGHT
 
+## 将角色 Sprite 缩放并定位到该角色的标准视觉高度。
+## [param sprite] 目标 Sprite2D。
+## [param char_id] 角色ID。
 static func fit_character_sprite(sprite: Sprite2D, char_id: String) -> void:
 	if sprite == null or sprite.texture == null:
 		return
@@ -326,6 +352,9 @@ static func fit_character_sprite(sprite: Sprite2D, char_id: String) -> void:
 	sprite.scale = Vector2.ONE * scale_factor
 	sprite.position = Vector2(0.0, -target_height * 0.5)
 
+## 按角色类型设置碰撞形状的尺寸与偏移。
+## [param collision] 目标 CollisionShape2D（矩形）。
+## [param char_id] 角色ID。
 static func fit_character_collision(collision: CollisionShape2D, char_id: String) -> void:
 	if collision == null:
 		return
@@ -344,6 +373,9 @@ static func fit_character_collision(collision: CollisionShape2D, char_id: String
 			rect.size = NPC_COLLISION_SIZE
 			collision.position = NPC_COLLISION_OFFSET
 
+## 创建角色脚下动态投影节点并完成初始化。
+## [param char_id] 角色ID。
+## [return] 投影节点实例。
 static func create_character_shadow_occluder(char_id: String) -> Node2D:
 	var shadow = load("res://scripts/effects/character_shadow.gd").new()
 	if shadow.has_method("setup"):

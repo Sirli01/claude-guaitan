@@ -34,6 +34,7 @@ var _footstep_timer: float = 0.0
 const WALK_FOOTSTEP_INTERVAL: float = 0.42
 const RUN_FOOTSTEP_INTERVAL: float = 0.28
 
+## 初始化玩家：加入分组、连接全局信号并创建帧动画组件。
 func _ready() -> void:
 	add_to_group("player")
 	GameManager.game_state_changed.connect(_on_game_state_changed)
@@ -50,6 +51,7 @@ func _ready() -> void:
 		frame_animator.idle_fps = 7.0
 	call_deferred("_connect_interaction_signals")
 
+## 连接交互区域进出信号（幂等，仅连接一次）。
 func _connect_interaction_signals() -> void:
 	if _signals_connected:
 		return
@@ -60,6 +62,8 @@ func _connect_interaction_signals() -> void:
 		interaction_area.area_exited.connect(_on_interaction_area_area_exited)
 		_signals_connected = true
 
+## 每物理帧处理移动输入、跑步/闪避判定、速度计算与脚步声更新。
+## [param delta] 距上一帧的时间间隔（秒）。
 func _physics_process(delta: float) -> void:
 	if not can_move or PlayerStats.is_exhausted:
 		velocity = Vector2.ZERO
@@ -131,12 +135,17 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_footstep_audio(delta, velocity.length_squared() > 1.0)
 
+## 触发一次闪避冲刺，沿输入方向位移并扣除体力。
+## [param input_dir] 闪避方向（取自玩家当前输入方向）。
 func _start_dodge(input_dir: Vector2) -> void:
 	_is_dodging = true
 	_dodge_timer = DODGE_DURATION
 	_dodge_direction = input_dir.normalized()
 	PlayerStats.change_stamina(-DODGE_STAMINA_COST)
 
+## 按走路/跑步节奏定时播放脚步声。
+## [param delta] 距上一帧的时间间隔（秒）。
+## [param moving] 玩家本帧是否在移动。
 func _update_footstep_audio(delta: float, moving: bool) -> void:
 	if not moving:
 		_footstep_timer = 0.0
@@ -147,11 +156,15 @@ func _update_footstep_audio(delta: float, moving: bool) -> void:
 	AudioManager.play_footstep(-10.0 if is_running or _is_dodging else -12.0)
 	_footstep_timer = RUN_FOOTSTEP_INTERVAL if is_running or _is_dodging else WALK_FOOTSTEP_INTERVAL
 
+## 处理原始按键输入：F12 触发全地图截图。
+## [param event] 输入事件。
 func _input(event: InputEvent) -> void:
 	# F12 = 全地图截图（调试用，放在 _input 确保不被 UI 拦截）
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F12:
 		_capture_full_map()
 
+## 处理未被 UI 消费的输入：推进对话、交互、开关规则书与物品栏。
+## [param event] 未被消费的输入事件。
 func _unhandled_input(event: InputEvent) -> void:
 	if GameManager.current_state == GameManager.GameState.DIALOGUE:
 		# 对话历史面板打开时不推进对话
@@ -187,6 +200,7 @@ func clear_texture_override() -> void:
 func _capture_full_map() -> void:
 	MapCaptureTool.capture_full_map(self)
 
+## 尝试与附近可交互物互动，优先选择距离最近的目标。
 func _try_interact() -> void:
 	var candidates: Array = []
 	# 收集缓存中的有效候选
@@ -209,33 +223,46 @@ func _try_interact() -> void:
 	)
 	candidates[0].interact()
 
+## 切换规则书界面的显示/隐藏。
 func _toggle_rules() -> void:
 	var rules_ui = get_tree().get_first_node_in_group("rules_ui")
 	if rules_ui:
 		rules_ui.toggle()
 
+## 切换物品栏界面的显示/隐藏。
 func _toggle_inventory() -> void:
 	var inv_ui = get_tree().get_first_node_in_group("inventory_ui")
 	if inv_ui:
 		inv_ui.toggle()
 
+## 可交互物体进入交互区域时缓存它。
+## [param body] 进入区域的节点。
 func _on_interaction_area_entered(body: Node2D) -> void:
 	if body.is_in_group("interactable"):
 		nearby_interactables.append(body)
 
+## 可交互物体离开交互区域时移除缓存。
+## [param body] 离开区域的节点。
 func _on_interaction_area_exited(body: Node2D) -> void:
 	nearby_interactables.erase(body)
 
+## 可交互 Area 进入交互区域时缓存它。
+## [param area] 进入区域的 Area2D。
 func _on_interaction_area_area_entered(area: Area2D) -> void:
 	if area.is_in_group("interactable"):
 		nearby_interactables.append(area)
 
+## 可交互 Area 离开交互区域时移除缓存。
+## [param area] 离开区域的 Area2D。
 func _on_interaction_area_area_exited(area: Area2D) -> void:
 	nearby_interactables.erase(area)
 
+## 游戏状态变化时同步玩家能否移动。
+## [param new_state] 新的游戏状态。
 func _on_game_state_changed(new_state: GameManager.GameState) -> void:
 	can_move = (new_state == GameManager.GameState.PLAYING)
 
+## 脱力开始回调：强制停止移动、播放喘息声并提示玩家休息。
 func _on_exhaustion_started() -> void:
 	## 脱力状态：强制停止移动，播放喘息声，提示玩家
 	velocity = Vector2.ZERO
@@ -244,10 +271,12 @@ func _on_exhaustion_started() -> void:
 	if level and level.has_method("show_hint"):
 		level.show_hint("没体力了……站着休息一下吧。", 4.0)
 
+## 脱力解除回调（当前无需额外处理）。
 func _on_exhaustion_ended() -> void:
 	## 脱力解除
 	pass
 
+## 理智归零回调：冻结玩家并延迟进入游戏结束流程。
 func _on_insanity_death() -> void:
 	## 理智归零 → 精神崩溃死亡
 	freeze_player()
@@ -256,6 +285,8 @@ func _on_insanity_death() -> void:
 	tw.tween_interval(1.0)
 	tw.tween_callback(func(): GameManager.go_to_game_over())
 
+## 恐慌模式切换时通知氛围层显示/隐藏理智脉冲遮罩。
+## [param is_panic] 是否处于恐慌模式。
 func _on_panic_mode_changed(is_panic: bool) -> void:
 	## 恐慌模式：通知氛围层显示/隐藏脉冲遮罩
 	var atmo = get_tree().get_first_node_in_group("atmosphere_layer")
@@ -273,6 +304,8 @@ func on_monster_hit(knockback_dir: Vector2 = Vector2.ZERO, sanity_damage: float 
 	if knockback_dir != Vector2.ZERO:
 		_do_knockback(knockback_dir.normalized())
 
+## 执行击退位移：逐帧碰撞检测移动，撞墙即停。
+## [param dir] 击退方向（单位向量）。
 func _do_knockback(dir: Vector2) -> void:
 	var distance := 80.0
 	var step := 5.0
@@ -285,12 +318,16 @@ func _do_knockback(dir: Vector2) -> void:
 			break
 		await get_tree().process_frame
 
+## 设置玩家是否允许跑步。
+## [param value] true 允许跑步，false 禁止。
 func set_can_run(value: bool) -> void:
 	can_run = value
 
+## 冻结玩家：禁止移动并将速度归零。
 func freeze_player() -> void:
 	can_move = false
 	velocity = Vector2.ZERO
 
+## 解除冻结，恢复玩家移动。
 func unfreeze_player() -> void:
 	can_move = true

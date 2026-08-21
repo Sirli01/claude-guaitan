@@ -3,6 +3,7 @@ extends Area2D
 
 var _level: Node
 
+## 触发场景通过 meta 注册的交互回调，实现踢贩卖机逻辑。
 func interact() -> void:
 	var callback = get_meta("interact_callback", Callable())
 	if callback.is_valid():

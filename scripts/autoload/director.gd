@@ -38,10 +38,13 @@ var time_since_last_peak: float = 0.0
 ## 是否被暂停（由 GameManager 控制）
 var _paused: bool = false
 
+## 初始化为常驻处理并随机首次积累时长。
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_roll_buildup_duration()
 
+## 驱动锯齿波张力循环：按当前阶段推进时间并更新张力值。
+## [param delta] 帧间隔时间（秒）。
 func _process(delta: float) -> void:
 	if _paused:
 		return

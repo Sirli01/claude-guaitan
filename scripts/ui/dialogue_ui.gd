@@ -72,6 +72,7 @@ const PORTRAIT_MAP := {
 	"余凡/surprised":"res://assets/sprites/portraits/余凡_surprised.png",
 }
 
+## 初始化对话UI：隐藏面板、注册到 DialogueManager 并连接对话信号。
 func _ready() -> void:
 	panel.visible = false
 	# TSCN已通过offset定义了正确的panel位置和大小(40,800,1880,1060)
@@ -86,6 +87,7 @@ func _ready() -> void:
 	_setup_history_panel()
 	_setup_debug_ui()
 
+## 节点移出场景树时断开与 DialogueManager 的所有信号连接。
 func _exit_tree() -> void:
 	if DialogueManager.dialogue_started.is_connected(_on_dialogue_started):
 		DialogueManager.dialogue_started.disconnect(_on_dialogue_started)
@@ -94,6 +96,8 @@ func _exit_tree() -> void:
 	if DialogueManager.dialogue_ended.is_connected(_on_dialogue_ended):
 		DialogueManager.dialogue_ended.disconnect(_on_dialogue_ended)
 
+## 对话开始回调：显示对话框并隐藏头像与继续指示符。
+## [param _speaker] 开始对话的说话者名（未使用）。
 func _on_dialogue_started(_speaker: String) -> void:
 	panel.visible = true
 	panel.focus_mode = Control.FOCUS_NONE  # 禁止焦点，消除紫粉色框
@@ -101,6 +105,10 @@ func _on_dialogue_started(_speaker: String) -> void:
 	continue_indicator.visible = false
 	_portrait.visible = false
 
+## 显示一行对话：记录历史、更新说话者与头像，并用打字机效果逐字显示文本。
+## [param speaker] 说话者名字，空字符串表示旁白。
+## [param text] 本行台词内容。
+## [param emotion] 表情ID，用于选择角色头像（可为空）。
 func _on_line_shown(speaker: String, text: String, emotion: String = "") -> void:
 	# 记录到历史
 	_history.append({"speaker": speaker, "text": text})
@@ -128,10 +136,12 @@ func _on_line_shown(speaker: String, text: String, emotion: String = "") -> void
 	_tween.tween_property(text_label, "visible_ratio", 1.0, duration)
 	_tween.tween_callback(_on_typing_finished)
 
+## 打字机效果结束回调：标记输入完成并显示继续指示符。
 func _on_typing_finished() -> void:
 	_is_typing = false
 	continue_indicator.visible = true
 
+## 对话结束回调：隐藏对话框、头像和对话历史面板。
 func _on_dialogue_ended() -> void:
 	panel.visible = false
 	_portrait.visible = false
@@ -139,6 +149,7 @@ func _on_dialogue_ended() -> void:
 		_history_panel.visible = false
 		_history_visible = false
 
+## 构建对话历史面板（半透明背景 + 滚动容器 + 垂直列表）。
 func _setup_history_panel() -> void:
 	# 半透明黑色背景面板，覆盖屏幕上半部分
 	_history_panel = PanelContainer.new()
@@ -168,6 +179,7 @@ func _setup_history_panel() -> void:
 	_history_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_history_scroll.add_child(_history_vbox)
 
+## 打开或关闭对话历史面板；打开时按说话者颜色重建全部历史条目并滚动到底部。
 func _toggle_history() -> void:
 	if _history_visible:
 		_history_panel.visible = false
@@ -232,6 +244,7 @@ func _toggle_history() -> void:
 	await get_tree().process_frame
 	_history_scroll.scroll_vertical = _history_scroll.get_v_scroll_bar().max_value
 
+## 创建头像容器与 TextureRect，并根据对话框顶部位置计算头像初始坐标。
 func _setup_portraits() -> void:
 	# 全屏容器
 	_portrait_container = Control.new()
@@ -260,6 +273,9 @@ func _setup_portraits() -> void:
 	_portrait.material = mat
 	_portrait_container.add_child(_portrait)
 
+## 根据说话者与表情ID查找并显示对应头像，找不到时回退默认头像或警告。
+## [param speaker] 说话者名字。
+## [param emotion] 表情ID，优先匹配"角色名/表情"组合头像（可为空）。
 func _show_portrait(speaker: String, emotion: String = "") -> void:
 	_portrait.visible = false
 	
@@ -284,6 +300,8 @@ func _show_portrait(speaker: String, emotion: String = "") -> void:
 	_portrait.visible = true
 	# Portrait display debug removed for production
 
+## 按角色设置说话者名字标签的字体颜色，未知角色使用灰色。
+## [param speaker] 说话者名字。
 func _set_speaker_color(speaker: String) -> void:
 	match speaker:
 		"夏桐":
@@ -301,6 +319,8 @@ func _set_speaker_color(speaker: String) -> void:
 		_:
 			speaker_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 
+## 跳过正在进行的打字机效果，立即显示完整台词。
+## [return] 若确实跳过了打字过程返回 true，否则返回 false。
 func skip_typewriter() -> bool:
 	if _is_typing and _tween:
 		_tween.kill()
@@ -310,6 +330,7 @@ func skip_typewriter() -> bool:
 	return false
 
 # ===== 头像配置 =====
+## 从用户目录配置文件加载头像的位置与大小，并保证不超出左边界。
 func _load_portrait_config() -> void:
 	var config = ConfigFile.new()
 	if config.load(CONFIG_PATH) == OK:
@@ -320,6 +341,7 @@ func _load_portrait_config() -> void:
 	# 确保头像不超出左边界
 	portrait_pos.x = max(portrait_pos.x, 0.0)
 
+## 将当前头像位置与大小保存到用户目录配置文件。
 func _save_portrait_config() -> void:
 	var config = ConfigFile.new()
 	config.set_value("portrait", "x", portrait_pos.x)
@@ -328,6 +350,7 @@ func _save_portrait_config() -> void:
 	config.set_value("portrait", "h", portrait_size.y)
 	config.save(CONFIG_PATH)
 
+## 把 portrait_pos / portrait_size 应用到头像节点上。
 func _apply_portrait_transform() -> void:
 	if _portrait:
 		_portrait.position = portrait_pos
@@ -335,6 +358,7 @@ func _apply_portrait_transform() -> void:
 		_portrait.custom_minimum_size = portrait_size
 
 # ===== 头像调试工具（F9 切换）=====
+## 创建头像调试用的坐标信息标签与黄色边框指示（默认隐藏）。
 func _setup_debug_ui() -> void:
 	# 坐标信息标签
 	_debug_label = Label.new()
@@ -354,6 +378,7 @@ func _setup_debug_ui() -> void:
 	_debug_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_portrait_container.add_child(_debug_border)
 
+## 进入或退出头像调试模式；进入时显示测试头像供拖动缩放，退出时保存配置。
 func _toggle_debug_mode() -> void:
 	_debug_mode = not _debug_mode
 	if _debug_mode:
@@ -391,6 +416,7 @@ func _toggle_debug_mode() -> void:
 		_debug_dragging = false
 		push_warning("[DialogueUI] portrait config saved: pos=%s size=%s" % [str(portrait_pos), str(portrait_size)])
 
+## 刷新调试标签上的坐标文字与边框位置大小。
 func _update_debug_info() -> void:
 	_debug_label.text = "【头像调试】 位置: (%d, %d)  大小: %dx%d\n拖动=移动 | 滚轮=缩放 | F10=保存退出" % [
 		int(portrait_pos.x), int(portrait_pos.y),
@@ -399,6 +425,8 @@ func _update_debug_info() -> void:
 	_debug_border.position = portrait_pos - Vector2(2, 2)
 	_debug_border.size = portrait_size + Vector2(4, 4)
 
+## 处理全局输入：F10 切换调试模式、滚轮开合对话历史、调试模式下拖动/缩放头像。
+## [param event] 输入事件。
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F10:
 		_toggle_debug_mode()

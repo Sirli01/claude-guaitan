@@ -30,6 +30,7 @@ var _wlm: Node
 # 存储信号回调以便场景退出时断开
 var _signal_callbacks: Array[Dictionary] = []
 
+## 房间场景入口：初始化玩家/交互区/UI，并按是否首次进入播放开场独白
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return

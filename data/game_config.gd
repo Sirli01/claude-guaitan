@@ -150,23 +150,38 @@ const SFX := {
 # ║           工 具 方 法                     ║
 # ╚══════════════════════════════════════════╝
 
+## 安全加载音频资源。
+## [param path] 音频文件路径。
+## [return] 加载的音频流；路径为空或资源不存在时返回 null。
 static func load_audio(path: String) -> AudioStream:
 	## 安全加载音频（路径为空或不存在则返回null）
 	if path == "" or not ResourceLoader.exists(path):
 		return null
 	return load(path)
 
+## 安全加载纹理资源。
+## [param path] 纹理文件路径。
+## [return] 加载的纹理；路径为空或资源不存在时返回 null。
 static func load_texture(path: String) -> Texture2D:
 	## 安全加载纹理（路径为空或不存在则返回null）
 	if path == "" or not ResourceLoader.exists(path):
 		return null
 	return load(path)
 
+## 获取指定场景的背景音乐。
+## [param scene_id] 场景 ID。
+## [return] 对应 BGM 音频流；未配置时返回 null。
 static func get_bgm(scene_id: String) -> AudioStream:
 	return load_audio(BGM.get(scene_id, ""))
 
+## 获取指定场景的环境音。
+## [param scene_id] 场景 ID。
+## [return] 对应环境音音频流；未配置时返回 null。
 static func get_ambience(scene_id: String) -> AudioStream:
 	return load_audio(AMBIENCE.get(scene_id, ""))
 
+## 获取指定音效。
+## [param sfx_id] 音效 ID。
+## [return] 对应音效音频流；未配置时返回 null。
 static func get_sfx(sfx_id: String) -> AudioStream:
 	return load_audio(SFX.get(sfx_id, ""))

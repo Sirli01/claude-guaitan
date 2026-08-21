@@ -33,6 +33,7 @@ const ELEVATOR_DOOR_OPEN_TEX_PATH := "res://assets/sprites/打开的电梯门.pn
 
 var _door_visual: Node = null
 
+## 节点就绪回调：编辑器中立即重建预览，运行时延迟构建。
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		_rebuild()
@@ -40,17 +41,21 @@ func _ready() -> void:
 		# 运行时延迟构建：可能向关卡添加世界标签，场景装载期间会失败
 		call_deferred("_rebuild")
 
+## 清空并重建门的全部子节点（视觉/碰撞/触发区域）。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
 	_clear_children()
 	_build()
 
+## 释放所有子节点并重置门视觉引用。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 	_door_visual = null
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -58,6 +63,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 构建门内容：编辑器走预览分支，运行时走完整构建分支。
 func _build() -> void:
 	var owner_node := _get_owner()
 
@@ -66,6 +72,8 @@ func _build() -> void:
 	else:
 		_build_runtime()
 
+## 在编辑器中构建门框、门扇、标签与需求提示预览。
+## [param owner_node] 子节点归属的 owner 场景根节点。
 func _build_editor_preview(owner_node: Node) -> void:
 	# 门框
 	var frame := ColorRect.new()
@@ -119,6 +127,7 @@ func _build_editor_preview(owner_node: Node) -> void:
 		add_child(req_lbl)
 		req_lbl.set_owner(owner_node)
 
+## 运行时构建：按到达/目标类型生成开门视觉、碰撞阻挡与交互触发区域，并添加电梯标签。
 func _build_runtime() -> void:
 	var level := _find_level()
 	var door_center := position
@@ -139,6 +148,8 @@ func _build_runtime() -> void:
 		var label_text := LocaleManager.world_text(elevator_label) if LocaleManager else elevator_label
 		level.create_world_label(label_text, position + Vector2(-14, -door_size.y / 2 - 20), 14, Color(0.4, 0.4, 0.45))
 
+## 构建打开状态的电梯门视觉（贴图或色块回退）。
+## [param center] 门视觉的中心位置。
 func _build_open_door(center: Vector2) -> void:
 	if ResourceLoader.exists(ELEVATOR_DOOR_OPEN_TEX_PATH):
 		var door := Sprite2D.new()
@@ -168,6 +179,8 @@ func _build_open_door(center: Vector2) -> void:
 		top.color = Color(0.18, 0.18, 0.2)
 		add_child(top)
 
+## 构建关闭状态的电梯门视觉（贴图缺失时回退为开门样式）。
+## [param center] 门视觉的中心位置。
 func _build_closed_door(center: Vector2) -> void:
 	if ResourceLoader.exists(ELEVATOR_DOOR_TEX_PATH):
 		var door := Sprite2D.new()
@@ -182,6 +195,8 @@ func _build_closed_door(center: Vector2) -> void:
 	else:
 		_build_open_door(center)  # 回退
 
+## 在指定位置创建矩形静态碰撞体，阻挡玩家通行。
+## [param center] 碰撞体中心位置。
 func _build_blocker(center: Vector2) -> void:
 	var blocker := StaticBody2D.new()
 	blocker.collision_layer = 4
@@ -193,6 +208,7 @@ func _build_blocker(center: Vector2) -> void:
 	col.shape = shape
 	blocker.add_child(col)
 
+## 创建玩家进入检测区域：校验电梯卡与事件条件后加载目标场景。
 func _build_trigger() -> void:
 	var level := _find_level()
 	if not level:
@@ -236,6 +252,8 @@ func open_door() -> void:
 		if child is StaticBody2D:
 			child.queue_free()
 
+## 向上遍历祖先查找关卡节点。
+## [return] 含 show_hint 方法的关卡节点，未找到返回 null。
 func _find_level() -> Node:
 	var p := get_parent()
 	while p:

@@ -122,6 +122,8 @@ func is_using_preview_frames() -> bool:
 
 # ====== 内部方法 ======
 
+## 从角色帧目录加载 walk/idle 帧序列并应用预览布局。
+## [param char_id] 角色ID。
 func _load_frames(char_id: String) -> void:
 	var base_dir := _get_export_dir(char_id)
 	if base_dir.is_empty():
@@ -167,17 +169,26 @@ func _load_frames(char_id: String) -> void:
 	_apply_preview_layout()
 	animation_setup_complete.emit()
 
+## 获取角色帧导出目录（需存在 manifest.json）。
+## [param char_id] 角色ID。
+## [return] 目录路径，不存在时为空字符串。
 func _get_export_dir(char_id: String) -> String:
 	var res_dir := GameManager.get_character_frames_root(char_id)
 	if not res_dir.is_empty() and ResourceLoader.exists(res_dir.path_join("manifest.json")):
 		return res_dir
 	return ""
 
+## 加载指定路径的纹理资源。
+## [param path] 纹理路径。
+## [return] 纹理，不存在时为 null。
 func _load_texture(path: String) -> Texture2D:
 	if not ResourceLoader.exists(path):
 		return null
 	return ResourceLoader.load(path)
 
+## 读取并解析 manifest.json 清单。
+## [param path] 清单文件路径。
+## [return] 解析后的字典，失败时为空字典。
 func _load_manifest(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
@@ -189,6 +200,7 @@ func _load_manifest(path: String) -> Dictionary:
 		return parsed
 	return {}
 
+## 按 manifest 的画布尺寸与基线应用预览帧布局。
 func _apply_preview_layout() -> void:
 	if not sprite:
 		return
@@ -199,6 +211,7 @@ func _apply_preview_layout() -> void:
 	sprite.scale = Vector2.ONE * _preview_scale
 	sprite.position = Vector2(-_canvas_size.x * 0.5 * _preview_scale, -_baseline_y * _preview_scale)
 
+## 恢复使用者设置的默认 Sprite 布局。
 func _apply_default_layout() -> void:
 	if not sprite:
 		return

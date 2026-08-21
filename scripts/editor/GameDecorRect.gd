@@ -46,6 +46,7 @@ class_name GameDecorRect
 ## 世界标签字号
 @export var label_font_size: int = 18
 
+## 节点就绪回调：编辑器中立即重建预览，运行时延迟构建。
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		_rebuild()
@@ -53,16 +54,20 @@ func _ready() -> void:
 		# 运行时延迟构建：可能向关卡添加世界标签，场景装载期间会失败
 		call_deferred("_rebuild")
 
+## 清空并重建装饰矩形的全部子节点。
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
 	_clear_children()
 	_build()
 
+## 释放所有子节点。
 func _clear_children() -> void:
 	for child in get_children():
 		child.queue_free()
 
+## 获取子节点应归属的 owner 节点。
+## [return] 编辑器中返回当前编辑场景根节点，运行时返回自身。
 func _get_owner() -> Node:
 	if Engine.is_editor_hint():
 		var tree = get_tree()
@@ -70,6 +75,7 @@ func _get_owner() -> Node:
 			return tree.edited_scene_root
 	return self
 
+## 构建装饰色块；编辑器额外显示名称标签，运行时转交 _build_runtime。
 func _build() -> void:
 	var owner_node := _get_owner()
 
@@ -97,6 +103,7 @@ func _build() -> void:
 	else:
 		_build_runtime()
 
+## 运行时构建：创建世界标签与靠近触发的提示区域。
 func _build_runtime() -> void:
 	var level := _find_level()
 
@@ -124,6 +131,7 @@ func _build_runtime() -> void:
 				level.show_hint(captured_hint, captured_duration)
 		)
 
+## 编辑器中绘制交互范围虚框（仅有提示文字时）。
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
@@ -133,6 +141,8 @@ func _draw() -> void:
 			Rect2(-decor_size / 2 - Vector2(10, 10), decor_size + Vector2(20, 20)),
 			Color(0.8, 0.6, 0.2, 0.15), false, 1.0)
 
+## 向上遍历祖先查找关卡节点。
+## [return] 含 show_hint 方法的关卡节点，未找到返回 null。
 func _find_level() -> Node:
 	var p := get_parent()
 	while p:

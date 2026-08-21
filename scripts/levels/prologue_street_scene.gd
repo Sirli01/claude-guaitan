@@ -30,6 +30,7 @@ var _apt_prompt: Label     # 公寓"按E进入"提示
 var _home_prompt: Label    # 姐姐家"按E进入"提示
 var _wlm: Node  # WorldLabelManager
 
+## 街道场景入口：初始化玩家/交互/入口/UI，并按是否首次进入播放开场镜头演出
 func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
 	GameManager.change_floor(GameManager.Floor.STREET)
@@ -373,6 +374,7 @@ func _kill_loop_tweens() -> void:
 			tw.kill()
 	_loop_tweens.clear()
 
+## 场景退出时清理循环动画与运行时信号
 func _exit_tree() -> void:
 	# 杀掉所有无限循环tween
 	_kill_loop_tweens()

@@ -55,6 +55,7 @@ var _current_tab: int = 0  # 0=设置, 1=按键, 2=道具, 3=提示
 @onready var close_hint: Label = $Panel/MainVBox/CloseHint
 
 
+## 暂停菜单初始化：构建标签页并应用多语言文本
 func _ready() -> void:
 	layer = 90
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -122,7 +123,7 @@ func _apply_locale() -> void:
 	title_label.text = LocaleManager.t("pause_title")
 
 	# 标签页按钮
-	var tab_names := [
+	var tab_names: Array[String] = [
 		LocaleManager.t("tab_settings"),
 		LocaleManager.t("tab_controls"),
 		LocaleManager.t("tab_items"),

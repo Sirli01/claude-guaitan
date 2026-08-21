@@ -42,6 +42,7 @@ const ITEM_LOSS_POOL := ["sweets", "sedative", "energy_drink", "energy_bar", "ba
 enum Phase { EXPLORE, TIMID_DEATH, RULE_DISCOVER, FEMALE_DEATH, CHEERFUL_DANGER, RESCUE, SEARCH, DONE }
 var current_phase: Phase = Phase.EXPLORE
 
+## 初始化第二层：注册楼层、预生成音效、搭建场景元素与NPC，并启动入场剧情。
 func _ready() -> void:
 	# 编辑器模式：几何与灯光已在 .tscn 中定义，无需生成
 	if Engine.is_editor_hint():
@@ -92,6 +93,8 @@ func _ready() -> void:
 	await get_tree().create_timer(1.0).timeout
 	_entry_sequence()
 
+## 每帧检查剧情触发条件：余凡离开视野即触发其死亡、玩家接近沈薇触发女伴之死、以及重试耳塞救援分支。
+## [param _delta] 帧间隔时间（未使用）。
 func _physics_process(_delta: float) -> void:
 	if _waiting_for_timid_distance and timid_npc and player:
 		if not _is_world_pos_on_screen(timid_npc.global_position, 36.0):
@@ -110,6 +113,10 @@ func _physics_process(_delta: float) -> void:
 		# 每帧重试：拿到耳塞且条件合适时触发给鹿可耳塞的分支
 		_trigger_earplug_branch()
 
+## 判断世界坐标是否处于当前相机可视范围内。
+## [param pos] 待检测的世界坐标。
+## [param padding] 判定矩形的外扩边距（像素）。
+## [return] 在可视范围内时为 true。
 func _is_world_pos_on_screen(pos: Vector2, padding: float = 0.0) -> bool:
 	var cam := get_viewport().get_camera_2d()
 	if cam == null:
@@ -124,6 +131,9 @@ func _is_world_pos_on_screen(pos: Vector2, padding: float = 0.0) -> bool:
 	)
 	return screen_rect.has_point(pos)
 
+## 判断世界坐标是否处于屏幕中央的清晰可见区域（四周各留280px边距，排除屏幕边缘）。
+## [param pos] 待检测的世界坐标。
+## [return] 处于清晰可见区域时为 true。
 func _is_world_pos_clearly_visible(pos: Vector2) -> bool:
 	var cam := get_viewport().get_camera_2d()
 	if cam == null:
@@ -157,6 +167,11 @@ func _add_ceiling_cracks() -> void:
 		crack.size = Vector2(4, randi_range(10, 30))
 		add_child(crack)
 
+## 在指定位置放置可拾取的地面道具（如余凡死后掉落的耳塞），带名称标签与闪烁提示。
+## [param pos] 道具世界坐标。
+## [param item_id] 物品ID。
+## [param item_name] 物品显示名。
+## [param color] 道具视觉颜色。
 func _place_room_item(pos: Vector2, item_id: String, item_name: String, color: Color) -> void:
 	var area = Area2D.new()
 	area.set_script(load("res://scripts/items/simple_pickup.gd"))
@@ -196,6 +211,7 @@ func _place_room_item(pos: Vector2, item_id: String, item_name: String, color: C
 			call_deferred("_trigger_earplug_branch")
 		)
 
+## 按存活状态生成本层NPC：夏桐、林佳语、周锐随队伍出发，沈薇同行，余凡留守到达电梯口。
 func _spawn_npcs() -> void:
 	if GameManager.is_character_alive("cool_npc"):
 		cool_npc = create_npc_visual(FLOOR_2_PARTY_SPAWN_POS + Vector2(-60, 16), "cool_npc")
@@ -215,6 +231,8 @@ func _spawn_npcs() -> void:
 		timid_npc = create_npc_visual(TIMID_GUARD_POS, "timid_male")
 		timid_npc.walk_speed = 40.0
 
+## 判断鹿可是否正处于被锁定待救援状态（尚未被耳塞救下且仍在原地等待）。
+## [return] 鹿可正在等待救援时为 true。
 func _is_cheerful_waiting_for_rescue() -> bool:
 	return cheerful_npc != null \
 		and is_instance_valid(cheerful_npc) \
@@ -223,6 +241,7 @@ func _is_cheerful_waiting_for_rescue() -> bool:
 		and not _used_earplug \
 		and (current_phase == Phase.CHEERFUL_DANGER or current_phase == Phase.DONE)
 
+## 根据当前剧情阶段刷新各NPC的故事对话内容。
 func _refresh_floor_2_npc_dialogues() -> void:
 	if current_phase == Phase.EXPLORE:
 		set_npc_story_dialogue(cool_npc, "floor_2", "talk_explore_cool")
@@ -254,11 +273,13 @@ func _refresh_floor_2_npc_dialogues() -> void:
 		set_npc_story_dialogue(male_npc, "floor_2", "talk_search_male")
 		set_npc_story_dialogue(cheerful_npc, "floor_2", "talk_search_cheerful")
 
+## 为所有存活NPC点亮手机灯光。
 func _enable_npc_phone_lights() -> void:
 	for npc in [cool_npc, cheerful_npc, male_npc, female_npc, timid_npc]:
 		if npc and is_instance_valid(npc) and npc.is_alive:
 			npc.enable_phone_light()
 
+## 点亮NPC手机灯并让队伍成员在走廊内随机徘徊探索（沈薇已离队、余凡留守电梯口，均不参与）。
 func _start_npc_wandering() -> void:
 	_enable_npc_phone_lights()
 	var wandering_npcs: Array[Node2D] = []
@@ -273,6 +294,7 @@ func _start_npc_wandering() -> void:
 		_wander_loop(npc)
 	# 余凡留在电梯口，不移动（起点就是电梯口，他就站在原地）
 
+## 停止所有NPC的徘徊移动，并让余凡停止踱步。
 func _stop_all_wandering() -> void:
 	for npc_ref in _wander_tweens:
 		if is_instance_valid(npc_ref):
@@ -280,6 +302,7 @@ func _stop_all_wandering() -> void:
 	_wander_tweens.clear()
 	_stop_timid_guard_pacing()
 
+## 让胆小男余凡回到电梯口守卫位并开始小范围踱步等待队友。
 func _start_timid_guard_pacing() -> void:
 	if timid_npc == null or not is_instance_valid(timid_npc):
 		return
@@ -288,11 +311,13 @@ func _start_timid_guard_pacing() -> void:
 	_timid_pacing_active = true
 	_timid_guard_pacing_loop()
 
+## 停止余凡在电梯口的踱步。
 func _stop_timid_guard_pacing() -> void:
 	_timid_pacing_active = false
 	if timid_npc and is_instance_valid(timid_npc):
 		timid_npc.stop_walking()
 
+## 余凡的踱步循环：绕电梯口附近的几个点位缓慢走动，走完一轮后自动重复。
 func _timid_guard_pacing_loop() -> void:
 	if not _timid_pacing_active or timid_npc == null or not is_instance_valid(timid_npc):
 		return
@@ -312,12 +337,16 @@ func _timid_guard_pacing_loop() -> void:
 	if _timid_pacing_active:
 		_timid_guard_pacing_loop()
 
+## 停止指定NPC的徘徊并将其移出徘徊记录。
+## [param npc] 要停止徘徊的NPC节点。
 func _stop_npc_wander(npc: Node2D) -> void:
 	if _wander_tweens.has(npc):
 		if is_instance_valid(npc):
 			npc.stop_walking()
 		_wander_tweens.erase(npc)
 
+## 单个NPC的徘徊循环：随机取走廊内目标点走过去，停留数秒后继续，直到被停止或场景退出。
+## [param npc] 执行徘徊的NPC节点。
 func _wander_loop(npc: Node2D) -> void:
 	if not is_instance_valid(npc) or not npc.is_inside_tree():
 		return
@@ -336,6 +365,8 @@ func _wander_loop(npc: Node2D) -> void:
 	if not _exiting and is_instance_valid(npc) and _wander_tweens.has(npc):
 		_wander_loop(npc)
 
+## 播放巨型高跟鞋从天而降砸向目标点的致命一击演出（急速坠落→轰然落地→淡出消失）。
+## [param world_pos] 高跟鞋落点的世界坐标。
 func _play_heel_strike(world_pos: Vector2) -> void:
 	if high_heel_visual == null:
 		return
@@ -358,6 +389,8 @@ func _play_heel_strike(world_pos: Vector2) -> void:
 	high_heel_visual.visible = false
 	high_heel_visual.scale = Vector2.ONE
 
+## 在指定位置放置电梯卡拾取物，玩家捡到后标记本层通关并刷新NPC对话。
+## [param pos] 电梯卡掉落的世界坐标。
 func _place_elevator_card(pos: Vector2) -> void:
 	var card_area = create_elevator_card_pickup(pos)
 	card_area.picked_up.connect(func():
@@ -366,6 +399,7 @@ func _place_elevator_card(pos: Vector2) -> void:
 		_refresh_floor_2_npc_dialogues()
 	)
 
+## 搭建离开第二层的电梯：门体视觉、阻挡与触发区，需持有电梯卡且剧情推进到位才能进入。
 func _build_elevator() -> void:
 	var door_center := Vector2(740, 80)
 	var door_size := Vector2(144, 120)
@@ -381,6 +415,7 @@ func _build_elevator() -> void:
 	)
 
 # ===== 入场 =====
+## 入场剧情：手机没电的抱怨、与沈薇争吵致其赌气离队，随后众人自由探索并启动余凡的死亡倒计时。
 func _entry_sequence() -> void:
 	player.freeze_player()
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
@@ -420,6 +455,7 @@ func _entry_sequence() -> void:
 	_waiting_for_timid_distance = true
 
 # ===== 胆小男之死 =====
+## 胆小男余凡被高跟鞋杀死的剧情事件：咔哒声由远及近→对话铺垫→高跟鞋落下将他踩杀→掉落耳塞→规则「禁止离群」浮现。
 func _timid_death_event() -> void:
 	if current_phase != Phase.EXPLORE:
 		return
@@ -461,6 +497,7 @@ func _timid_death_event() -> void:
 	_rule_discover_event()
 
 # ===== 发现规则 → 发现女伴独自一人 =====
+## 发现规则后的剧情：众人惊慌改为跟随玩家，鹿可暂时掉队隐藏，离队的沈薇现身上方区域，等待玩家接近触发她的死亡。
 func _rule_discover_event() -> void:
 	current_phase = Phase.RULE_DISCOVER
 	
@@ -499,6 +536,7 @@ func _rule_discover_event() -> void:
 	_waiting_for_female_proximity = true
 
 # ===== 女伴之死 =====
+## 女伴沈薇之死的剧情事件：高跟鞋声逼近→她朝玩家狂奔呼救却在半途被踩杀→掉落电梯卡→迟到的鹿可登场。
 func _female_death_event() -> void:
 	current_phase = Phase.FEMALE_DEATH
 	
@@ -557,6 +595,7 @@ func _female_death_event() -> void:
 	_cheerful_danger_event()
 
 # ===== 开朗NPC被锁定（跑得慢，掉队）=====
+## 开朗NPC鹿可因跑得慢掉队被高跟鞋锁定的剧情：她吓得原地不敢动，等待玩家送来耳塞救援。
 func _cheerful_danger_event() -> void:
 	current_phase = Phase.CHEERFUL_DANGER
 	
@@ -586,6 +625,7 @@ func _cheerful_danger_event() -> void:
 	show_hint(LocaleManager.t("hint_f2_cheerful_safe"), 6.0)
 	_trigger_earplug_branch()
 
+## 设置鹿可的求助对话，并在每次对话结束后检查耳塞救援条件。
 func _setup_cheerful_interact() -> void:
 	# 鹿可已在 interactable group，玩家按E会调 cheerful_npc.interact()
 	# 设置对话 → 对话结束后检查耳塞
@@ -607,6 +647,7 @@ func _setup_cheerful_interact() -> void:
 	_signal_callbacks.append({"signal": DialogueManager.dialogue_ended, "callable": _cb})
 
 # 捡起耳塞 / 对话结束 / 鹿可原地等待后 调用，条件满足就触发耳塞分支
+## 检查耳塞救援条件（持有耳塞、鹿可待救、无对话与状态冲突），全部满足则冻结玩家并进入耳塞分支。
 func _trigger_earplug_branch() -> void:
 	if _used_earplug or _earplug_branch_pending:
 		return
@@ -623,6 +664,7 @@ func _trigger_earplug_branch() -> void:
 	GameManager.set_state(GameManager.GameState.CUTSCENE)
 	_earplug_branch.call_deferred()
 
+## 耳塞救援分支：把耳塞给鹿可隔绝高跟鞋声助她脱险，她加入队伍并进入搜索阶段。
 func _earplug_branch() -> void:
 	if _used_earplug:
 		_earplug_branch_pending = false
@@ -639,6 +681,7 @@ func _earplug_branch() -> void:
 	_rescue_complete()
 
 # ===== 救援后 → 找电梯卡 =====
+## 救援结束的过渡：按电梯卡是否已被拾取分别进入完成或搜索阶段，并给出对应提示。
 func _rescue_complete() -> void:
 	# 如果玩家已经捡过电梯卡，直接进入DONE阶段
 	if elevator_card_found:
@@ -657,6 +700,7 @@ func _rescue_complete() -> void:
 	else:
 		show_hint(LocaleManager.t("hint_f2_find_card"), 8.0)
 
+## 未用耳塞路线的代价抽取：从常用物品池随机扣除最多两件，记入待损失清单供电梯内剧情结算。
 func _roll_no_earplug_item_loss() -> void:
 	var candidates: Array[String] = []
 	for item_id in ITEM_LOSS_POOL:
@@ -674,6 +718,8 @@ func _roll_no_earplug_item_loss() -> void:
 		removed_items.append(item_id)
 	GameManager.pending_item_loss = removed_items
 
+## 用高跟鞋踩杀指定NPC：播放砸落演出、登记角色死亡并将尸体淡出移除。
+## [param npc] 被高跟鞋杀死的NPC。
 func _kill_with_heel(npc: CharacterBody2D) -> void:
 	if npc == null or not is_instance_valid(npc):
 		return
@@ -686,6 +732,7 @@ func _kill_with_heel(npc: CharacterBody2D) -> void:
 	await tw.finished
 	npc.queue_free()
 
+## 进入电梯剧情：刷卡开门；无耳塞路线中鹿可在渐强的高跟鞋声中一步步挪向电梯，千钧一发被拉入；有耳塞则直接乘梯前往第三层。
 func _enter_elevator() -> void:
 	player.freeze_player()
 	GameManager.set_state(GameManager.GameState.CUTSCENE)

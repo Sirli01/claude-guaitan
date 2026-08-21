@@ -42,6 +42,7 @@ var door_nodes: Array[Area2D] = []
 signal door_entered(door_data: Dictionary)
 signal trigger_activated(event_id: String, trigger_data: Dictionary)
 
+## 根据 room_config 构建整个房间（地板、墙、家具、物品、触发器、门、装饰、音频与环境光）。
 func build() -> void:
 	var size: Vector2 = room_config.get("size", Vector2(300, 200))
 	var bg_color: Color = room_config.get("bg_color", Color(0.08, 0.06, 0.05))
@@ -84,6 +85,9 @@ func build() -> void:
 	# 环境光
 	_setup_ambient_light()
 
+## 构建四面墙壁（碰撞体+视觉色块）。
+## [param size] 房间尺寸。
+## [param color] 墙壁颜色。
 func _build_walls(size: Vector2, color: Color) -> void:
 	walls_body = StaticBody2D.new()
 	walls_body.collision_layer = 4
@@ -112,6 +116,8 @@ func _build_walls(size: Vector2, color: Color) -> void:
 		vis.color = color
 		add_child(vis)
 
+## 构建单件家具（阻挡碰撞体+视觉，可选贴图替换色块）。
+## [param data] 家具配置（pos/size/color/sprite/name）。
 func _build_furniture(data: Dictionary) -> void:
 	var pos: Vector2 = data.get("pos", Vector2.ZERO)
 	var size: Vector2 = data.get("size", Vector2(30, 20))
@@ -145,6 +151,8 @@ func _build_furniture(data: Dictionary) -> void:
 	
 	furniture_nodes.append(body)
 
+## 构建单个可拾取物品（Area2D+图标+提示标签）。
+## [param data] 物品配置（pos/item_id/sprite/hint）。
 func _build_pickup(data: Dictionary) -> void:
 	var pos: Vector2 = data.get("pos", Vector2.ZERO)
 	var item_id: String = data.get("item_id", "")
@@ -189,6 +197,8 @@ func _build_pickup(data: Dictionary) -> void:
 	
 	pickup_nodes.append(pickup)
 
+## 构建单个触发区域，玩家进入时发出 trigger_activated 信号。
+## [param data] 触发器配置（pos/size/event_id/one_shot）。
 func _build_trigger(data: Dictionary) -> void:
 	var pos: Vector2 = data.get("pos", Vector2.ZERO)
 	var size: Vector2 = data.get("size", Vector2(40, 40))
@@ -218,6 +228,8 @@ func _build_trigger(data: Dictionary) -> void:
 	
 	trigger_nodes.append(area)
 
+## 构建单扇门区域，玩家进入时发出 door_entered 信号。
+## [param data] 门配置（pos/size/color/target_scene/target_pos）。
 func _build_door(data: Dictionary) -> void:
 	var pos: Vector2 = data.get("pos", Vector2.ZERO)
 	var size: Vector2 = data.get("size", Vector2(30, 10))
@@ -248,6 +260,8 @@ func _build_door(data: Dictionary) -> void:
 	
 	door_nodes.append(area)
 
+## 构建纯视觉装饰（优先使用贴图，否则用色块，无碰撞）。
+## [param data] 装饰配置（pos/size/color/sprite/z_index）。
 func _build_decoration(data: Dictionary) -> void:
 	var pos: Vector2 = data.get("pos", Vector2.ZERO)
 	var size: Vector2 = data.get("size", Vector2(10, 10))
@@ -268,6 +282,7 @@ func _build_decoration(data: Dictionary) -> void:
 		vis.z_index = data.get("z_index", 0)
 		add_child(vis)
 
+## 按 room_config 播放房间 BGM 与环境音。
 func _setup_audio() -> void:
 	var bgm_path = room_config.get("bgm", "")
 	if bgm_path != "" and ResourceLoader.exists(bgm_path):
@@ -276,6 +291,7 @@ func _setup_audio() -> void:
 	if amb_path != "" and ResourceLoader.exists(amb_path):
 		AudioManager.play_ambience(load(amb_path))
 
+## 用 CanvasModulate 设置房间整体环境光亮度与色温。
 func _setup_ambient_light() -> void:
 	var light_energy: float = room_config.get("ambient_light", -1.0)
 	if light_energy < 0:

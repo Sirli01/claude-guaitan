@@ -27,6 +27,7 @@ var _heartbeat_interval: float = 0.8  # 心跳间隔（秒）
 var _heartbeat_stream: AudioStream
 # === 画面干扰（理智极低时画面扭曲，待实现） ===
 
+## 初始化特效层：创建闪屏矩形、眼睑遮罩、暗角泛红层与心跳播放器，并连接理智信号。
 func _ready() -> void:
 	layer = 100  # 在最上层
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -105,6 +106,8 @@ void fragment() {
 	if PlayerStats:
 		PlayerStats.sanity_changed.connect(_on_sanity_changed)
 
+## 每帧更新震屏衰减与低理智心跳节奏。
+## [param delta] 帧间隔时间（秒）。
 func _process(delta: float) -> void:
 	_process_shake(delta)
 	_process_heartbeat(delta)
@@ -124,6 +127,8 @@ func shake(intensity: float = 6.0, duration: float = 0.3) -> void:
 	_shake_duration = maxf(_shake_duration, duration)
 	_shake_timer = 0.0
 
+## 按时间线性衰减震屏强度，结束后复位相机偏移。
+## [param delta] 帧间隔时间（秒）。
 func _process_shake(delta: float) -> void:
 	if _shake_duration <= 0:
 		return
@@ -143,6 +148,8 @@ func _process_shake(delta: float) -> void:
 	)
 	_apply_camera_offset(shake_offset)
 
+## 在基准偏移之上叠加震动偏移并写入当前相机。
+## [param cam_offset] 本帧的震动偏移量。
 func _apply_camera_offset(cam_offset: Vector2) -> void:
 	var camera = get_viewport().get_camera_2d()
 	if camera:
@@ -172,6 +179,9 @@ func flash_black(duration: float = 0.3) -> void:
 func flash_color(color: Color, duration: float = 0.2) -> void:
 	_do_flash(color, duration)
 
+## 用补间将全屏矩形从指定颜色淡出到透明，实现闪屏。
+## [param color] 闪屏颜色（含透明度）。
+## [param duration] 淡出时长（秒）。
 func _do_flash(color: Color, duration: float) -> void:
 	if _flash_tween:
 		_flash_tween.kill()
@@ -179,17 +189,25 @@ func _do_flash(color: Color, duration: float) -> void:
 	_flash_tween = create_tween()
 	_flash_tween.tween_property(_flash_rect, "color:a", 0.0, duration)
 
+## 设置眼睑遮罩的张开程度并同步到着色器参数。
+## [param value] 张开程度，0 为完全闭合，1 为完全睁开。
 func _set_eyelid_open_amount(value: float) -> void:
 	_eyelid_open_amount = clampf(value, 0.0, 1.0)
 	if _eyelid_shader:
 		_eyelid_shader.set_shader_parameter("open_amount", _eyelid_open_amount)
 
+## 显示眼睑遮罩并立即设为指定张开程度。
+## [param open_amount] 初始张开程度（0~1）。
 func _show_eyelid(open_amount: float) -> void:
 	if _eyelid_tween and _eyelid_tween.is_valid():
 		_eyelid_tween.kill()
 	_eyelid_rect.visible = true
 	_set_eyelid_open_amount(open_amount)
 
+## 用缓动补间把眼睑张开程度过渡到目标值。
+## [param target] 目标张开程度（0~1）。
+## [param duration] 过渡时长（秒）。
+## [return] 正在执行的补间动画。
 func _animate_eyelid_to(target: float, duration: float) -> Tween:
 	if _eyelid_tween and _eyelid_tween.is_valid():
 		_eyelid_tween.kill()
@@ -197,6 +215,9 @@ func _animate_eyelid_to(target: float, duration: float) -> Tween:
 	_eyelid_tween.tween_method(_set_eyelid_open_amount, _eyelid_open_amount, target, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	return _eyelid_tween
 
+## 灵魂互换闭眼演出：显示眼睑并伴随震屏与重度震动渐闭至全黑。
+## [param duration] 闭眼时长（秒）。
+## [param start_open] 起始张开程度（0~1）。
 func soul_swap_eye_close(duration: float = 0.28, start_open: float = 0.92) -> void:
 	_show_eyelid(start_open)
 	shake(4.0, duration + 0.06)
@@ -204,6 +225,9 @@ func soul_swap_eye_close(duration: float = 0.28, start_open: float = 0.92) -> vo
 	var tw = _animate_eyelid_to(0.0, duration)
 	await tw.finished
 
+## 灵魂互换睁眼演出：从全黑渐睁至目标程度，完成后隐藏眼睑遮罩。
+## [param duration] 睁眼时长（秒）。
+## [param end_open] 结束张开程度（0~1）。
 func soul_swap_eye_open(duration: float = 0.36, end_open: float = 1.0) -> void:
 	_show_eyelid(0.0)
 	shake(2.5, duration)
@@ -217,6 +241,9 @@ func soul_swap_eye_open(duration: float = 0.36, end_open: float = 1.0) -> void:
 # 低理智视觉效果
 # ============================================
 
+## 理智变化回调：低于阈值时增强边缘泛红、加速心跳并叠加音频失真与画面扭曲。
+## [param current] 当前理智值。
+## [param max_val] 理智上限值。
 func _on_sanity_changed(current: float, max_val: float) -> void:
 	var ratio = current / max_val if max_val > 0 else 1.0
 	
@@ -251,10 +278,14 @@ func _on_sanity_changed(current: float, max_val: float) -> void:
 		if atmo:
 			atmo.set_distortion(0, 0.5)
 
+## 从 atmosphere_layer 分组中获取氛围层节点。
+## [return] 氛围层节点，不存在时返回 null。
 func _get_atmosphere_layer() -> Node:
 	var nodes = get_tree().get_nodes_in_group("atmosphere_layer")
 	return nodes[0] if nodes.size() > 0 else null
 
+## 低理智激活状态下按当前间隔循环播放心跳音效。
+## [param delta] 帧间隔时间（秒）。
 func _process_heartbeat(delta: float) -> void:
 	if not _heartbeat_active:
 		return
