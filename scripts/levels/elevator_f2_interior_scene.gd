@@ -45,9 +45,11 @@ func _setup_characters() -> void:
 		_setup_character(get_node("%" + entry[0]), entry[1])
 
 ## 配置单个角色：加载朝下贴图、按电梯比例放大并添加名牌。
+## 电梯内部世界为 v1 尺度，角色贴图已全局放大 2 倍，故额外乘 0.5 抵消。
 ## [param node] 角色占位节点。[param char_id] 角色ID。
 func _setup_character(node: Node2D, char_id: String) -> void:
 	const S := 5.0
+	const CHAR_SCALE := 0.5
 	var sprite = Sprite2D.new()
 	var down_path = GameConfig.CHARACTER_SPRITES.get(char_id, "")
 	var up_path = down_path.replace("idle_down", "idle_up") if down_path != "" else ""
@@ -56,13 +58,13 @@ func _setup_character(node: Node2D, char_id: String) -> void:
 	else:
 		sprite.texture = GameManager.load_char_texture(char_id, 14, 18)
 	GameManager.fit_character_sprite(sprite, char_id)
-	sprite.scale *= S
+	sprite.scale *= S * CHAR_SCALE
 	node.add_child(sprite)
 
 	var display_name = GameManager.NAMES.get(char_id, char_id)
 	var label = Label.new()
 	label.text = display_name
-	label.position = Vector2(-14 * S * 2, (-GameManager.get_character_visual_height(char_id) - 8.0) * S * 2)
+	label.position = Vector2(-14 * S * 2, (-GameManager.get_character_visual_height(char_id) * CHAR_SCALE - 8.0) * S * 2)
 	label.add_theme_font_size_override("font_size", int(5 * S * 2))
 	label.add_theme_color_override("font_color", GameManager.CHAR_COLORS.get(char_id, Color.WHITE).lightened(0.3))
 	node.add_child(label)

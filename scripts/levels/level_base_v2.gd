@@ -45,8 +45,12 @@ const ELEVATOR_DOOR_OPEN_TEX_PATH := "res://assets/sprites/打开的电梯门.pn
 # 缓存的灯光纹理（避免每次 add_room_light 都重新生成）
 var _cached_circle_texture_64: ImageTexture = null
 var _cached_circle_texture_32: ImageTexture = null
-@export var WALL_FRONT_FACE_DEPTH: float = 22.0  ## 水平墙正面高度
-@export var WALL_SIDE_FACE_DEPTH: float = 5.0   ## 竖向墙侧面宽度
+## 世界缩放系数：场景几何相对 v1 的倍数。
+## 翻倍后的关卡（第一/二层、序章房间）保持默认 2.0；
+## 未翻倍的关卡（第三层）设为 1.0，环境视觉常量会自动回到 v1 比例。
+@export var world_scale: float = 2.0
+@export var WALL_FRONT_FACE_DEPTH: float = 22.0  ## 水平墙正面高度（× world_scale）
+@export var WALL_SIDE_FACE_DEPTH: float = 5.0   ## 竖向墙侧面宽度（× world_scale）
 
 ## 当前场景音频ID（对应 GameConfig.BGM / GameConfig.AMBIENCE 的键名）
 ## 子类设置后 setup_ui() 会自动播放
@@ -133,8 +137,8 @@ func setup_player(pos: Vector2, zoom: float = 6.0) -> CharacterBody2D:
 ## [param pos] 电梯中心位置。
 func _build_arrival_elevator(pos: Vector2) -> void:
 	# 到达电梯（玩家从这里出来，显示打开的门）
-	var door_center := pos + Vector2(0, -20)
-	var door_size := Vector2(72, 60)
+	var door_center := pos + Vector2(0, -20) * world_scale
+	var door_size := Vector2(72, 60) * world_scale
 	var door_container = Node2D.new()
 	add_child(door_container)
 	if ResourceLoader.exists(ELEVATOR_DOOR_OPEN_TEX_PATH):
@@ -150,7 +154,7 @@ func _build_arrival_elevator(pos: Vector2) -> void:
 		add_elevator_door_visual(door_center, door_size)
 	add_elevator_door_blocker(door_center, door_size)
 	var elev_label_text = "电梯" if Engine.is_editor_hint() else LocaleManager.world_text("电梯")
-	var elev_label = create_world_label(elev_label_text, pos + Vector2(-14, -58), 14, Color(0.4, 0.4, 0.45))
+	var elev_label = create_world_label(elev_label_text, pos + Vector2(-14, -58) * world_scale, 14, Color(0.4, 0.4, 0.45))
 
 ## 创建电梯门视觉（有贴图用贴图，否则用色块拼出双开门）。
 ## [param center] 门中心。[param size] 门尺寸。[return] 视觉节点。
@@ -714,12 +718,12 @@ func add_visible_wall(
 	var col_size := size
 	if size.x >= size.y and face_normal != Vector2.ZERO and absf(face_normal.y) > 0.5 and show_front_face:
 		var dir_y := signf(face_normal.y)
-		col_size.y += WALL_FRONT_FACE_DEPTH
-		col_center.y -= dir_y * WALL_FRONT_FACE_DEPTH / 2.0
+		col_size.y += WALL_FRONT_FACE_DEPTH * world_scale
+		col_center.y -= dir_y * WALL_FRONT_FACE_DEPTH * world_scale / 2.0
 	elif size.y > size.x and face_normal != Vector2.ZERO and absf(face_normal.x) > 0.5 and show_side_face:
 		var dir_x := signf(face_normal.x)
-		col_size.x += WALL_SIDE_FACE_DEPTH
-		col_center.x -= dir_x * WALL_SIDE_FACE_DEPTH / 2.0
+		col_size.x += WALL_SIDE_FACE_DEPTH * world_scale
+		col_center.x -= dir_x * WALL_SIDE_FACE_DEPTH * world_scale / 2.0
 	add_wall(parent, col_center, col_size)
 	if show_cap:
 		var vis = _make_wall_rect(pos - size / 2, size, color.lightened(0.05), 4)
@@ -832,17 +836,17 @@ func add_standard_furniture(pos: Vector2, size: Vector2, label_text: String, col
 	const LONG_CABINET_TEX = "res://assets/sprites/_0010_长储物柜.png"
 	const CHAIR_TEX  = "res://assets/sprites/_0011_椅子.png"
 	if label_text == "书桌" and ResourceLoader.exists(DESK_TEX_2):
-		var writing_desk_size = Vector2(size.x, 34.0)
+		var writing_desk_size = Vector2(size.x, 34.0 * world_scale)
 		_add_textured_furniture_visual(DESK_TEX_2, pos, size, writing_desk_size, Vector2(137.0, 111.0), -55.5)
 		_add_textured_furniture_body(pos, writing_desk_size, size)
 		return true
 	if label_text == "柜台" and ResourceLoader.exists(DESK_TEX_2):
-		var counter_size = Vector2(size.x, 36.0)
+		var counter_size = Vector2(size.x, 36.0 * world_scale)
 		_add_textured_furniture_visual(DESK_TEX_2, pos, size, counter_size, Vector2(137.0, 111.0), -55.5)
 		_add_textured_furniture_body(pos, counter_size, size)
 		return true
 	if label_text == "货架" and ResourceLoader.exists(LONG_CABINET_TEX):
-		var shelf_size = Vector2(size.x, 24.0)
+		var shelf_size = Vector2(size.x, 24.0 * world_scale)
 		_add_textured_furniture_visual(LONG_CABINET_TEX, pos, size, shelf_size, Vector2(380.0, 87.0), -43.5)
 		_add_textured_furniture_body(pos, shelf_size, size)
 		return true
@@ -851,31 +855,31 @@ func add_standard_furniture(pos: Vector2, size: Vector2, label_text: String, col
 		"bed":
 			if not ResourceLoader.exists(BED_TEX):
 				return false
-			var display_size = Vector2(size.x, 55.0)
+			var display_size = Vector2(size.x, 55.0 * world_scale)
 			_add_textured_furniture_visual(BED_TEX, pos, size, display_size, Vector2(140.0, 228.0), -114.0)
 			_add_textured_furniture_body(pos, display_size, size)
 		"desk":
 			if not ResourceLoader.exists(DESK_TEX):
 				return false
-			var display_size = Vector2(size.x, 30.0)
+			var display_size = Vector2(size.x, 30.0 * world_scale)
 			_add_textured_furniture_visual(DESK_TEX, pos, size, display_size, Vector2(179.0, 118.0), -59.0)
 			_add_textured_furniture_body(pos, display_size, size)
 		"sofa":
 			if not ResourceLoader.exists(SOFA_TEX):
 				return false
-			var display_size = Vector2(size.x, 40.0)
+			var display_size = Vector2(size.x, 40.0 * world_scale)
 			_add_textured_furniture_visual(SOFA_TEX, pos, size, display_size, Vector2(251.0, 140.0), -70.0)
 			_add_textured_furniture_body(pos, display_size, size)
 		"cabinet":
 			if not ResourceLoader.exists(CABINET_TEX):
 				return false
-			var display_size = Vector2(size.x, 45.0)
+			var display_size = Vector2(size.x, 45.0 * world_scale)
 			_add_textured_furniture_visual(CABINET_TEX, pos, size, display_size, Vector2(182.0, 151.0), -75.5)
 			_add_textured_furniture_body(pos, display_size, size)
 		"chair":
 			if not ResourceLoader.exists(CHAIR_TEX):
 				return false
-			var display_size = Vector2(size.x, 32.0)
+			var display_size = Vector2(size.x, 32.0 * world_scale)
 			_add_textured_furniture_visual(CHAIR_TEX, pos, size, display_size, Vector2(82.0, 108.0), -54.0)
 			_add_textured_furniture_body(pos, display_size, size)
 		_:
@@ -911,7 +915,7 @@ func create_elevator_card_pickup(pos: Vector2) -> Area2D:
 
 	var col = CollisionShape2D.new()
 	var shape = CircleShape2D.new()
-	shape.radius = 10.0
+	shape.radius = 10.0 * world_scale
 	col.shape = shape
 	card_area.add_child(col)
 
@@ -920,23 +924,23 @@ func create_elevator_card_pickup(pos: Vector2) -> Area2D:
 	if ResourceLoader.exists(CARD_TEX):
 		var card_sprite = Sprite2D.new()
 		card_sprite.texture = load(CARD_TEX)
-		card_sprite.position = Vector2(-6, -4)
+		card_sprite.position = Vector2(-6, -4) * world_scale
 		var tex_size = card_sprite.texture.get_size()
-		card_sprite.scale = Vector2(12.0 / tex_size.x, 8.0 / tex_size.y)
+		card_sprite.scale = Vector2(12.0 * world_scale / tex_size.x, 8.0 * world_scale / tex_size.y)
 		card_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		card_area.add_child(card_sprite)
 		card_vis = card_sprite
 	else:
 		var visual = ColorRect.new()
 		visual.color = Color(0.45, 0.8, 1.0, 0.7)
-		visual.position = Vector2(-6, -4)
-		visual.size = Vector2(12, 8)
+		visual.position = Vector2(-6, -4) * world_scale
+		visual.size = Vector2(12, 8) * world_scale
 		card_area.add_child(visual)
 		card_vis = visual
 
 	var card_name = "电梯卡" if Engine.is_editor_hint() else InventoryManager.get_item_data("elevator_card").get("name", "电梯卡")
 	var interact_hint = "" if Engine.is_editor_hint() else InputDevice.hint("interact")
-	var label = create_world_label("%s %s" % [card_name, interact_hint], pos + Vector2(-18, -20), 18, Color(0.5, 0.8, 1.0))
+	var label = create_world_label("%s %s" % [card_name, interact_hint], pos + Vector2(-18, -20) * world_scale, 18, Color(0.5, 0.8, 1.0))
 	label.visible = false
 	card_area._name_label = label
 	card_area.tree_exiting.connect(func(): if is_instance_valid(label): label.queue_free())
@@ -955,14 +959,14 @@ func _add_horizontal_wall_face(pos: Vector2, size: Vector2, color: Color, face_z
 ## 创建水平墙正面贴图（可指定朝向）。
 ## [param dir_sign] 朝向符号：1 朝下，-1 朝上。
 func _add_horizontal_wall_face_dir(pos: Vector2, size: Vector2, color: Color, dir_sign: float, face_z_index: int = 0) -> void:
-	var face_h: float = 48.0  # 和门贴图显示高度一致
+	var face_h: float = 48.0 * world_scale  # 与门贴图显示高度一致
 	var spr := Sprite2D.new()
 	spr.texture = load("res://assets/sprites/_0002_水平墙正面.png")
 	# 880×162 原始尺寸，缩放到 size.x × face_h
 	spr.scale = Vector2(size.x / 880.0, face_h / 162.0)
 	# 将墙面贴到面向玩家的边缘上，而不是厚障碍块的几何中心。
 	# size.y=8 时退化为旧公式；更厚的障碍块会自动把墙面推到可见边缘。
-	var center_y := pos.y + dir_sign * (size.y * 0.5 - 16.0)
+	var center_y := pos.y + dir_sign * (size.y * 0.5 - 16.0 * world_scale)
 	spr.position = Vector2(pos.x, center_y)
 	spr.z_index = face_z_index
 	add_child(spr)
@@ -986,8 +990,9 @@ func _add_vertical_wall_face_dir(pos: Vector2, size: Vector2, color: Color, dir_
 
 ## 创建 NPC 视觉节点（精灵+名牌+碰撞，挂载 npc_base 脚本）。
 ## [param pos] 出生位置。[param npc_id] 角色 ID。
+## [param visual_scale] 视觉缩放（v1 尺度的关卡传 0.5 抵消全局 2 倍角色）。
 ## [return] NPC 节点。
-func create_npc_visual(pos: Vector2, npc_id: String) -> CharacterBody2D:
+func create_npc_visual(pos: Vector2, npc_id: String, visual_scale: float = 1.0) -> CharacterBody2D:
 	var display_name = GameManager.NAMES.get(npc_id, npc_id)
 	var color = GameManager.CHAR_COLORS.get(npc_id, Color(0.5, 0.5, 0.5))
 	
@@ -1001,22 +1006,23 @@ func create_npc_visual(pos: Vector2, npc_id: String) -> CharacterBody2D:
 	var sprite = Sprite2D.new()
 	sprite.texture = GameManager.load_char_texture(npc_id, 14, 18)
 	GameManager.fit_character_sprite(sprite, npc_id)
+	sprite.scale *= visual_scale
 	npc.add_child(sprite)
 	npc.sprite = sprite
-	
+
 	var col = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
-	shape.size = GameManager.NPC_COLLISION_SIZE
+	shape.size = GameManager.NPC_COLLISION_SIZE * visual_scale
 	col.shape = shape
 	col.position = GameManager.NPC_COLLISION_OFFSET
 	npc.add_child(col)
 	npc.collision = col
 	npc.add_child(GameManager.create_character_shadow_occluder(npc_id))
-	
+
 	var label = create_tracked_world_label(
 		display_name,
 		npc,
-		Vector2(0, -GameManager.get_character_visual_height(npc_id) - 10.0),
+		Vector2(0, -GameManager.get_character_visual_height(npc_id) * visual_scale - 10.0),
 		18,
 		color.lightened(0.3)
 	)
@@ -1095,11 +1101,11 @@ func add_door(walls_parent: Node2D, pos: Vector2, size: Vector2, locked: bool = 
 	var door_visual: CanvasItem
 	if not is_vertical and ResourceLoader.exists(DOOR_CLOSED_TEX):
 		# 斜俯视风格：门板贴图固定在走廊侧门口，开门时淡出
-		var disp_h := 48.0
-		var display_width := size.x + 4.0
-		var sprite_center_y := pos.y - 12.0
+		var disp_h := 48.0 * world_scale
+		var display_width := size.x + 4.0 * world_scale
+		var sprite_center_y := pos.y - 12.0 * world_scale
 		if room_side_normal.y > 0.5:
-			sprite_center_y = pos.y - 20.0
+			sprite_center_y = pos.y - 20.0 * world_scale
 		var spr = Sprite2D.new()
 		spr.texture = load(DOOR_CLOSED_TEX)
 		# 缩放：宽度填满门口，高度固定显示高度
@@ -1129,28 +1135,28 @@ func add_door(walls_parent: Node2D, pos: Vector2, size: Vector2, locked: bool = 
 	var use_sprite_door = door_visual is Sprite2D
 	if is_vertical:
 		var frame_left = ColorRect.new()
-		frame_left.position = Vector2(pos.x - size.x / 2 - 1, pos.y - size.y / 2)
-		frame_left.size = Vector2(2, size.y)
+		frame_left.position = Vector2(pos.x - size.x / 2 - world_scale, pos.y - size.y / 2)
+		frame_left.size = Vector2(2 * world_scale, size.y)
 		frame_left.color = frame_color
 		frame_left.z_index = visual_z_index
 		add_child(frame_left)
 		var frame_right = ColorRect.new()
-		frame_right.position = Vector2(pos.x + size.x / 2 - 1, pos.y - size.y / 2)
-		frame_right.size = Vector2(2, size.y)
+		frame_right.position = Vector2(pos.x + size.x / 2 - world_scale, pos.y - size.y / 2)
+		frame_right.size = Vector2(2 * world_scale, size.y)
 		frame_right.color = frame_color
 		frame_right.z_index = visual_z_index
 		add_child(frame_right)
 	else:
 		if not use_sprite_door:
 			var frame_top = ColorRect.new()
-			frame_top.position = Vector2(pos.x - size.x / 2, pos.y - size.y / 2 - 1)
-			frame_top.size = Vector2(size.x, 2)
+			frame_top.position = Vector2(pos.x - size.x / 2, pos.y - size.y / 2 - world_scale)
+			frame_top.size = Vector2(size.x, 2 * world_scale)
 			frame_top.color = frame_color
 			frame_top.z_index = visual_z_index
 			add_child(frame_top)
 			var frame_bottom = ColorRect.new()
-			frame_bottom.position = Vector2(pos.x - size.x / 2, pos.y + size.y / 2 - 1)
-			frame_bottom.size = Vector2(size.x, 2)
+			frame_bottom.position = Vector2(pos.x - size.x / 2, pos.y + size.y / 2 - world_scale)
+			frame_bottom.size = Vector2(size.x, 2 * world_scale)
 			frame_bottom.color = frame_color
 			frame_bottom.z_index = visual_z_index
 			add_child(frame_bottom)
@@ -1158,7 +1164,7 @@ func add_door(walls_parent: Node2D, pos: Vector2, size: Vector2, locked: bool = 
 	# 锁图标
 	var lock_label = null
 	if locked:
-		lock_label = create_world_label("🔒", pos + Vector2(-8, -12), 14, Color(1.0, 0.6, 0.2))
+		lock_label = create_world_label("🔒", pos + Vector2(-8, -12) * world_scale, 14, Color(1.0, 0.6, 0.2))
 	
 	# 所有门都创建触发区；普通门自动开关，锁门保留 E 交互
 	var interact_area = Area2D.new()
@@ -1169,13 +1175,13 @@ func add_door(walls_parent: Node2D, pos: Vector2, size: Vector2, locked: bool = 
 	
 	var area_col = CollisionShape2D.new()
 	var area_shape = RectangleShape2D.new()
-	area_shape.size = size + Vector2(20, 20)
+	area_shape.size = size + Vector2(20, 20) * world_scale
 	area_col.shape = area_shape
 	interact_area.add_child(area_col)
 	
 	var door_text = "门" if Engine.is_editor_hint() else LocaleManager.world_text("门")
 	var door_hint = "" if Engine.is_editor_hint() else InputDevice.hint("interact")
-	var hint_label = create_world_label("%s %s" % [door_text, door_hint], pos + Vector2(-20, -22), 16, Color(1.0, 1.0, 0.7) if locked else Color(0.9, 0.9, 0.8))
+	var hint_label = create_world_label("%s %s" % [door_text, door_hint], pos + Vector2(-20, -22) * world_scale, 16, Color(1.0, 1.0, 0.7) if locked else Color(0.9, 0.9, 0.8))
 	hint_label.visible = false
 	
 	interact_area.set_meta("door_body", door_body)
@@ -1524,7 +1530,7 @@ func setup_navigation(bounds: Rect2 = Rect2(-460, -310, 920, 620)) -> void:
 	add_child(nav_region)
 
 	var nav_poly = NavigationPolygon.new()
-	nav_poly.agent_radius = 14.0
+	nav_poly.agent_radius = 14.0 * world_scale
 	# 使用分组模式：只解析标记了 nav_obstacle 的 StaticBody2D 节点
 	nav_poly.parsed_geometry_type = NavigationPolygon.PARSED_GEOMETRY_STATIC_COLLIDERS
 	nav_poly.source_geometry_mode = NavigationPolygon.SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN

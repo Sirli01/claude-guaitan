@@ -106,8 +106,9 @@ func _ready() -> void:
 	_add_floor_cracks()
 	_place_search_prop(Vector2(-332, -248), Vector2(18, 10), "残破日记", Color(0.5, 0.45, 0.3, 0.75), "_on_diary_found")
 	_build_corridor_obstacles()
-	setup_player(Vector2(0, 440), 6.0)
-	_build_arrival_elevator(Vector2(0, 440))
+	setup_player(Vector2(0, 220), 3.0)
+	_shrink_player_to_v1()
+	_build_arrival_elevator(Vector2(0, 220))
 	player.walk_speed = 180.0  # 第三层步行稍慢，增加压迫感
 	player.set_can_run(true)  # 允许跑但跑了会死
 	_spawn_npcs()
@@ -205,13 +206,13 @@ func _add_floor_cracks() -> void:
 ## 按存活状态生成本层NPC：夏桐、林佳语与周锐。
 func _spawn_npcs() -> void:
 	if GameManager.is_character_alive("cool_npc"):
-		cool_npc = create_npc_visual(Vector2(30, 230), "cool_npc")
-	
+		cool_npc = create_npc_visual(Vector2(30, 230), "cool_npc", 0.5)
+
 	if GameManager.is_character_alive("cheerful_npc"):
-		cheerful_npc = create_npc_visual(Vector2(-30, 215), "cheerful_npc")
-	
+		cheerful_npc = create_npc_visual(Vector2(-30, 215), "cheerful_npc", 0.5)
+
 	if GameManager.is_character_alive("male_npc"):
-		male_npc = create_npc_visual(Vector2(15, 205), "male_npc")
+		male_npc = create_npc_visual(Vector2(15, 205), "male_npc", 0.5)
 
 ## 为所有存活NPC点亮手机灯光。
 func _enable_npc_phone_lights() -> void:
@@ -251,6 +252,8 @@ func _build_monster() -> void:
 	sprite.texture = GameManager.load_char_texture("humanoid_monster", 18, 26)
 	GameManager.fit_character_sprite(sprite, "humanoid_monster")
 	_apply_shadow_distortion(sprite)
+	# 第三层世界为 v1 尺度，角色贴图已全局放大 2 倍，此处缩回
+	sprite.scale *= 0.5
 	humanoid_monster.add_child(sprite)
 	var using_custom_monster_art := GameManager.get_character_sprite_path("humanoid_monster") != "" and ResourceLoader.exists(GameManager.get_character_sprite_path("humanoid_monster"))
 	
@@ -261,16 +264,16 @@ func _build_monster() -> void:
 	humanoid_monster.add_child(col)
 	
 	if not using_custom_monster_art:
-		# 怪物眼睛闪烁
+		# 怪物眼睛闪烁（本层世界为 v1 尺度，位置随角色缩回）
 		var eye = ColorRect.new()
 		eye.color = Color(0.9, 0.1, 0.1)
-		eye.position = Vector2(-3, -18)
-		eye.size = Vector2(2, 2)
+		eye.position = Vector2(-1.5, -9)
+		eye.size = Vector2(1, 1)
 		humanoid_monster.add_child(eye)
 		var eye2 = ColorRect.new()
 		eye2.color = Color(0.9, 0.1, 0.1)
-		eye2.position = Vector2(3, -18)
-		eye2.size = Vector2(2, 2)
+		eye2.position = Vector2(1.5, -9)
+		eye2.size = Vector2(1, 1)
 		humanoid_monster.add_child(eye2)
 		var tw = create_tween().set_loops()
 		_loop_tweens.append(tw)
@@ -287,7 +290,7 @@ func _build_monster() -> void:
 	else:
 		light.texture = _create_light_texture()
 	light.texture_scale = 2.0
-	light.position = Vector2(0, -15)
+	light.position = Vector2(0, -7.5)
 	humanoid_monster.add_child(light)
 	
 	# 红光微弱脉动
@@ -302,6 +305,17 @@ func _build_monster() -> void:
 	_monster_nav_agent.target_desired_distance = 18.0
 	_monster_nav_agent.avoidance_enabled = false
 	humanoid_monster.add_child(_monster_nav_agent)
+
+## 将玩家贴图与碰撞缩回 v1 比例（本层世界未随全局放大）。
+func _shrink_player_to_v1() -> void:
+	var sprite: Sprite2D = player.get_node_or_null("Sprite2D")
+	if sprite:
+		sprite.scale *= 0.5
+	var col: CollisionShape2D = player.get_node_or_null("CollisionShape2D")
+	if col and col.shape:
+		col.shape = col.shape.duplicate()
+		col.shape.size *= 0.5
+		col.position *= 0.5
 
 ## 深渊巨口的预留构建入口（跑步触发的检测实际由 _physics_process 完成）。
 func _build_abyss_mouths() -> void:

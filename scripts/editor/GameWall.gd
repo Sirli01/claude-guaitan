@@ -37,6 +37,15 @@ class_name GameWall
 const WALL_FRONT_FACE_DEPTH: float = 22.0
 const WALL_SIDE_FACE_DEPTH: float = 5.0
 
+## 读取所属关卡的世界缩放系数（找不到时默认 2.0）
+func _get_world_scale() -> float:
+	var p := get_parent()
+	while p:
+		if p is LevelBaseV2:
+			return p.world_scale
+		p = p.get_parent()
+	return 2.0
+
 var _built: bool = false
 
 ## 节点就绪回调：设置碰撞层并重建墙体。
@@ -83,12 +92,12 @@ func _build() -> void:
 
 	if size.x >= size.y and face_normal != Vector2.ZERO and absf(face_normal.y) > 0.5 and show_front_face:
 		var dir_y := signf(face_normal.y)
-		col_size.y += WALL_FRONT_FACE_DEPTH
-		col_center.y -= dir_y * WALL_FRONT_FACE_DEPTH / 2.0
+		col_size.y += WALL_FRONT_FACE_DEPTH * _get_world_scale()
+		col_center.y -= dir_y * WALL_FRONT_FACE_DEPTH * _get_world_scale() / 2.0
 	elif size.y > size.x and face_normal != Vector2.ZERO and absf(face_normal.x) > 0.5 and show_side_face:
 		var dir_x := signf(face_normal.x)
-		col_size.x += WALL_SIDE_FACE_DEPTH
-		col_center.x -= dir_x * WALL_SIDE_FACE_DEPTH / 2.0
+		col_size.x += WALL_SIDE_FACE_DEPTH * _get_world_scale()
+		col_center.x -= dir_x * WALL_SIDE_FACE_DEPTH * _get_world_scale() / 2.0
 
 	rect.size = col_size
 	col.shape = rect
@@ -146,14 +155,14 @@ func _build() -> void:
 ## [param size] 墙体尺寸。
 ## [param dir_sign] 正面朝向符号（1 或 -1，决定上下偏移方向）。
 func _add_horizontal_face(size: Vector2, dir_sign: float) -> void:
-	var face_h := 48.0
+	var face_h := 48.0 * _get_world_scale()
 	var owner_node = _get_owner()
 	var tex_path := "res://assets/sprites/_0002_水平墙正面.png"
 	if ResourceLoader.exists(tex_path):
 		var spr := Sprite2D.new()
 		spr.texture = load(tex_path)
 		spr.scale = Vector2(size.x / 880.0, face_h / 162.0)
-		var center_y := dir_sign * (size.y * 0.5 - 16.0)
+		var center_y := dir_sign * (size.y * 0.5 - 16.0 * _get_world_scale())
 		spr.position = Vector2(0, center_y)
 		spr.z_index = 0
 		spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -175,7 +184,7 @@ func _add_horizontal_face(size: Vector2, dir_sign: float) -> void:
 ## [param size] 墙体尺寸。
 ## [param dir_sign] 侧面朝向符号（1 或 -1，决定左右偏移方向）。
 func _add_vertical_face(size: Vector2, dir_sign: float) -> void:
-	var face_w := WALL_SIDE_FACE_DEPTH
+	var face_w := WALL_SIDE_FACE_DEPTH * _get_world_scale()
 	var owner_node = _get_owner()
 	var tex_path := "res://assets/sprites/_0004_竖向墙侧面.png"
 	if ResourceLoader.exists(tex_path):

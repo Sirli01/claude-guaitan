@@ -134,16 +134,24 @@ func _fade_from_black(duration: float) -> void:
 
 ## 配置场景中实例化的玩家：加载贴图、设置街道摄像机缩放与交互半径。
 ## 节点结构来自 player.tscn，这里只做运行时数据绑定。
+## 街道世界为 v1 尺度（未随全局放大 2 倍），故角色贴图/碰撞需缩回 0.5。
 func _setup_player() -> void:
+	const CHAR_SCALE := 0.5
 	var sprite: Sprite2D = player.get_node_or_null("Sprite2D")
 	if sprite:
 		sprite.texture = GameManager.load_char_texture("sister", 16, 20)
 		GameManager.fit_character_sprite(sprite, "sister")
+		sprite.scale *= CHAR_SCALE
 		player.sprite = sprite
 
 	var col: CollisionShape2D = player.get_node_or_null("CollisionShape2D")
 	if col:
 		GameManager.fit_character_collision(col, "sister")
+		# 世界未翻倍，碰撞体同步缩回
+		if col.shape is RectangleShape2D:
+			col.shape = col.shape.duplicate()
+			col.shape.size *= CHAR_SCALE
+		col.position *= CHAR_SCALE
 		player.collision = col
 
 	var area: Area2D = player.get_node_or_null("InteractionArea")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/editor/GameWall.gd" id="1_wall"]
 [ext_resource type="Script" path="res://scripts/editor/GameFurniture.gd" id="2_furn"]
@@ -11,6 +11,8 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/_0012_急救箱.png" id="9_medk"]
 [ext_resource type="Texture2D" path="res://assets/sprites/_0000_电梯卡.png" id="10_crd"]
 [ext_resource type="Script" path="res://scripts/levels/floor_1_scene.gd" id="11_flr"]
+[ext_resource type="Script" path="res://scripts/editor/RoomLight.gd" id="12_rl"]
+[ext_resource type="Script" path="res://scripts/editor/GameDoorLeak.gd" id="13_dlk"]
 
 [node name="Floor1" type="Node2D"]
 script = ExtResource("11_flr")
@@ -508,46 +510,46 @@ energy = 1.4
 texture_scale = 4.4
 
 [node name="急救箱" type="Node2D" parent="."]
-position = Vector2(210.0,42.0)
+position = Vector2(420.0,84.0)
 script = ExtResource("5_cont")
 container_name = "急救箱"
-container_size = Vector2(14.0,14.0)
+container_size = Vector2(28.0,28.0)
 container_color = Color(0.8, 0.2, 0.2, 1)
 contained_item_id = "bandage"
 contained_item_name = "绷带"
 texture_path = "res://assets/sprites/_0012_急救箱.png"
-texture_display_size = Vector2(18.0,14.0)
+texture_display_size = Vector2(36.0,28.0)
 
 [node name="大门" type="Node2D" parent="."]
-position = Vector2(-390.0,350.0)
+position = Vector2(-780.0,700.0)
 script = ExtResource("6_deco")
 decor_name = "大门"
-decor_size = Vector2(40.0,15.0)
+decor_size = Vector2(80.0,30.0)
 decor_color = Color(0.2, 0.15, 0.12, 1)
 hint_text = "门被锁住了"
 label_color = Color(0.5, 0.4, 0.35, 1)
 
 [node name="门厅" type="Node2D" parent="."]
-position = Vector2(-434.0,330.0)
+position = Vector2(-868.0,660.0)
 script = ExtResource("6_deco")
 decor_name = "门厅"
 decor_size = Vector2(1.0,1.0)
 decor_color = Color(0.72, 0.82, 0.88, 1)
 show_label = true
-label_font_size = 14
+label_font_size = 28
 
 [node name="镜子" type="Node2D" parent="."]
-position = Vector2(145.0,-178.0)
+position = Vector2(290.0,-356.0)
 script = ExtResource("6_deco")
 decor_name = "镜子"
-decor_size = Vector2(30.0,8.0)
+decor_size = Vector2(60.0,16.0)
 decor_color = Color(0.15, 0.15, 0.2, 1)
 label_color = Color(0.4, 0.4, 0.5, 1)
 
 [node name="电梯" type="Node2D" parent="."]
-position = Vector2(340.0,-130.0)
+position = Vector2(680.0,-260.0)
 script = ExtResource("7_elev")
-door_size = Vector2(72.0,60.0)
+door_size = Vector2(80.0,72.0)
 is_arrival = false
 elevator_label = "电梯"
 requires_card = true
@@ -555,11 +557,74 @@ required_event = "floor1_23_triggered"
 target_scene = "res://scenes/levels/elevator_f1_interior.tscn"
 
 [node name="电梯卡" type="Node2D" parent="."]
-position = Vector2(70.0,-250.0)
+position = Vector2(140.0,-500.0)
 script = ExtResource("8_pick")
 item_id = "elevator_card"
 item_name = "电梯卡"
-pickup_radius = 10.0
+pickup_radius = 20.0
 preview_color = Color(0.5, 0.8, 1.0, 1)
 texture_path = "res://assets/sprites/_0000_电梯卡.png"
-texture_display_size = Vector2(12.0,8.0)
+texture_display_size = Vector2(24.0,16.0)
+
+[node name="FlickerLight" type="PointLight2D" parent="."]
+position = Vector2(640, -260)
+script = ExtResource("12_rl")
+light_type = "flickering"
+base_energy = 1.5
+light_scale_val = 4.8
+
+[node name="Dust1" type="PointLight2D" parent="."]
+position = Vector2(-720, 440)
+script = ExtResource("12_rl")
+light_type = "dust"
+create_detection_area = false
+
+[node name="Dust2" type="PointLight2D" parent="."]
+position = Vector2(420, 250)
+script = ExtResource("12_rl")
+light_type = "dust"
+create_detection_area = false
+
+[node name="Dust3" type="PointLight2D" parent="."]
+position = Vector2(-430, -270)
+script = ExtResource("12_rl")
+light_type = "dust"
+create_detection_area = false
+
+[node name="Dust4" type="PointLight2D" parent="."]
+position = Vector2(600, -260)
+script = ExtResource("12_rl")
+light_type = "dust"
+create_detection_area = false
+
+[node name="Leak100" type="Node2D" parent="."]
+position = Vector2(-500, -210)
+script = ExtResource("13_dlk")
+leak_width = 48.0
+leak_direction = "left"
+
+[node name="Leak101" type="Node2D" parent="."]
+position = Vector2(-330, -340)
+script = ExtResource("13_dlk")
+leak_width = 50.0
+
+[node name="Leak102" type="Node2D" parent="."]
+position = Vector2(70, -340)
+script = ExtResource("13_dlk")
+leak_width = 50.0
+
+[node name="Leak106" type="Node2D" parent="."]
+position = Vector2(488, -340)
+script = ExtResource("13_dlk")
+leak_width = 56.0
+
+[node name="Leak107" type="Node2D" parent="."]
+position = Vector2(822, -340)
+script = ExtResource("13_dlk")
+leak_width = 36.0
+
+[node name="Leak108" type="Node2D" parent="."]
+position = Vector2(520, 330)
+script = ExtResource("13_dlk")
+leak_width = 48.0
+leak_direction = "right"

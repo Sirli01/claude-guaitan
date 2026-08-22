@@ -4,9 +4,11 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/player/sister/idle/idle_down.png" id="2_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+resource_local_to_scene = true
 size = Vector2(50, 30)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interact"]
+resource_local_to_scene = true
 radius = 60.0
 
 [node name="Player" type="CharacterBody2D"]

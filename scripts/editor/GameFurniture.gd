@@ -34,7 +34,7 @@ class_name GameFurniture
 		texture_path = value
 		_rebuild()
 
-## 标准家具贴图配置：kind → [纹理路径, 纹理尺寸, 显示高度, 纹理偏移Y]
+## 标准家具贴图配置：kind → [纹理路径, 纹理尺寸, 显示高度(v1 基准), 纹理偏移Y]
 const KIND_TEXTURES := {
 	"bed": ["res://assets/sprites/_0005_单人床.png", Vector2(140, 228), 55.0, -114.0],
 	"desk": ["res://assets/sprites/_0006_桌子1.png", Vector2(179, 118), 30.0, -59.0],
@@ -47,6 +47,15 @@ const KIND_TEXTURES := {
 }
 
 var _visual_node: Node = null
+
+## 读取所属关卡的世界缩放系数（找不到时默认 2.0）
+func _get_world_scale() -> float:
+	var p := get_parent()
+	while p:
+		if p is LevelBaseV2:
+			return p.world_scale
+		p = p.get_parent()
+	return 2.0
 
 ## 节点就绪回调：设置碰撞层并重建家具。
 func _ready() -> void:
@@ -144,7 +153,7 @@ func _build_kind_texture() -> bool:
 	spr.texture = load(tex_path)
 	spr.position = Vector2(furniture_size.x / 2.0, furniture_size.y)
 	spr.offset = Vector2(0.0, offset_y)
-	spr.scale = Vector2(furniture_size.x, display_h) / tex_size
+	spr.scale = Vector2(furniture_size.x, display_h * _get_world_scale()) / tex_size
 	spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(spr)
 	return true

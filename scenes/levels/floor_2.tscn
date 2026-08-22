@@ -327,99 +327,102 @@ position = Vector2(-500, -440)
 script = ExtResource("6")
 light_type = "room"
 base_energy = 2.5
-light_scale_val = 4.0
+light_scale_val = 8.0
 
 [node name="L_Room202" type="PointLight2D" parent="."]
 position = Vector2(500, -440)
 script = ExtResource("6")
 light_type = "room"
 base_energy = 2.5
-light_scale_val = 4.0
+light_scale_val = 8.0
 
 [node name="L_Room203" type="PointLight2D" parent="."]
 position = Vector2(500, 400)
 script = ExtResource("6")
 light_type = "room"
 base_energy = 2.5
-light_scale_val = 4.0
+light_scale_val = 8.0
 
 [node name="L_StorFlicker" type="PointLight2D" parent="."]
 position = Vector2(-620, -20)
 script = ExtResource("6")
 light_type = "flickering"
 base_energy = 1.5
-light_scale_val = 2.5
+light_scale_val = 5.0
 
 [node name="L_Cor1" type="PointLight2D" parent="."]
 position = Vector2(-400, 200)
 script = ExtResource("6")
 light_type = "room"
 base_energy = 2.0
-light_scale_val = 3.5
+light_scale_val = 7.0
 
 [node name="L_Cor2Flicker" type="PointLight2D" parent="."]
 position = Vector2(0, 0)
 script = ExtResource("6")
 light_type = "flickering"
 base_energy = 2.0
-light_scale_val = 3.5
+light_scale_val = 7.0
 
 [node name="L_Cor3" type="PointLight2D" parent="."]
 position = Vector2(600, 0)
 script = ExtResource("6")
 light_type = "room"
 base_energy = 2.0
-light_scale_val = 3.5
+light_scale_val = 7.0
 
 [node name="L_CorBroken" type="PointLight2D" parent="."]
 position = Vector2(-700, 0)
 script = ExtResource("6")
 light_type = "broken"
 base_energy = 1.2
-light_scale_val = 3.0
+light_scale_val = 6.0
 
 [node name="L_Cor4Flicker" type="PointLight2D" parent="."]
 position = Vector2(0, 400)
 script = ExtResource("6")
 light_type = "flickering"
 base_energy = 1.8
-light_scale_val = 3.0
+light_scale_val = 6.0
 
 [node name="L_Dust1" type="PointLight2D" parent="."]
 position = Vector2(-600, -100)
 script = ExtResource("6")
-light_type = "dust"
+create_detection_area = false
+	
 base_energy = 0.0
 light_scale_val = 1.0
 
 [node name="L_Dust2" type="PointLight2D" parent="."]
 position = Vector2(300, 200)
 script = ExtResource("6")
-light_type = "dust"
+create_detection_area = false
+	
 base_energy = 0.0
 light_scale_val = 1.0
 
 [node name="L_Dust3" type="PointLight2D" parent="."]
 position = Vector2(-200, 400)
 script = ExtResource("6")
-light_type = "dust"
+create_detection_area = false
+	
 base_energy = 0.0
 light_scale_val = 1.0
 
 [node name="Leak_201Door" type="Node2D" parent="."]
 position = Vector2(-500, -360)
 script = ExtResource("7")
-leak_width = 25.0
+leak_width = 50.0
 
 [node name="Leak_203Door" type="Node2D" parent="."]
 position = Vector2(500, 480)
 script = ExtResource("7")
-leak_width = 25.0
+leak_width = 50.0
 
 [node name="Leak_StorDoor" type="Node2D" parent="."]
 position = Vector2(-440, 80)
 script = ExtResource("7")
-leak_width = 20.0
+leak_width = 40.0
 
 [node name="HighHeel" parent="." instance=ExtResource("8")]
 unique_name_in_owner = true

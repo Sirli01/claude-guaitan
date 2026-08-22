@@ -44,8 +44,8 @@ const PLAYER_VISUAL_HEIGHT: float = 72.0
 const NPC_VISUAL_HEIGHT: float = 66.0
 const MONSTER_VISUAL_HEIGHT: float = 108.0
 
-const PLAYER_COLLISION_SIZE: Vector2 = Vector2(28, 20)
-const PLAYER_COLLISION_OFFSET: Vector2 = Vector2(0, -10)
+const PLAYER_COLLISION_SIZE: Vector2 = Vector2(44, 36)
+const PLAYER_COLLISION_OFFSET: Vector2 = Vector2(0, 2)
 const NPC_COLLISION_SIZE: Vector2 = Vector2(28, 20)
 const NPC_COLLISION_OFFSET: Vector2 = Vector2(0, -10)
 const MONSTER_COLLISION_SIZE: Vector2 = Vector2(36, 28)
