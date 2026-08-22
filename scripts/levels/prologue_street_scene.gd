@@ -141,7 +141,6 @@ func _setup_player() -> void:
 	if sprite:
 		sprite.texture = GameManager.load_char_texture("sister", 16, 20)
 		GameManager.fit_character_sprite(sprite, "sister")
-		sprite.scale *= CHAR_SCALE
 		player.sprite = sprite
 
 	var col: CollisionShape2D = player.get_node_or_null("CollisionShape2D")
@@ -173,6 +172,13 @@ func _setup_player() -> void:
 	var light: PointLight2D = player.get_node_or_null("PointLight2D")
 	if light:
 		player.point_light = light
+
+	# tscn 实例化时 sprite 晚于玩家 _ready 赋值，需补建帧动画组件
+	player.ensure_frame_animator()
+	# 在帧目录预览布局的基础上缩回街道 v1 比例（位置偏移同步缩放）
+	if sprite:
+		sprite.scale *= CHAR_SCALE
+		sprite.position *= CHAR_SCALE
 
 ## 绑定街边交互容器与长椅：挂接关卡引用并创建靠近时显示的世界标签。
 func _setup_interactables() -> void:

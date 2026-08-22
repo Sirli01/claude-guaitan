@@ -51,6 +51,18 @@ func _ready() -> void:
 		frame_animator.idle_fps = 7.0
 	call_deferred("_connect_interaction_signals")
 
+## 确保帧动画组件完成初始化。
+## tscn 直接实例化本节点时，关卡脚本对 sprite 的赋值晚于 _ready()，
+## 帧目录未加载会导致角色永远静止朝下，需在赋值后调用此方法补建。
+func ensure_frame_animator() -> void:
+	if frame_animator == null or sprite == null:
+		return
+	if frame_animator.is_using_preview_frames():
+		return
+	frame_animator.setup("sister", sprite)
+	frame_animator.walk_fps = 7.0
+	frame_animator.idle_fps = 7.0
+
 ## 连接交互区域进出信号（幂等，仅连接一次）。
 func _connect_interaction_signals() -> void:
 	if _signals_connected:

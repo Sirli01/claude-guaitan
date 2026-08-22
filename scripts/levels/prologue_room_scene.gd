@@ -109,7 +109,6 @@ func _setup_player() -> void:
 	if sprite:
 		sprite.texture = GameManager.load_char_texture("sister", 16, 20)
 		GameManager.fit_character_sprite(sprite, "sister")
-		sprite.scale *= PROLOGUE_SCALE
 		player.sprite = sprite
 
 	var col: CollisionShape2D = player.get_node_or_null("CollisionShape2D")
@@ -131,6 +130,13 @@ func _setup_player() -> void:
 
 	# 角色阴影遮挡体（GameManager 提供的运行时组件）
 	player.add_child(GameManager.create_character_shadow_occluder("sister"))
+
+	# tscn 实例化时 sprite 晚于玩家 _ready 赋值，需补建帧动画组件
+	player.ensure_frame_animator()
+	# 在帧目录预览布局的基础上应用序章放大（位置偏移同步缩放）
+	if sprite:
+		sprite.scale *= PROLOGUE_SCALE
+		sprite.position *= PROLOGUE_SCALE
 
 	# 延迟再次应用序章放大，覆盖 player._ready() 可能重置的尺寸
 	call_deferred("_finish_prologue_player_setup")
