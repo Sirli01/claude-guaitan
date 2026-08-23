@@ -61,19 +61,26 @@ func _ready() -> void:
 
 	# 应用UI缩放
 	_apply_ui_scale()
+	# 窗口分辨率变化时同步重排
+	UIScaleManager.scale_changed.connect(func(_s: float) -> void: _apply_ui_scale())
 
 
 ## 应用UI缩放。
+## 注意：不能用 Control.scale 缩放——它会绕节点左上角缩放导致面板偏离屏幕中心；
+## 正确做法是按缩放系数扩大居中锚点的 offsets，面板始终保持在屏幕正中。
 func _apply_ui_scale() -> void:
 	# 获取缩放因子
-	var scale = UIScaleManager.scale_factor
+	var s := UIScaleManager.scale_factor
 
-	# 缩放整个手机框架
-	var phone_frame = $PhoneFrame
-	if phone_frame:
-		phone_frame.scale = Vector2(scale, scale)
+	# 以中心锚点为基准扩展手机外框（设计尺寸 560x720）
+	var frame := $PhoneFrame as PanelContainer
+	if frame:
+		frame.offset_left = -280.0 * s
+		frame.offset_top = -360.0 * s
+		frame.offset_right = 280.0 * s
+		frame.offset_bottom = 360.0 * s
 
-	# 更新字体大小
+	# 按钮和文字大小
 	close_btn.add_theme_font_size_override("font_size", UIScaleManager.get_scaled_font_size(24))
 	contact_label.add_theme_font_size_override("font_size", UIScaleManager.get_scaled_font_size(26))
 	bottom_hint.add_theme_font_size_override("font_size", UIScaleManager.get_scaled_font_size(20))
