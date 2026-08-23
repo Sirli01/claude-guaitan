@@ -177,10 +177,10 @@ show_front_face = false
 show_side_face = false
 
 [node name="Bed" type="StaticBody2D" parent="."]
-position = Vector2(-164, -104)
+position = Vector2(-248, -181)
 script = ExtResource("3")
 furniture_name = "床"
-furniture_size = Vector2(120, 80)
+furniture_size = Vector2(158, 176)
 furniture_color = Color(0.3, 0.2, 0.15, 1)
 show_visual = false
 
