@@ -34,6 +34,12 @@ class_name GameFurniture
 		texture_path = value
 		_rebuild()
 
+## 是否绘制家具视觉。整图背景的房间可关闭，只保留碰撞与容器交互。
+@export var show_visual: bool = true:
+	set(value):
+		show_visual = value
+		_rebuild()
+
 ## 标准家具贴图配置：kind → [纹理路径, 纹理尺寸, 显示高度(v1 基准), 纹理偏移Y]
 const KIND_TEXTURES := {
 	"bed": ["res://assets/sprites/_0005_单人床.png", Vector2(140, 228), 55.0, -114.0],
@@ -102,7 +108,9 @@ func _build() -> void:
 		col.set_owner(owner_node)
 
 	# Visual
-	if texture_path != "" and ResourceLoader.exists(texture_path):
+	if not show_visual:
+		pass
+	elif texture_path != "" and ResourceLoader.exists(texture_path):
 		var spr := Sprite2D.new()
 		spr.texture = load(texture_path)
 		spr.position = furniture_size / 2.0

@@ -145,45 +145,60 @@ position = Vector2(0, -240)
 script = ExtResource("2")
 wall_size = Vector2(560, 20)
 wall_color = Color(0.1, 0.08, 0.07, 1)
+show_cap = false
+show_front_face = false
+show_side_face = false
 
 [node name="WallBottom" type="StaticBody2D" parent="."]
 position = Vector2(0, 230)
 script = ExtResource("2")
 wall_size = Vector2(560, 20)
 wall_color = Color(0.1, 0.08, 0.07, 1)
+show_cap = false
+show_front_face = false
+show_side_face = false
 
 [node name="WallLeft" type="StaticBody2D" parent="."]
 position = Vector2(-270, -4)
 script = ExtResource("2")
 wall_size = Vector2(20, 470)
 wall_color = Color(0.1, 0.08, 0.07, 1)
+show_cap = false
+show_front_face = false
+show_side_face = false
 
 [node name="WallRight" type="StaticBody2D" parent="."]
 position = Vector2(270, -4)
 script = ExtResource("2")
 wall_size = Vector2(20, 470)
 wall_color = Color(0.1, 0.08, 0.07, 1)
+show_cap = false
+show_front_face = false
+show_side_face = false
 
 [node name="Bed" type="StaticBody2D" parent="."]
-position = Vector2(-224, -144)
+position = Vector2(-164, -104)
 script = ExtResource("3")
 furniture_name = "床"
 furniture_size = Vector2(120, 80)
 furniture_color = Color(0.3, 0.2, 0.15, 1)
+show_visual = false
 
 [node name="Desk" type="StaticBody2D" parent="."]
-position = Vector2(90, -186)
+position = Vector2(140, -156)
 script = ExtResource("3")
 furniture_name = "书桌"
 furniture_size = Vector2(100, 60)
 furniture_color = Color(0.25, 0.2, 0.18, 1)
+show_visual = false
 
 [node name="Wardrobe" type="StaticBody2D" parent="."]
-position = Vector2(-66, -196)
+position = Vector2(-36, -176)
 script = ExtResource("3")
 furniture_name = "衣柜"
 furniture_size = Vector2(60, 40)
 furniture_color = Color(0.2, 0.22, 0.25, 1)
+show_visual = false
 
 [node name="WindowEffects" type="Node2D" parent="."]
 scale = Vector2(0.5, 0.5)

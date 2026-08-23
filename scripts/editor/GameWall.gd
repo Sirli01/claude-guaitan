@@ -37,6 +37,13 @@ class_name GameWall
 const WALL_FRONT_FACE_DEPTH: float = 22.0
 const WALL_SIDE_FACE_DEPTH: float = 5.0
 
+## 是否绘制墙体视觉（顶面色块/正面/侧面）。整图背景的房间可关闭，
+## 只保留碰撞与遮光。
+@export var show_visual: bool = true:
+	set(value):
+		show_visual = value
+		_rebuild()
+
 ## 读取所属关卡的世界缩放系数（找不到时默认 2.0）
 func _get_world_scale() -> float:
 	var p := get_parent()
