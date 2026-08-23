@@ -66,24 +66,28 @@ func _ready() -> void:
 
 
 ## 应用UI缩放。
-## 注意：不能用 Control.scale 缩放——它会绕节点左上角缩放导致面板偏离屏幕中心；
-## 正确做法是按缩放系数扩大居中锚点的 offsets，面板始终保持在屏幕正中。
+## 做法：外框保持设计尺寸 560x720 居中不变，把 pivot 设为面板中心后
+## 用 Control.scale 整体等比放大——文字、边距、内容全部跟随，且始终居中。
+## （直接改 offsets 只放大外框，内部字体不会跟着变，会导致字小框大。）
 func _apply_ui_scale() -> void:
-	# 获取缩放因子
 	var s := UIScaleManager.scale_factor
 
-	# 以中心锚点为基准扩展手机外框（设计尺寸 560x720）
 	var frame := $PhoneFrame as PanelContainer
 	if frame:
-		frame.offset_left = -280.0 * s
-		frame.offset_top = -360.0 * s
-		frame.offset_right = 280.0 * s
-		frame.offset_bottom = 360.0 * s
+		# 设计尺寸（与 tscn 中的 offsets 一致）
+		var design_size := Vector2(560, 720)
+		frame.offset_left = -design_size.x / 2
+		frame.offset_top = -design_size.y / 2
+		frame.offset_right = design_size.x / 2
+		frame.offset_bottom = design_size.y / 2
+		# 缩放围绕面板中心进行
+		frame.pivot_offset = design_size / 2
+		frame.scale = Vector2(s, s)
 
-	# 按钮和文字大小
-	close_btn.add_theme_font_size_override("font_size", UIScaleManager.get_scaled_font_size(24))
-	contact_label.add_theme_font_size_override("font_size", UIScaleManager.get_scaled_font_size(26))
-	bottom_hint.add_theme_font_size_override("font_size", UIScaleManager.get_scaled_font_size(20))
+	# 字体保持设计基准值即可（整体缩放会同步放大渲染）
+	close_btn.add_theme_font_size_override("font_size", 24)
+	contact_label.add_theme_font_size_override("font_size", 26)
+	bottom_hint.add_theme_font_size_override("font_size", 20)
 
 
 ## 应用多语言文本。
