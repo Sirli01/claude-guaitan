@@ -1,11 +1,44 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene format=3 uid="uid://dco41prmjw85v"]
 
-[ext_resource type="Script" path="res://scripts/levels/prologue_room_scene.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/editor/GameWall.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/editor/GameFurniture.gd" id="3"]
+[ext_resource type="Script" uid="uid://3kncdww3w5t6" path="res://scripts/levels/prologue_room_scene.gd" id="1"]
+[ext_resource type="Script" uid="uid://bka0w6cy6075k" path="res://scripts/editor/GameWall.gd" id="2"]
+[ext_resource type="Script" uid="uid://4fscu526vsq4" path="res://scripts/editor/GameFurniture.gd" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/characters/player.tscn" id="4"]
-[ext_resource type="Texture2D" path="res://assets/sprites/_0000_手机.png" id="5"]
-[ext_resource type="Texture2D" path="res://assets/sprites/房间.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://dbw8rqej7my2h" path="res://assets/sprites/_0000_手机.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://tbt7jw4bt61s" path="res://assets/sprites/房间.png" id="6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_uapy6"]
+size = Vector2(560, 20)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_1fkvw"]
+polygon = PackedVector2Array(-280, -10, 280, -10, 280, 10, -280, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_t1ny7"]
+size = Vector2(560, 20)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nj2h6"]
+polygon = PackedVector2Array(-280, -10, 280, -10, 280, 10, -280, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pcdin"]
+size = Vector2(20, 470)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_08q67"]
+polygon = PackedVector2Array(-10, -235, 10, -235, 10, 235, -10, 235)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1kpp1"]
+size = Vector2(20, 470)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vc50l"]
+polygon = PackedVector2Array(-10, -235, 10, -235, 10, 235, -10, 235)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ls5c0"]
+size = Vector2(150, 214)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yrxcc"]
+size = Vector2(87, 54)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ysncf"]
+size = Vector2(93, 104)
 
 [sub_resource type="Shader" id="shader_beam"]
 code = "
@@ -43,22 +76,11 @@ colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.25, 1, 1, 1, 0)
 
 [sub_resource type="GradientTexture2D" id="gtex_light"]
 gradient = SubResource("grad_light")
-width = 64
-height = 64
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(1, 0.5)
-
-[sub_resource type="GradientTexture2D" id="gtex_player_light"]
-gradient = SubResource("grad_light")
-width = 128
-height = 128
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
 [sub_resource type="Gradient" id="grad_dust"]
-offsets = PackedFloat32Array(0, 1)
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
 [sub_resource type="GradientTexture2D" id="gtex_dust"]
@@ -77,17 +99,39 @@ point_count = 4
 curve = SubResource("curve_alpha")
 
 [sub_resource type="ParticleProcessMaterial" id="pmat_dust"]
+emission_shape = 3
+emission_box_extents = Vector3(80, 160, 0)
 direction = Vector3(0.5, 1, 0)
 spread = 30.0
 initial_velocity_min = 3.0
 initial_velocity_max = 6.0
 gravity = Vector3(0, 1, 0)
-emission_shape = 3
-emission_box_extents = Vector3(80, 160, 0)
 scale_min = 0.3
 scale_max = 0.8
 color = Color(1, 0.95, 0.75, 0.5)
 alpha_curve = SubResource("ctex_alpha")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8wuex"]
+resource_local_to_scene = true
+size = Vector2(50, 30)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_b506q"]
+resource_local_to_scene = true
+radius = 60.0
+
+[sub_resource type="GradientTexture2D" id="gtex_player_light"]
+gradient = SubResource("grad_light")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="RectangleShape2D" id="shape_phone"]
+size = Vector2(40, 24)
+
+[sub_resource type="RectangleShape2D" id="shape_door"]
+size = Vector2(80, 20)
 
 [sub_resource type="StyleBoxFlat" id="sb_stam_bg"]
 bg_color = Color(0.15, 0.12, 0.12, 1)
@@ -117,93 +161,153 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="RectangleShape2D" id="shape_phone"]
-size = Vector2(40, 24)
-
-[sub_resource type="RectangleShape2D" id="shape_door"]
-size = Vector2(80, 20)
-
-[node name="PrologueRoom" type="Node2D"]
+[node name="PrologueRoom" type="Node2D" unique_id=1709800149]
 script = ExtResource("1")
 
-[node name="FloorBG" type="ColorRect" parent="."]
+[node name="FloorBG" type="ColorRect" parent="." unique_id=1972337335]
 z_index = -20
-position = Vector2(-270, -240)
-size = Vector2(540, 470)
+offset_left = -270.0
+offset_top = -240.0
+offset_right = 270.0
+offset_bottom = 230.0
 color = Color(0.08, 0.07, 0.06, 1)
 
-[node name="RoomImage" type="Sprite2D" parent="."]
+[node name="RoomImage" type="Sprite2D" parent="." unique_id=630942370]
 z_index = -10
+texture_filter = 1
 position = Vector2(-270, -240)
 scale = Vector2(0.246126, 0.244792)
 texture = ExtResource("6")
 centered = false
-texture_filter = 1
 
-[node name="上墙" type="StaticBody2D" parent="."]
+[node name="上墙" type="StaticBody2D" parent="." unique_id=713660680]
 position = Vector2(0, -240)
+collision_layer = 4
 script = ExtResource("2")
 wall_size = Vector2(560, 20)
-wall_color = Color(0.1, 0.08, 0.07, 1)
 show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="下墙" type="StaticBody2D" parent="."]
+[node name="@CollisionShape2D@21603" type="CollisionShape2D" parent="上墙" unique_id=1902326341]
+shape = SubResource("RectangleShape2D_uapy6")
+
+[node name="@LightOccluder2D@21604" type="LightOccluder2D" parent="上墙" unique_id=1658921552]
+occluder = SubResource("OccluderPolygon2D_1fkvw")
+occluder_light_mask = 0
+
+[node name="下墙" type="StaticBody2D" parent="." unique_id=1759339543]
 position = Vector2(0, 230)
+collision_layer = 4
 script = ExtResource("2")
 wall_size = Vector2(560, 20)
-wall_color = Color(0.1, 0.08, 0.07, 1)
 show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="左墙" type="StaticBody2D" parent="."]
+[node name="@CollisionShape2D@21605" type="CollisionShape2D" parent="下墙" unique_id=1952936110]
+shape = SubResource("RectangleShape2D_t1ny7")
+
+[node name="@LightOccluder2D@21606" type="LightOccluder2D" parent="下墙" unique_id=620730142]
+occluder = SubResource("OccluderPolygon2D_nj2h6")
+occluder_light_mask = 0
+
+[node name="左墙" type="StaticBody2D" parent="." unique_id=1985188683]
 position = Vector2(-270, -4)
+collision_layer = 4
 script = ExtResource("2")
 wall_size = Vector2(20, 470)
-wall_color = Color(0.1, 0.08, 0.07, 1)
 show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="右墙" type="StaticBody2D" parent="."]
+[node name="@CollisionShape2D@21607" type="CollisionShape2D" parent="左墙" unique_id=185655443]
+shape = SubResource("RectangleShape2D_pcdin")
+
+[node name="@LightOccluder2D@21608" type="LightOccluder2D" parent="左墙" unique_id=1513736501]
+occluder = SubResource("OccluderPolygon2D_08q67")
+occluder_light_mask = 0
+
+[node name="右墙" type="StaticBody2D" parent="." unique_id=841634968]
 position = Vector2(270, -4)
+collision_layer = 4
 script = ExtResource("2")
 wall_size = Vector2(20, 470)
-wall_color = Color(0.1, 0.08, 0.07, 1)
 show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="床" type="StaticBody2D" parent="."]
+[node name="@CollisionShape2D@21609" type="CollisionShape2D" parent="右墙" unique_id=1009902696]
+shape = SubResource("RectangleShape2D_1kpp1")
+
+[node name="@LightOccluder2D@21610" type="LightOccluder2D" parent="右墙" unique_id=2104658141]
+occluder = SubResource("OccluderPolygon2D_vc50l")
+occluder_light_mask = 0
+
+[node name="床" type="StaticBody2D" parent="." unique_id=1693440649]
 position = Vector2(-248, -181)
+collision_layer = 4
 script = ExtResource("3")
 furniture_name = "床"
 furniture_size = Vector2(158, 176)
 furniture_color = Color(0.3, 0.2, 0.15, 1)
 show_visual = false
 
-[node name="书桌" type="StaticBody2D" parent="."]
+[node name="@CollisionShape2D@21611" type="CollisionShape2D" parent="床" unique_id=57490364]
+position = Vector2(75, 95)
+shape = SubResource("RectangleShape2D_ls5c0")
+
+[node name="@Label@21612" type="Label" parent="床" unique_id=640249215]
+offset_top = -18.0
+offset_bottom = -18.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "床"
+
+[node name="书桌" type="StaticBody2D" parent="." unique_id=1528162216]
 position = Vector2(140, -156)
+collision_layer = 4
 script = ExtResource("3")
 furniture_name = "书桌"
 furniture_size = Vector2(100, 60)
 furniture_color = Color(0.25, 0.2, 0.18, 1)
 show_visual = false
 
-[node name="衣柜" type="StaticBody2D" parent="."]
+[node name="@CollisionShape2D@21613" type="CollisionShape2D" parent="书桌" unique_id=341585131]
+position = Vector2(-2.5, 5)
+shape = SubResource("RectangleShape2D_yrxcc")
+
+[node name="@Label@21614" type="Label" parent="书桌" unique_id=1743494302]
+offset_top = -18.0
+offset_bottom = -18.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "书桌"
+
+[node name="衣柜" type="StaticBody2D" parent="." unique_id=1177171308]
 position = Vector2(-36, -176)
+collision_layer = 4
 script = ExtResource("3")
 furniture_name = "衣柜"
 furniture_size = Vector2(60, 40)
 furniture_color = Color(0.2, 0.22, 0.25, 1)
 show_visual = false
 
-[node name="WindowEffects" type="Node2D" parent="."]
+[node name="@CollisionShape2D@21615" type="CollisionShape2D" parent="衣柜" unique_id=826886236]
+position = Vector2(23.5, -2)
+shape = SubResource("RectangleShape2D_ysncf")
+
+[node name="@Label@21616" type="Label" parent="衣柜" unique_id=1878841894]
+offset_top = -18.0
+offset_bottom = -18.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "衣柜"
+
+[node name="WindowEffects" type="Node2D" parent="." unique_id=1246852614]
 scale = Vector2(0.5, 0.5)
 
-[node name="WinFrame" type="ColorRect" parent="WindowEffects"]
+[node name="WinFrame" type="ColorRect" parent="WindowEffects" unique_id=2072987675]
 z_index = 1
 offset_left = 88.0
 offset_top = -468.0
@@ -211,80 +315,85 @@ offset_right = 264.0
 offset_bottom = -420.0
 color = Color(0.45, 0.35, 0.25, 0)
 
-[node name="SunBeam" type="Polygon2D" parent="WindowEffects"]
+[node name="SunBeam" type="Polygon2D" parent="WindowEffects" unique_id=173199242]
 z_index = 3
 material = SubResource("mat_beam")
-color = Color(1, 1, 1, 1)
 polygon = PackedVector2Array(120, -432, 232, -432, 416, 104, 216, 104)
 uv = PackedVector2Array(0, 0, 1, 0, 1, 1, 0, 1)
 
-[node name="SunBeamCore" type="Polygon2D" parent="WindowEffects"]
+[node name="SunBeamCore" type="Polygon2D" parent="WindowEffects" unique_id=358642841]
 z_index = 3
 material = SubResource("mat_core")
-color = Color(1, 1, 1, 1)
 polygon = PackedVector2Array(144, -432, 208, -432, 336, 24, 248, 24)
 uv = PackedVector2Array(0, 0, 1, 0, 1, 1, 0, 1)
 
-[node name="WindowLight" type="PointLight2D" parent="WindowEffects"]
+[node name="WindowLight" type="PointLight2D" parent="WindowEffects" unique_id=1704927242]
 position = Vector2(176, -336)
 color = Color(1, 0.9, 0.65, 1)
 energy = 0.3
 texture = SubResource("gtex_light")
 texture_scale = 5.0
 
-[node name="DustParticles" type="GPUParticles2D" parent="WindowEffects"]
+[node name="DustParticles" type="GPUParticles2D" parent="WindowEffects" unique_id=2123884866]
 z_index = 4
 position = Vector2(236, -176)
 amount = 12
+texture = SubResource("gtex_dust")
 lifetime = 5.0
 speed_scale = 0.3
 process_material = SubResource("pmat_dust")
-texture = SubResource("gtex_dust")
 
-[node name="Player" parent="." instance=ExtResource("4")]
+[node name="Player" parent="." unique_id=492393899 instance=ExtResource("4")]
 unique_name_in_owner = true
 position = Vector2(0, 68)
 
-[node name="PointLight2D" type="PointLight2D" parent="Player"]
+[node name="CollisionShape2D" parent="Player" index="1"]
+shape = SubResource("RectangleShape2D_8wuex")
+
+[node name="CollisionShape2D" parent="Player/InteractionArea" index="0"]
+shape = SubResource("CircleShape2D_b506q")
+
+[node name="PointLight2D" type="PointLight2D" parent="Player" unique_id=1563923847]
+position = Vector2(-3, -66)
 color = Color(0.95, 0.9, 0.75, 1)
 energy = 0.35
 texture = SubResource("gtex_player_light")
 texture_scale = 3.5
 
-[node name="PhoneArea" type="Area2D" parent="." groups=["interactable"]]
+[node name="PhoneArea" type="Area2D" parent="." unique_id=874597439 groups=["interactable"]]
 unique_name_in_owner = true
 position = Vector2(140, -156)
 collision_layer = 16
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PhoneArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PhoneArea" unique_id=1735034943]
 shape = SubResource("shape_phone")
 
-[node name="PhoneSprite" type="Sprite2D" parent="PhoneArea"]
+[node name="PhoneSprite" type="Sprite2D" parent="PhoneArea" unique_id=268468111]
+texture_filter = 1
 position = Vector2(-10, -8)
 scale = Vector2(0.012987, 0.01411)
 texture = ExtResource("5")
-texture_filter = 1
 
-[node name="DoorArea" type="Area2D" parent="."]
+[node name="DoorArea" type="Area2D" parent="." unique_id=734693451]
 unique_name_in_owner = true
 position = Vector2(0, 216)
 collision_layer = 32
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorArea" unique_id=873126373]
 shape = SubResource("shape_door")
 
-[node name="DoorVisual" type="ColorRect" parent="DoorArea"]
+[node name="DoorVisual" type="ColorRect" parent="DoorArea" unique_id=282272428]
 offset_left = -40.0
 offset_top = -10.0
 offset_right = 40.0
 offset_bottom = 10.0
 color = Color(0.35, 0.22, 0.12, 1)
 
-[node name="HUDLayer" type="CanvasLayer" parent="."]
+[node name="HUDLayer" type="CanvasLayer" parent="." unique_id=1693895557]
 unique_name_in_owner = true
 layer = 5
 
-[node name="TopBar" type="HBoxContainer" parent="HUDLayer"]
+[node name="TopBar" type="HBoxContainer" parent="HUDLayer" unique_id=831143464]
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 60.0
@@ -293,13 +402,13 @@ offset_right = -60.0
 offset_bottom = 120.0
 grow_horizontal = 2
 
-[node name="FloorLabel" type="Label" parent="HUDLayer/TopBar"]
+[node name="FloorLabel" type="Label" parent="HUDLayer/TopBar" unique_id=806811462]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
 theme_override_font_sizes/font_size = 60
 
-[node name="StatusVBox" type="VBoxContainer" parent="HUDLayer"]
+[node name="StatusVBox" type="VBoxContainer" parent="HUDLayer" unique_id=1907957603]
 unique_name_in_owner = true
 offset_left = 60.0
 offset_top = 114.0
@@ -307,13 +416,13 @@ offset_right = 480.0
 offset_bottom = 114.0
 theme_override_constants/separation = 8
 
-[node name="StaminaLabel" type="Label" parent="HUDLayer/StatusVBox"]
+[node name="StaminaLabel" type="Label" parent="HUDLayer/StatusVBox" unique_id=1567616527]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.8, 0.5, 1)
 theme_override_font_sizes/font_size = 44
 
-[node name="StaminaBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+[node name="StaminaBar" type="ProgressBar" parent="HUDLayer/StatusVBox" unique_id=358047894]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(360, 24)
 layout_mode = 2
@@ -321,13 +430,13 @@ theme_override_styles/background = SubResource("sb_stam_bg")
 theme_override_styles/fill = SubResource("sb_stam_fill")
 show_percentage = false
 
-[node name="SanityLabel" type="Label" parent="HUDLayer/StatusVBox"]
+[node name="SanityLabel" type="Label" parent="HUDLayer/StatusVBox" unique_id=897209086]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.5, 0.9, 1)
 theme_override_font_sizes/font_size = 44
 
-[node name="SanityBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+[node name="SanityBar" type="ProgressBar" parent="HUDLayer/StatusVBox" unique_id=1691748271]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(360, 24)
 layout_mode = 2

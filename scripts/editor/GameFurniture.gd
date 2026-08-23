@@ -53,6 +53,7 @@ const KIND_TEXTURES := {
 }
 
 var _visual_node: Node = null
+var _adopting: bool = false  # 防止采纳碰撞尺寸时递归重建
 
 ## 读取所属关卡的世界缩放系数（找不到时默认 2.0）
 func _get_world_scale() -> float:
@@ -72,6 +73,19 @@ func _ready() -> void:
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
+	# 把手动拖动/缩放过碰撞框的结果采纳回 furniture_size 与 position，
+	# 否则重新加载时会被按属性重建的碰撞覆盖。（其余楼层 tscn 无残留碰撞子节点，不受影响）
+	if not _adopting:
+		for child in get_children():
+			if child is CollisionShape2D and child.shape is RectangleShape2D:
+				var s: Vector2 = child.shape.size
+				var delta: Vector2 = child.position - furniture_size / 2.0
+				if s != furniture_size or delta != Vector2.ZERO:
+					_adopting = true
+					position += delta
+					furniture_size = s  # setter 会再次触发 _rebuild
+					_adopting = false
+				break
 	_clear_children()
 	_build()
 
