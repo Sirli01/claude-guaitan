@@ -80,8 +80,10 @@ func _apply_ui_scale() -> void:
 		frame.offset_top = -design_size.y / 2
 		frame.offset_right = design_size.x / 2
 		frame.offset_bottom = design_size.y / 2
-		# 缩放围绕面板中心进行
+		# 缩放围绕面板中心进行；并保证手机不超过视口高度的 85%
 		frame.pivot_offset = design_size / 2
+		var vs := get_viewport().get_visible_rect().size
+		s = clampf(minf(vs.x / design_size.x, vs.y / design_size.y) * 0.85, 1.0, s)
 		frame.scale = Vector2(s, s)
 
 	# 字体保持设计基准值即可（整体缩放会同步放大渲染）

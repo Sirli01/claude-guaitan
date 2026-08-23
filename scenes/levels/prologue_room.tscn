@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://tbt7jw4bt61s" path="res://assets/sprites/房间.png" id="6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_uapy6"]
-size = Vector2(560, 20)
+size = Vector2(560, 84)
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_1fkvw"]
 polygon = PackedVector2Array(-280, -10, 280, -10, 280, 10, -280, 10)
@@ -26,19 +26,19 @@ size = Vector2(20, 470)
 polygon = PackedVector2Array(-10, -235, 10, -235, 10, 235, -10, 235)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1kpp1"]
-size = Vector2(20, 470)
+size = Vector2(54, 468)
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vc50l"]
 polygon = PackedVector2Array(-10, -235, 10, -235, 10, 235, -10, 235)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ls5c0"]
-size = Vector2(150, 214)
+size = Vector2(157, 215)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yrxcc"]
-size = Vector2(87, 54)
+size = Vector2(87, 55)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ysncf"]
-size = Vector2(93, 104)
+size = Vector2(94, 99)
 
 [sub_resource type="Shader" id="shader_beam"]
 code = "
@@ -113,7 +113,7 @@ alpha_curve = SubResource("ctex_alpha")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8wuex"]
 resource_local_to_scene = true
-size = Vector2(50, 30)
+size = Vector2(39, 30)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b506q"]
 resource_local_to_scene = true
@@ -189,10 +189,11 @@ show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="@CollisionShape2D@21603" type="CollisionShape2D" parent="上墙" unique_id=1902326341]
+[node name="@CollisionShape2D@21605" type="CollisionShape2D" parent="上墙" unique_id=1323269345]
+position = Vector2(0, 32)
 shape = SubResource("RectangleShape2D_uapy6")
 
-[node name="@LightOccluder2D@21604" type="LightOccluder2D" parent="上墙" unique_id=1658921552]
+[node name="@LightOccluder2D@21606" type="LightOccluder2D" parent="上墙" unique_id=541482122]
 occluder = SubResource("OccluderPolygon2D_1fkvw")
 occluder_light_mask = 0
 
@@ -205,10 +206,10 @@ show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="@CollisionShape2D@21605" type="CollisionShape2D" parent="下墙" unique_id=1952936110]
+[node name="@CollisionShape2D@21607" type="CollisionShape2D" parent="下墙" unique_id=577121668]
 shape = SubResource("RectangleShape2D_t1ny7")
 
-[node name="@LightOccluder2D@21606" type="LightOccluder2D" parent="下墙" unique_id=620730142]
+[node name="@LightOccluder2D@21608" type="LightOccluder2D" parent="下墙" unique_id=1893685297]
 occluder = SubResource("OccluderPolygon2D_nj2h6")
 occluder_light_mask = 0
 
@@ -221,10 +222,10 @@ show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="@CollisionShape2D@21607" type="CollisionShape2D" parent="左墙" unique_id=185655443]
+[node name="@CollisionShape2D@21609" type="CollisionShape2D" parent="左墙" unique_id=1257321783]
 shape = SubResource("RectangleShape2D_pcdin")
 
-[node name="@LightOccluder2D@21608" type="LightOccluder2D" parent="左墙" unique_id=1513736501]
+[node name="@LightOccluder2D@21610" type="LightOccluder2D" parent="左墙" unique_id=908760156]
 occluder = SubResource("OccluderPolygon2D_08q67")
 occluder_light_mask = 0
 
@@ -237,27 +238,28 @@ show_cap = false
 show_front_face = false
 show_side_face = false
 
-[node name="@CollisionShape2D@21609" type="CollisionShape2D" parent="右墙" unique_id=1009902696]
+[node name="@CollisionShape2D@21611" type="CollisionShape2D" parent="右墙" unique_id=1608347485]
+position = Vector2(-17, 1)
 shape = SubResource("RectangleShape2D_1kpp1")
 
-[node name="@LightOccluder2D@21610" type="LightOccluder2D" parent="右墙" unique_id=2104658141]
+[node name="@LightOccluder2D@21612" type="LightOccluder2D" parent="右墙" unique_id=622122936]
 occluder = SubResource("OccluderPolygon2D_vc50l")
 occluder_light_mask = 0
 
 [node name="床" type="StaticBody2D" parent="." unique_id=1693440649]
-position = Vector2(-248, -181)
+position = Vector2(-252, -174)
 collision_layer = 4
 script = ExtResource("3")
 furniture_name = "床"
-furniture_size = Vector2(158, 176)
+furniture_size = Vector2(150, 214)
 furniture_color = Color(0.3, 0.2, 0.15, 1)
 show_visual = false
 
-[node name="@CollisionShape2D@21611" type="CollisionShape2D" parent="床" unique_id=57490364]
-position = Vector2(75, 95)
+[node name="@CollisionShape2D@21615" type="CollisionShape2D" parent="床" unique_id=524143793]
+position = Vector2(78.5, 87.5)
 shape = SubResource("RectangleShape2D_ls5c0")
 
-[node name="@Label@21612" type="Label" parent="床" unique_id=640249215]
+[node name="@Label@21616" type="Label" parent="床" unique_id=1849325785]
 offset_top = -18.0
 offset_bottom = -18.0
 theme_override_colors/font_color = Color(0.8, 0.8, 0.6, 1)
@@ -265,19 +267,19 @@ theme_override_font_sizes/font_size = 12
 text = "床"
 
 [node name="书桌" type="StaticBody2D" parent="." unique_id=1528162216]
-position = Vector2(140, -156)
+position = Vector2(87.5, -181)
 collision_layer = 4
 script = ExtResource("3")
 furniture_name = "书桌"
-furniture_size = Vector2(100, 60)
+furniture_size = Vector2(87, 54)
 furniture_color = Color(0.25, 0.2, 0.18, 1)
 show_visual = false
 
-[node name="@CollisionShape2D@21613" type="CollisionShape2D" parent="书桌" unique_id=341585131]
-position = Vector2(-2.5, 5)
+[node name="@CollisionShape2D@21619" type="CollisionShape2D" parent="书桌" unique_id=112867054]
+position = Vector2(50, 29.5)
 shape = SubResource("RectangleShape2D_yrxcc")
 
-[node name="@Label@21614" type="Label" parent="书桌" unique_id=1743494302]
+[node name="@Label@21620" type="Label" parent="书桌" unique_id=2125780386]
 offset_top = -18.0
 offset_bottom = -18.0
 theme_override_colors/font_color = Color(0.8, 0.8, 0.6, 1)
@@ -285,19 +287,19 @@ theme_override_font_sizes/font_size = 12
 text = "书桌"
 
 [node name="衣柜" type="StaticBody2D" parent="." unique_id=1177171308]
-position = Vector2(-36, -176)
+position = Vector2(-42.5, -198)
 collision_layer = 4
 script = ExtResource("3")
 furniture_name = "衣柜"
-furniture_size = Vector2(60, 40)
+furniture_size = Vector2(93, 104)
 furniture_color = Color(0.2, 0.22, 0.25, 1)
 show_visual = false
 
-[node name="@CollisionShape2D@21615" type="CollisionShape2D" parent="衣柜" unique_id=826886236]
-position = Vector2(23.5, -2)
+[node name="@CollisionShape2D@21623" type="CollisionShape2D" parent="衣柜" unique_id=750957706]
+position = Vector2(30.5, 18.5)
 shape = SubResource("RectangleShape2D_ysncf")
 
-[node name="@Label@21616" type="Label" parent="衣柜" unique_id=1878841894]
+[node name="@Label@21624" type="Label" parent="衣柜" unique_id=1761348927]
 offset_top = -18.0
 offset_bottom = -18.0
 theme_override_colors/font_color = Color(0.8, 0.8, 0.6, 1)
@@ -348,6 +350,7 @@ unique_name_in_owner = true
 position = Vector2(0, 68)
 
 [node name="CollisionShape2D" parent="Player" index="1"]
+position = Vector2(0.5, -15)
 shape = SubResource("RectangleShape2D_8wuex")
 
 [node name="CollisionShape2D" parent="Player/InteractionArea" index="0"]
