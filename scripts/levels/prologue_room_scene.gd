@@ -125,7 +125,7 @@ func _setup_player() -> void:
 
 	var light: PointLight2D = player.get_node_or_null("PointLight2D")
 	if light:
-		light.texture_scale = 6.0 * PROLOGUE_SCALE
+		light.texture_scale = 2.6 * PROLOGUE_SCALE
 		player.point_light = light
 
 	# 角色阴影遮挡体（GameManager 提供的运行时组件）
@@ -156,7 +156,7 @@ func _finish_prologue_player_setup() -> void:
 		if col_node and col_node.shape and col_node.shape is CircleShape2D:
 			col_node.shape.radius = 60.0 * PROLOGUE_SCALE
 	if player.point_light and player.point_light is PointLight2D:
-		player.point_light.texture_scale = 6.0 * PROLOGUE_SCALE
+		player.point_light.texture_scale = 2.6 * PROLOGUE_SCALE
 
 ## 创建"按E拾取"世界提示标签（由 WorldLabelManager 运行时管理，默认隐藏）
 func _create_phone_prompt() -> void:
