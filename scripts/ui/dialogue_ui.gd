@@ -23,8 +23,8 @@ var _portrait: TextureRect  # 当前说话者头像（显示在对话框上方�
 var _portrait_container: Control  # 头像的父容器
 
 # 头像位置/大小（在Godot编辑器Inspector面板中调整）
-@export var portrait_pos := Vector2(200, 0)  # 相对于屏幕的绝对坐标
-@export var portrait_size := Vector2(1470, 1470)
+@export var portrait_pos := Vector2(100, 0)  # 相对于屏幕的绝对坐标
+@export var portrait_size := Vector2(735, 735)
 const CONFIG_PATH := "user://portrait_config.cfg"
 
 # 调试工具
@@ -154,8 +154,8 @@ func _setup_history_panel() -> void:
 	# 半透明黑色背景面板，覆盖屏幕上半部分
 	_history_panel = PanelContainer.new()
 	_history_panel.visible = false
-	_history_panel.position = Vector2(80, 80)
-	_history_panel.size = Vector2(3680, 1440)
+	_history_panel.position = Vector2(40, 40)
+	_history_panel.size = Vector2(1840, 720)
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.0, 0.0, 0.0, 0.85)
 	style.corner_radius_top_left = 8
@@ -197,7 +197,7 @@ func _toggle_history() -> void:
 	var title = Label.new()
 	title.text = LocaleManager.t("dialogue_history_title")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 44)
+	title.add_theme_font_size_override("font_size", 22)
 	title.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	_history_vbox.add_child(title)
 	
@@ -213,8 +213,8 @@ func _toggle_history() -> void:
 		if entry.speaker != "":
 			var name_lbl = Label.new()
 			name_lbl.text = entry.speaker + "："
-			name_lbl.add_theme_font_size_override("font_size", 48)
-			name_lbl.custom_minimum_size.x = 240
+			name_lbl.add_theme_font_size_override("font_size", 24)
+			name_lbl.custom_minimum_size.x = 120
 			# 颜色与角色对应
 			var color := Color(0.8, 0.8, 0.8)
 			match entry.speaker:
@@ -229,7 +229,7 @@ func _toggle_history() -> void:
 		
 		var text_lbl = Label.new()
 		text_lbl.text = entry.text
-		text_lbl.add_theme_font_size_override("font_size", 48)
+		text_lbl.add_theme_font_size_override("font_size", 24)
 		text_lbl.add_theme_color_override("font_color", Color(0.75, 0.75, 0.75))
 		text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		text_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -363,8 +363,8 @@ func _setup_debug_ui() -> void:
 	# 坐标信息标签
 	_debug_label = Label.new()
 	_debug_label.visible = false
-	_debug_label.position = Vector2(20, 20)
-	_debug_label.add_theme_font_size_override("font_size", 28)
+	_debug_label.position = Vector2(10, 10)
+	_debug_label.add_theme_font_size_override("font_size", 14)
 	_debug_label.add_theme_color_override("font_color", Color.YELLOW)
 	_debug_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	_debug_label.add_theme_constant_override("shadow_offset_x", 1)
