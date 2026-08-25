@@ -55,7 +55,7 @@ enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 
 theme/custom="res://assets/ui/horror_theme.tres"
 theme/custom_font="res://assets/fonts/LXGWWenKai-Regular.ttf"
-theme/default_font_size=56
+theme/default_font_size=28
 
 [input]
 

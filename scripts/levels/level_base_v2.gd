@@ -1374,18 +1374,22 @@ func _setup_status_hud(parent: CanvasLayer) -> void:
 	_stamina_bar.show_percentage = false
 	_stamina_bar.visible = PlayerStats.stamina_enabled
 	var stam_bg = StyleBoxFlat.new()
-	stam_bg.bg_color = Color(0.15, 0.12, 0.12)
-	stam_bg.corner_radius_top_left = 2
-	stam_bg.corner_radius_top_right = 2
-	stam_bg.corner_radius_bottom_left = 2
-	stam_bg.corner_radius_bottom_right = 2
+	stam_bg.bg_color = Color(0.07, 0.055, 0.075, 0.85)
+	stam_bg.set_corner_radius_all(6)
+	stam_bg.border_width_left = 1
+	stam_bg.border_width_top = 1
+	stam_bg.border_width_right = 1
+	stam_bg.border_width_bottom = 1
+	stam_bg.border_color = Color(0.45, 0.38, 0.3, 0.7)
 	_stamina_bar.add_theme_stylebox_override("background", stam_bg)
 	var stam_fill = StyleBoxFlat.new()
-	stam_fill.bg_color = Color(0.4, 0.8, 0.3)
-	stam_fill.corner_radius_top_left = 2
-	stam_fill.corner_radius_top_right = 2
-	stam_fill.corner_radius_bottom_left = 2
-	stam_fill.corner_radius_bottom_right = 2
+	stam_fill.bg_color = Color(0.5, 0.88, 0.38)
+	stam_fill.set_corner_radius_all(5)
+	stam_fill.border_width_left = 1
+	stam_fill.border_width_top = 1
+	stam_fill.border_width_right = 1
+	stam_fill.border_width_bottom = 1
+	stam_fill.border_color = Color(0.75, 1.0, 0.65, 0.5)
 	_stamina_bar.add_theme_stylebox_override("fill", stam_fill)
 	status_vbox.add_child(_stamina_bar)
 	
@@ -1402,18 +1406,22 @@ func _setup_status_hud(parent: CanvasLayer) -> void:
 	_sanity_bar.value = PlayerStats.sanity
 	_sanity_bar.show_percentage = false
 	var san_bg = StyleBoxFlat.new()
-	san_bg.bg_color = Color(0.12, 0.1, 0.15)
-	san_bg.corner_radius_top_left = 2
-	san_bg.corner_radius_top_right = 2
-	san_bg.corner_radius_bottom_left = 2
-	san_bg.corner_radius_bottom_right = 2
+	san_bg.bg_color = Color(0.06, 0.05, 0.09, 0.85)
+	san_bg.set_corner_radius_all(6)
+	san_bg.border_width_left = 1
+	san_bg.border_width_top = 1
+	san_bg.border_width_right = 1
+	san_bg.border_width_bottom = 1
+	san_bg.border_color = Color(0.4, 0.32, 0.55, 0.7)
 	_sanity_bar.add_theme_stylebox_override("background", san_bg)
 	var san_fill = StyleBoxFlat.new()
-	san_fill.bg_color = Color(0.5, 0.4, 0.9)
-	san_fill.corner_radius_top_left = 2
-	san_fill.corner_radius_top_right = 2
-	san_fill.corner_radius_bottom_left = 2
-	san_fill.corner_radius_bottom_right = 2
+	san_fill.bg_color = Color(0.58, 0.44, 0.95)
+	san_fill.set_corner_radius_all(5)
+	san_fill.border_width_left = 1
+	san_fill.border_width_top = 1
+	san_fill.border_width_right = 1
+	san_fill.border_width_bottom = 1
+	san_fill.border_color = Color(0.8, 0.7, 1.0, 0.5)
 	_sanity_bar.add_theme_stylebox_override("fill", san_fill)
 	status_vbox.add_child(_sanity_bar)
 	
@@ -1433,18 +1441,17 @@ func _setup_status_hud(parent: CanvasLayer) -> void:
 	_battery_bar.show_percentage = false
 	_battery_bar.visible = has_flashlight
 	var bat_bg = StyleBoxFlat.new()
-	bat_bg.bg_color = Color(0.15, 0.12, 0.08)
-	bat_bg.corner_radius_top_left = 2
-	bat_bg.corner_radius_top_right = 2
-	bat_bg.corner_radius_bottom_left = 2
-	bat_bg.corner_radius_bottom_right = 2
+	bat_bg.bg_color = Color(0.09, 0.07, 0.05, 0.85)
+	bat_bg.set_corner_radius_all(6)
+	bat_bg.border_width_left = 1
+	bat_bg.border_width_top = 1
+	bat_bg.border_width_right = 1
+	bat_bg.border_width_bottom = 1
+	bat_bg.border_color = Color(0.5, 0.4, 0.22, 0.7)
 	_battery_bar.add_theme_stylebox_override("background", bat_bg)
 	var bat_fill = StyleBoxFlat.new()
-	bat_fill.bg_color = Color(0.9, 0.7, 0.2)
-	bat_fill.corner_radius_top_left = 2
-	bat_fill.corner_radius_top_right = 2
-	bat_fill.corner_radius_bottom_left = 2
-	bat_fill.corner_radius_bottom_right = 2
+	bat_fill.bg_color = Color(0.95, 0.75, 0.25)
+	bat_fill.set_corner_radius_all(5)
 	_battery_bar.add_theme_stylebox_override("fill", bat_fill)
 	status_vbox.add_child(_battery_bar)
 	

@@ -1,6 +1,24 @@
-[gd_scene format=3]
+[gd_scene format=3 load_steps=2]
 
 [ext_resource type="Script" path="res://scripts/ui/phone_ui.gd" id="1_phone"]
+
+[sub_resource type="StyleBoxFlat" id="sb_phone_bezel"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.055, 0.055, 0.075, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.015, 0.015, 0.025, 1)
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 12
 
 [node name="PhoneUI" type="Control"]
 layout_mode = 3
@@ -35,6 +53,7 @@ offset_right = 280.0
 offset_bottom = 360.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("sb_phone_bezel")
 
 [node name="VBox" type="VBoxContainer" parent="PhoneFrame"]
 layout_mode = 2
