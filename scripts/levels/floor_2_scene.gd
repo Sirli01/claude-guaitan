@@ -60,7 +60,7 @@ func _ready() -> void:
 	discover_scene_nodes()
 	_add_room_labels()
 	_add_ceiling_cracks()
-	setup_player(FLOOR_2_PARTY_SPAWN_POS, 6.0)
+	setup_player(FLOOR_2_PARTY_SPAWN_POS, 3.0)
 	_build_arrival_elevator(FLOOR_2_ARRIVAL_POS)
 	_spawn_npcs()
 	_build_elevator()

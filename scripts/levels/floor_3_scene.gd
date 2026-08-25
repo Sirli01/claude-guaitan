@@ -106,7 +106,7 @@ func _ready() -> void:
 	_add_floor_cracks()
 	_place_search_prop(Vector2(-332, -248), Vector2(18, 10), "残破日记", Color(0.5, 0.45, 0.3, 0.75), "_on_diary_found")
 	_build_corridor_obstacles()
-	setup_player(Vector2(0, 220), 3.0)
+	setup_player(Vector2(0, 220), 1.5)
 	_shrink_player_to_v1()
 	_build_arrival_elevator(Vector2(0, 220))
 	player.walk_speed = 180.0  # 第三层步行稍慢，增加压迫感
