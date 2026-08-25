@@ -62,6 +62,7 @@ func _ready() -> void:
 			_elevator_door = child
 	# 动态灯光效果（闪烁灯、灰尘、门缝漏光）
 	_place_dynamic_lights()
+	camera_bounds = Rect2(-920, -620, 1840, 1360)
 	setup_player(Vector2(-780, 620), 3.0)  # 蛇形走廊入口
 	_spawn_npcs()
 	# 读档时如果已有电梯卡或已触发23点事件，恢复状态

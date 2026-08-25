@@ -28,18 +28,16 @@ func _on_viewport_size_changed() -> void:
 
 ## 更新缩放因子
 func _update_scale_factor() -> void:
-	var viewport_size = get_viewport().get_visible_rect().size
-
-	# 计算缩放因子（基于宽度比例）
-	var new_scale = viewport_size.x / BASE_WIDTH
-
-	# 限制最小和最大缩放
-	new_scale = clampf(new_scale, 0.5, 3.0)
+	# 项目已改用 canvas_items 拉伸 + expand 宽高比：
+	# UI 坐标恒为 1920x1080 设计空间，由引擎自动适配任意窗口/分辨率，
+	# 手动二次缩放不再需要（历史上 4K 画布时代的补丁）。固定为 1.0，
+	# 保留 API 以兼容旧调用点（phone_ui 等）。
+	var new_scale = 1.0
 
 	if not is_equal_approx(new_scale, scale_factor):
 		scale_factor = new_scale
 		scale_changed.emit(scale_factor)
-		print("[UI Scale] 缩放因子更新: %.2f (视口: %s)" % [scale_factor, viewport_size])
+		print("[UI Scale] 缩放因子更新: %.2f (视口: %s)" % [scale_factor, get_viewport().get_visible_rect().size])
 
 
 ## 获取缩放后的字体大小

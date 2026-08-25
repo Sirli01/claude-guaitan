@@ -49,6 +49,10 @@ var _cached_circle_texture_32: ImageTexture = null
 ## 翻倍后的关卡（第一/二层、序章房间）保持默认 2.0；
 ## 未翻倍的关卡（第三层）设为 1.0，环境视觉常量会自动回到 v1 比例。
 @export var world_scale: float = 2.0
+
+## 相机活动边界（世界坐标）。留空表示不限制。
+## 宽屏(aspect=expand)下视口可见范围变大，需要用它防止看到地图外的虚空。
+var camera_bounds: Rect2 = Rect2()
 @export var WALL_FRONT_FACE_DEPTH: float = 22.0  ## 水平墙正面高度（× world_scale）
 @export var WALL_SIDE_FACE_DEPTH: float = 5.0   ## 竖向墙侧面宽度（× world_scale）
 
@@ -118,6 +122,12 @@ func setup_player(pos: Vector2, zoom: float = 6.0) -> CharacterBody2D:
 	# 配置摄像机
 	if cam:
 		cam.zoom = Vector2(zoom, zoom)
+		# 宽屏(aspect=expand)下可见范围更大，用边界防止看到地图外
+		if camera_bounds.size != Vector2.ZERO:
+			cam.limit_left = int(camera_bounds.position.x)
+			cam.limit_top = int(camera_bounds.position.y)
+			cam.limit_right = int(camera_bounds.end.x)
+			cam.limit_bottom = int(camera_bounds.end.y)
 		player.camera = cam
 
 	# 添加角色阴影遮挡体

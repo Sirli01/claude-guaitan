@@ -122,6 +122,11 @@ func _setup_player() -> void:
 	var cam: Camera2D = player.get_node_or_null("Camera2D")
 	if cam:
 		player.camera = cam
+		# 房间尺寸有限，宽屏下限制相机不看到墙外虚空
+		cam.limit_left = -270
+		cam.limit_top = -240
+		cam.limit_right = 270
+		cam.limit_bottom = 230
 
 	var light: PointLight2D = player.get_node_or_null("PointLight2D")
 	if light:

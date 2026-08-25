@@ -167,6 +167,11 @@ func _setup_player() -> void:
 	var cam: Camera2D = player.get_node_or_null("Camera2D")
 	if cam:
 		cam.zoom = Vector2(1.5, 1.5)
+		# 街道横向范围有限，宽屏下限制相机不看到两端外
+		cam.limit_left = -620
+		cam.limit_right = 620
+		cam.limit_top = -300
+		cam.limit_bottom = 400
 		player.camera = cam
 
 	var light: PointLight2D = player.get_node_or_null("PointLight2D")
