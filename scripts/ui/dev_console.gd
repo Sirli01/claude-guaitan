@@ -60,11 +60,11 @@ func _build_ui() -> void:
 	scroll.add_child(root)
 	
 	# 标题
-	_add_label(root, "开发者控制台 (F3)", 44, Color(0.4, 0.8, 1.0))
+	_add_label(root, "开发者控制台 (F3)", 22, Color(0.4, 0.8, 1.0))
 	_add_separator(root)
 	
 	# ====== 场景跳转 ======
-	_add_label(root, "场景跳转", 36, Color(1.0, 0.9, 0.4))
+	_add_label(root, "场景跳转", 18, Color(1.0, 0.9, 0.4))
 	var scene_grid = _add_grid(root, 4)
 	_add_scene_btn(scene_grid, "序章-房间", "res://scenes/levels/prologue_room.tscn", GameManager.Floor.PROLOGUE, [])
 	_add_scene_btn(scene_grid, "序章-街道", "res://scenes/levels/prologue_street.tscn", GameManager.Floor.STREET, ["phone"])
@@ -78,7 +78,7 @@ func _build_ui() -> void:
 	_add_separator(root)
 	
 	# ====== 道具管理 ======
-	_add_label(root, "给予道具（点击添加到背包）", 36, Color(0.4, 1.0, 0.6))
+	_add_label(root, "给予道具（点击添加到背包）", 18, Color(0.4, 1.0, 0.6))
 	var item_grid = _add_grid(root, 5)
 	var items = [
 		["phone", "手机"], ["flashlight", "手电筒"], ["battery", "电池"],
@@ -94,7 +94,7 @@ func _build_ui() -> void:
 	_add_separator(root)
 	
 	# ====== 属性调节 ======
-	_add_label(root, "属性调节", 36, Color(1.0, 0.6, 0.4))
+	_add_label(root, "属性调节", 18, Color(1.0, 0.6, 0.4))
 	var stat_grid = _add_grid(root, 4)
 	_add_stat_btn(stat_grid, "体力满", func(): PlayerStats.stamina = PlayerStats.max_stamina; PlayerStats.stamina_changed.emit(PlayerStats.stamina, PlayerStats.max_stamina))
 	_add_stat_btn(stat_grid, "体力=10", func(): PlayerStats.stamina = 10.0; PlayerStats.stamina_changed.emit(10.0, PlayerStats.max_stamina))
@@ -112,7 +112,7 @@ func _build_ui() -> void:
 	_add_separator(root)
 
 	# ====== 快捷功能 ======
-	_add_label(root, "快捷功能", 36, Color(0.7, 0.7, 0.7))
+	_add_label(root, "快捷功能", 18, Color(0.7, 0.7, 0.7))
 	var misc_grid = _add_grid(root, 4)
 	_add_stat_btn(misc_grid, "跳过对话", func():
 		if DialogueManager.is_dialogue_active:
@@ -183,7 +183,7 @@ func _make_btn(text: String, color: Color, callback: Callable) -> Button:
 	var hover = s.duplicate()
 	hover.bg_color = color.lightened(0.2)
 	b.add_theme_stylebox_override("hover", hover)
-	b.add_theme_font_size_override("font_size", 28)
+	b.add_theme_font_size_override("font_size", 14)
 	b.pressed.connect(callback)
 	return b
 

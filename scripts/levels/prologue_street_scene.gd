@@ -82,13 +82,13 @@ func _ready() -> void:
 
 		# 镜头1：向下平移展示街道（2秒）
 		var pan_down := create_tween()
-		pan_down.tween_property(cam, "offset", Vector2(0, 60), 2.0).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+		pan_down.tween_property(cam, "offset", Vector2(0, 120), 2.0).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 		await pan_down.finished
 		await get_tree().create_timer(0.8).timeout
 
 		# 镜头2：向右平移看到公寓入口（3秒）
 		var pan_right := create_tween()
-		pan_right.tween_property(cam, "offset", Vector2(375, 25), 3.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+		pan_right.tween_property(cam, "offset", Vector2(750, 50), 3.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 		await pan_right.finished
 		await get_tree().create_timer(1.5).timeout
 
@@ -166,7 +166,7 @@ func _setup_player() -> void:
 
 	var cam: Camera2D = player.get_node_or_null("Camera2D")
 	if cam:
-		cam.zoom = Vector2(1.5, 1.5)
+		cam.zoom = Vector2(3.0, 3.0)
 		# 街道横向范围有限，宽屏下限制相机不看到两端外
 		cam.limit_left = -620
 		cam.limit_right = 620

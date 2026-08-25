@@ -226,7 +226,7 @@ func _setup_ui() -> void:
 var _hint_labels: Array[Dictionary] = []
 const HINT_DURATION: float = 4.0
 const HINT_FADE_TIME: float = 1.0
-const HINT_LINE_HEIGHT: int = 80
+const HINT_LINE_HEIGHT: int = 40
 
 ## 显示底部操作提示（多条时向上堆叠，超时淡出）。
 ## [param text] 提示内容。[param duration] 停留秒数。提示为瞬时 UI，故动态创建。
@@ -238,12 +238,12 @@ func _show_hint(text: String, duration: float = HINT_DURATION) -> void:
 
 	var label := Label.new()
 	label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	label.offset_left = -600
-	label.offset_right = 600
-	label.offset_top = -180
-	label.offset_bottom = -90
+	label.offset_left = -300
+	label.offset_right = 300
+	label.offset_top = -90
+	label.offset_bottom = -45
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 38)
+	label.add_theme_font_size_override("font_size", 19)
 	label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.6))
 	label.text = text
 	label.modulate.a = 1.0

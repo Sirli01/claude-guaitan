@@ -10,7 +10,7 @@ var dialogue_layer: CanvasLayer
 var _hint_labels: Array[Dictionary] = []
 const HINT_DURATION: float = 3.0
 const HINT_FADE_TIME: float = 0.5
-const HINT_LINE_HEIGHT: int = 80
+const HINT_LINE_HEIGHT: int = 40
 var _floor_text_label: Label
 var _floor_name: String = ""
 var _signal_callbacks: Array[Dictionary] = []
@@ -416,12 +416,12 @@ func show_hint(text: String, duration: float = HINT_DURATION) -> void:
 
 	var label = Label.new()
 	label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	label.offset_left = -750
-	label.offset_right = 750
-	label.offset_top = -180
-	label.offset_bottom = -90
+	label.offset_left = -375
+	label.offset_right = 375
+	label.offset_top = -90
+	label.offset_bottom = -45
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 38)
+	label.add_theme_font_size_override("font_size", 19)
 	label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.6))
 	label.text = text
 	label.modulate.a = 1.0
