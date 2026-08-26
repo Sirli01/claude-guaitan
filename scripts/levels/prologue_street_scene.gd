@@ -12,7 +12,7 @@ extends Node2D
 @onready var sanity_label: Label = %SanityLabel
 @onready var sanity_bar: ProgressBar = %SanityBar
 @onready var parallax_bg: ParallaxBackground = %ParallaxBG
-@onready var fg_buildings: Node2D = %FgBuildings
+
 @onready var left_border: Area2D = %LeftBorder
 @onready var right_border: Area2D = %RightBorder
 @onready var home_entrance: Area2D = %HomeEntrance
@@ -134,9 +134,8 @@ func _fade_from_black(duration: float) -> void:
 
 ## 配置场景中实例化的玩家：加载贴图、设置街道摄像机缩放与交互半径。
 ## 节点结构来自 player.tscn，这里只做运行时数据绑定。
-## 街道世界为 v1 尺度（未随全局放大 2 倍），故角色贴图/碰撞需缩回 0.5。
+## 街道已删除小尺寸道具，角色与其他楼层保持一致大小（不再缩小）。
 func _setup_player() -> void:
-	const CHAR_SCALE := 0.5
 	var sprite: Sprite2D = player.get_node_or_null("Sprite2D")
 	if sprite:
 		sprite.texture = GameManager.load_char_texture("sister", 16, 20)
@@ -146,11 +145,6 @@ func _setup_player() -> void:
 	var col: CollisionShape2D = player.get_node_or_null("CollisionShape2D")
 	if col:
 		GameManager.fit_character_collision(col, "sister")
-		# 世界未翻倍，碰撞体同步缩回
-		if col.shape is RectangleShape2D:
-			col.shape = col.shape.duplicate()
-			col.shape.size *= CHAR_SCALE
-		col.position *= CHAR_SCALE
 		player.collision = col
 
 	var area: Area2D = player.get_node_or_null("InteractionArea")
@@ -180,10 +174,6 @@ func _setup_player() -> void:
 
 	# tscn 实例化时 sprite 晚于玩家 _ready 赋值，需补建帧动画组件
 	player.ensure_frame_animator()
-	# 在帧目录预览布局的基础上缩回街道 v1 比例（位置偏移同步缩放）
-	if sprite:
-		sprite.scale *= CHAR_SCALE
-		sprite.position *= CHAR_SCALE
 
 ## 绑定街边交互容器与长椅：挂接关卡引用并创建靠近时显示的世界标签。
 func _setup_interactables() -> void:
@@ -337,12 +327,6 @@ func _process(_delta: float) -> void:
 	# 视差背景跟随相机
 	if parallax_bg and player and player.camera:
 		parallax_bg.scroll_offset = player.camera.get_screen_center_position()
-	# 前景建筑手动视差：相对相机偏移，移动速度 > 1.0 产生前景感
-	if fg_buildings and player and player.camera:
-		var cam_center: Vector2 = player.camera.get_screen_center_position()
-		# 前景额外偏移 = 相机位置 × (视差系数 - 1.0)
-		# 视差系数 1.35 → 前景比主场景多移动 35%
-		fg_buildings.position = -cam_center * 0.35
 	# 入口提示显示/隐藏（动态更新按键）
 	if player:
 		if apartment_entrance and _apt_prompt:
