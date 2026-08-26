@@ -52,6 +52,8 @@ func _ready() -> void:
 	
 	# 静态几何体（墙壁、地板、家具、灯光）从 .tscn 加载
 	discover_scene_nodes()
+	# 构建房间系统：房间墙/门/天花板/标签（v1 设计，坐标 ×2 适配当前世界）
+	_build_room_system()
 	# 收集 .tscn 中的走廊灯光引用（停电事件需要控制）
 	for child in get_children():
 		if child is PointLight2D and child.name.begins_with("Corridor"):
@@ -153,7 +155,7 @@ func _add_room_label(text: String, pos: Vector2) -> void:
 ## [param show_south_face] 是否绘制朝向走廊的南面墙（false 时贴图由外部绘制）。
 func _build_room_above_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_x: float, locked: bool = false, show_south_face: bool = true) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
-	var door_width = 44.0
+	var door_width = 44.0 * world_scale
 	# 顶墙是外墙，背对走廊，不需要正面
 	add_visible_wall(walls, Vector2(top_left.x + room_size.x / 2.0, top_left.y), Vector2(room_size.x, 8), wall_color, true, false, false)
 	add_visible_wall(walls, Vector2(top_left.x, top_left.y + room_size.y / 2.0), Vector2(8, room_size.y), wall_color, true, false, false, Vector2.RIGHT)
@@ -196,7 +198,7 @@ func _build_room_above_corridor(walls: Node2D, top_left: Vector2, room_size: Vec
 ## [param locked] 门是否上锁。
 func _build_room_below_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_x: float, locked: bool = false) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
-	var door_width = 44.0
+	var door_width = 44.0 * world_scale
 	add_visible_wall(walls, Vector2(top_left.x, top_left.y + room_size.y / 2.0), Vector2(8, room_size.y), wall_color, true, false, false, Vector2.RIGHT)
 	add_visible_wall(walls, Vector2(top_left.x + room_size.x, top_left.y + room_size.y / 2.0), Vector2(8, room_size.y), wall_color, true, false, false, Vector2.LEFT)
 	# 底墙是外墙，背对走廊，不需要正面
@@ -218,7 +220,7 @@ func _build_room_below_corridor(walls: Node2D, top_left: Vector2, room_size: Vec
 ## [param locked] 门是否上锁。
 func _build_room_left_of_vertical_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_y: float, locked: bool = false) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
-	var door_height = 44.0
+	var door_height = 44.0 * world_scale
 	# 顶/底墙是外墙，不需要正面
 	add_visible_wall(walls, Vector2(top_left.x + room_size.x / 2.0, top_left.y), Vector2(room_size.x, 8), wall_color, true, false, false)
 	add_visible_wall(walls, Vector2(top_left.x + room_size.x / 2.0, top_left.y + room_size.y), Vector2(room_size.x, 8), wall_color, false, false, false)
@@ -241,7 +243,7 @@ func _build_room_left_of_vertical_corridor(walls: Node2D, top_left: Vector2, roo
 ## [param locked] 门是否上锁。
 func _build_room_right_of_vertical_corridor(walls: Node2D, top_left: Vector2, room_size: Vector2, door_center_y: float, locked: bool = false) -> void:
 	var wall_color = Color(0.1, 0.07, 0.05)
-	var door_height = 44.0
+	var door_height = 44.0 * world_scale
 	# 顶/底墙是外墙，不需要正面
 	add_visible_wall(walls, Vector2(top_left.x + room_size.x / 2.0, top_left.y), Vector2(room_size.x, 8), wall_color, true, false, false)
 	add_visible_wall(walls, Vector2(top_left.x + room_size.x / 2.0, top_left.y + room_size.y), Vector2(room_size.x, 8), wall_color, true, false, false)
@@ -559,3 +561,86 @@ func _debug_clear_103_area() -> void:
 	var probe = Rect2(Vector2(-280, 80), Vector2(300, 260))
 	debug_list_colliders_in_rect(probe)
 	# To remove, call debug_remove_colliders_in_rect(probe) from the editor/console if you confirm
+
+
+# ====== 房间系统（v1 设计还原，坐标 ×2 适配当前世界）======
+
+## 构建全部房间的墙体、门、天花板与标签。
+## 九个房间：100/101/102/103/104/105/106/107/108。
+func _build_room_system() -> void:
+	var walls = StaticBody2D.new()
+	walls.name = "RoomWalls"
+	walls.collision_layer = 4
+	add_child(walls)
+
+	# 电梯井左侧遮挡墙
+	add_visible_wall(walls, Vector2(-880, 644), Vector2(30, 64), Color(0.12, 0.08, 0.06), true, false, false)
+	# 底部区域墙体（引导"家→公寓"路线）
+	add_visible_wall(walls, Vector2(120, 730), Vector2(1560, 60), Color(0.1, 0.07, 0.05), false, true, false, Vector2.UP)
+	# 108 房下方区域
+	add_visible_wall(walls, Vector2(690, 610), Vector2(360, 100), Color(0.1, 0.07, 0.05), false, true, false, Vector2.UP)
+	# 底部走廊两侧房墙（103~105 房间隔墙向下延伸）
+	add_visible_wall(walls, Vector2(-475, 345), Vector2(70, 310), Color(0.1, 0.07, 0.05), false, false, true, Vector2.RIGHT)
+	add_visible_wall(walls, Vector2(-55, 345), Vector2(70, 310), Color(0.1, 0.07, 0.05), false, false, true, Vector2.RIGHT)
+	# 补墙面缝隙
+	var seam_size := Vector2(70.0, 80.0)
+	var seam_pos1 := Vector2(-475.0, 540.0)
+	var seam_pos2 := Vector2(-55.0, 540.0)
+	var seam_color := Color(0.1, 0.07, 0.05).lightened(0.05)
+	add_child(_make_wall_rect(seam_pos1 - seam_size / 2.0, seam_size, seam_color, 4))
+	add_child(_make_wall_rect(seam_pos2 - seam_size / 2.0, seam_size, seam_color, 4))
+	add_wall(walls, Vector2(-475.0, 588.0), Vector2(70, 16))
+	add_wall(walls, Vector2(-55.0, 588.0), Vector2(70, 16))
+	add_visible_wall(walls, Vector2(285.0, -80.0), Vector2(1250, 200), Color(0.1, 0.07, 0.05), false, true, false, Vector2.DOWN)
+	add_visible_wall(walls, Vector2(-700.0, 66.0), Vector2(400, 28), Color(0.1, 0.07, 0.05), false, true, false, Vector2.DOWN)
+	add_visible_wall(walls, Vector2(700.0, 686.0), Vector2(400, 28), Color(0.1, 0.07, 0.05), false, true, false, Vector2.UP)
+
+	# === 房间 100（左上角，垂直走廊左侧）===
+	_build_room_left_of_vertical_corridor(walls, Vector2(-860, -600), Vector2(360, 660), -210.0)
+	_add_room_label("100", Vector2(-840, -576))
+
+	# === 房间 103（底部走廊上方左侧）===
+	_build_room_above_corridor(walls, Vector2(-860, 190), Vector2(350, 300), -685.0, false, false)
+	_add_room_label("103", Vector2(-840, 196))
+
+	# === 房间 104（底部走廊上方中段）===
+	_build_room_above_corridor(walls, Vector2(-440, 190), Vector2(350, 300), -265.0, false, false)
+	_add_room_label("104", Vector2(-420, 196))
+
+	# === 房间 105（底部走廊上方右侧储藏间）===
+	_build_room_above_corridor(walls, Vector2(-20, 190), Vector2(320, 300), 140.0, false, false)
+	add_visible_wall(walls, Vector2(300.0, 539.0), Vector2(16, 114), Color(0.1, 0.07, 0.05), false, false, true, Vector2.RIGHT)
+	_add_horizontal_wall_face_dir(Vector2(-280.0, 604.0), Vector2(1160.0, 16.0), Color(0.1, 0.07, 0.05), 1.0)
+	_add_room_label("105", Vector2(0, 196))
+
+	# === 房间 101（上部走廊左侧）===
+	_build_room_above_corridor(walls, Vector2(-480, -600), Vector2(300, 260), -330.0)
+	_add_room_label("101", Vector2(-460, -580))
+
+	# === 房间 102（上部走廊中段，锁住）===
+	_build_room_above_corridor(walls, Vector2(-80, -600), Vector2(300, 260), 70.0, true)
+	_add_room_label("102", Vector2(-60, -580))
+
+	# === 房间 106（上部走廊右侧，双床房）===
+	_build_room_above_corridor(walls, Vector2(236, -600), Vector2(504, 260), 488.0)
+	_add_room_label("106", Vector2(256, -580))
+
+	# === 房间 107（上部走廊右侧工具房）===
+	_build_room_above_corridor(walls, Vector2(756, -600), Vector2(132, 260), 822.0)
+	_add_room_label("107", Vector2(772, -580))
+
+	# === 房间 108（右下角，垂直走廊右侧储藏间）===
+	_build_room_right_of_vertical_corridor(walls, Vector2(520, 80), Vector2(340, 480), 330.0)
+	_add_room_label("108", Vector2(548, 104))
+
+	# === 房间天花板（进门时走廊压暗、房间揭示）===
+	add_room_ceiling("100", Vector2(-860, -600), Vector2(360, 588), Rect2(Vector2(-860, -600), Vector2(360, 660)))
+	add_room_ceiling("103", Vector2(-860, 190), Vector2(350, 300), Rect2(Vector2(-860, 190), Vector2(350, 406)))
+	add_room_ceiling("104", Vector2(-440, 190), Vector2(350, 300), Rect2(Vector2(-440, 190), Vector2(350, 406)))
+	add_room_ceiling("105", Vector2(-20, 190), Vector2(320, 300), Rect2(Vector2(-20, 190), Vector2(320, 406)))
+	add_room_ceiling("101", Vector2(-480, -600), Vector2(300, 260), Rect2(Vector2(-480, -600), Vector2(300, 260)))
+	add_room_ceiling("102", Vector2(-80, -600), Vector2(300, 260), Rect2(Vector2(-80, -600), Vector2(300, 260)))
+	add_room_ceiling("106", Vector2(236, -600), Vector2(504, 260), Rect2(Vector2(236, -600), Vector2(504, 260)))
+	add_room_ceiling("107", Vector2(756, -600), Vector2(132, 260), Rect2(Vector2(756, -600), Vector2(132, 260)))
+	add_room_ceiling("108", Vector2(520, 80), Vector2(340, 480))
+
