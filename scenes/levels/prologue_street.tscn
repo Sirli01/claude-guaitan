@@ -1,8 +1,8 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene format=3 uid="uid://dre4241nas0pw"]
 
-[ext_resource type="Script" path="res://scripts/levels/prologue_street_scene.gd" id="1"]
+[ext_resource type="Script" uid="uid://qvc2qdly77g3" path="res://scripts/levels/prologue_street_scene.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/characters/player.tscn" id="4"]
-[ext_resource type="Texture2D" path="res://assets/sprites/street/后景楼和马路.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://ch5thvdsd2e4f" path="res://assets/sprites/street/后景楼和马路.png" id="5"]
 [ext_resource type="Texture2D" path="res://assets/sprites/street/前景楼.png" id="6"]
 
 [sub_resource type="Gradient" id="grad_moon"]
@@ -17,32 +17,7 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
-[sub_resource type="Gradient" id="grad_plight"]
-offsets = PackedFloat32Array(0, 1)
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
-
-[sub_resource type="GradientTexture2D" id="gtex_plight"]
-gradient = SubResource("grad_plight")
-width = 128
-height = 128
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(1, 0.5)
-
-[sub_resource type="Gradient" id="grad_adoor"]
-offsets = PackedFloat32Array(0, 1)
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
-
-[sub_resource type="GradientTexture2D" id="gtex_adoor"]
-gradient = SubResource("grad_adoor")
-width = 32
-height = 32
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(1, 0.5)
-
 [sub_resource type="Gradient" id="grad_dust"]
-offsets = PackedFloat32Array(0, 1)
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
 [sub_resource type="GradientTexture2D" id="gtex_dust"]
@@ -61,13 +36,13 @@ point_count = 4
 curve = SubResource("curve_alpha")
 
 [sub_resource type="ParticleProcessMaterial" id="pmat_dust"]
+emission_shape = 3
+emission_box_extents = Vector3(500, 100, 0)
 direction = Vector3(1, -0.3, 0)
 spread = 40.0
 initial_velocity_min = 8.0
 initial_velocity_max = 15.0
 gravity = Vector3(0, -2, 0)
-emission_shape = 3
-emission_box_extents = Vector3(500, 100, 0)
 scale_min = 0.5
 scale_max = 1.5
 color = Color(0.7, 0.75, 0.9, 0.3)
@@ -88,210 +63,268 @@ size = Vector2(24, 35)
 [sub_resource type="RectangleShape2D" id="sh_apt"]
 size = Vector2(30, 40)
 
+[sub_resource type="Gradient" id="grad_adoor"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_adoor"]
+gradient = SubResource("grad_adoor")
+width = 32
+height = 32
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fmguk"]
+resource_local_to_scene = true
+size = Vector2(50, 30)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_mwplg"]
+resource_local_to_scene = true
+radius = 60.0
+
+[sub_resource type="Gradient" id="grad_plight"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="gtex_plight"]
+gradient = SubResource("grad_plight")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
 [sub_resource type="StyleBoxFlat" id="sb_stam_bg"]
 bg_color = Color(0.07, 0.055, 0.075, 0.85)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.45, 0.38, 0.3, 0.7)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="sb_stam_fill"]
 bg_color = Color(0.5, 0.88, 0.38, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.75, 1, 0.65, 0.5)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="sb_san_bg"]
 bg_color = Color(0.06, 0.05, 0.09, 0.85)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.4, 0.32, 0.55, 0.7)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="sb_san_fill"]
 bg_color = Color(0.58, 0.44, 0.95, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.8, 0.7, 1, 0.5)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
-[node name="PrologueStreet" type="Node2D"]
+[node name="PrologueStreet" type="Node2D" unique_id=1381647891]
 script = ExtResource("1")
 
-[node name="ParallaxBG" type="ParallaxBackground" parent="."]
+[node name="ParallaxBG" type="ParallaxBackground" parent="." unique_id=1743744840]
 unique_name_in_owner = true
 layer = -1
 
-[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBG"]
+[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBG" unique_id=1133242921]
 motion_scale = Vector2(0.05, 0.05)
 
-[node name="Sky" type="ColorRect" parent="ParallaxBG/SkyLayer"]
+[node name="Sky" type="ColorRect" parent="ParallaxBG/SkyLayer" unique_id=485580706]
 offset_left = -1200.0
 offset_top = -800.0
 offset_right = 1200.0
 offset_bottom = -200.0
 color = Color(0.08, 0.07, 0.14, 1)
 
-[node name="BackBuildings" type="Node2D" parent="."]
+[node name="BackBuildings" type="Node2D" parent="." unique_id=1101286538]
 
-[node name="Copy0" type="Sprite2D" parent="BackBuildings"]
+[node name="Copy0" type="Sprite2D" parent="BackBuildings" unique_id=2000241308]
 z_index = -8
-position = Vector2(-1600, -306.22)
+texture_filter = 1
+position = Vector2(-1207, -319)
 scale = Vector2(0.389908, 0.389908)
 texture = ExtResource("5")
 centered = false
-texture_filter = 1
 
-[node name="Copy1" type="Sprite2D" parent="BackBuildings"]
+[node name="Copy1" type="Sprite2D" parent="BackBuildings" unique_id=1944353979]
 z_index = -8
-position = Vector2(-77.8, -306.22)
+texture_filter = 1
+position = Vector2(-1720, -105)
 scale = Vector2(0.389908, 0.389908)
 texture = ExtResource("5")
 centered = false
-texture_filter = 1
 
-[node name="Copy2" type="Sprite2D" parent="BackBuildings"]
+[node name="Copy2" type="Sprite2D" parent="BackBuildings" unique_id=1586045193]
 z_index = -8
-position = Vector2(1444.4, -306.22)
+texture_filter = 1
+position = Vector2(-216, -100)
 scale = Vector2(0.389908, 0.389908)
 texture = ExtResource("5")
 centered = false
-texture_filter = 1
 
-[node name="Copy3" type="Sprite2D" parent="BackBuildings"]
+[node name="Copy3" type="Sprite2D" parent="BackBuildings" unique_id=1322162211]
 z_index = -8
-position = Vector2(2966.61, -306.22)
+texture_filter = 1
+position = Vector2(259, -274)
 scale = Vector2(0.389908, 0.389908)
 texture = ExtResource("5")
 centered = false
-texture_filter = 1
 
-[node name="MoonLight" type="PointLight2D" parent="."]
+[node name="MoonLight" type="PointLight2D" parent="." unique_id=129819321]
 z_index = -1
-position = Vector2(200, -250)
+position = Vector2(-354, -417)
 color = Color(0.55, 0.65, 0.85, 1)
 energy = 0.15
 texture = SubResource("gtex_moon")
 texture_scale = 10.0
 
-[node name="DustParticles" type="GPUParticles2D" parent="."]
+[node name="DustParticles" type="GPUParticles2D" parent="." unique_id=399686109]
 z_index = 2
 position = Vector2(0, -50)
 amount = 30
+texture = SubResource("gtex_dust")
 lifetime = 6.0
 speed_scale = 0.5
 process_material = SubResource("pmat_dust")
-texture = SubResource("gtex_dust")
 
-[node name="Walls" type="StaticBody2D" parent="."]
+[node name="Walls" type="StaticBody2D" parent="." unique_id=1446944015]
 collision_layer = 4
 
-[node name="WallNorth" type="CollisionShape2D" parent="Walls"]
+[node name="WallNorth" type="CollisionShape2D" parent="Walls" unique_id=1080781083]
 position = Vector2(0, -10)
 shape = SubResource("sh_wall_h")
 
-[node name="WallSouth" type="CollisionShape2D" parent="Walls"]
+[node name="WallSouth" type="CollisionShape2D" parent="Walls" unique_id=1760167735]
 position = Vector2(0, 90)
 shape = SubResource("sh_wall_h")
 
-[node name="WallWest" type="CollisionShape2D" parent="Walls"]
+[node name="WallWest" type="CollisionShape2D" parent="Walls" unique_id=98752139]
 position = Vector2(-605, 0)
 shape = SubResource("sh_wall_v")
 
-[node name="WallEast" type="CollisionShape2D" parent="Walls"]
+[node name="WallEast" type="CollisionShape2D" parent="Walls" unique_id=123519414]
 position = Vector2(605, 0)
 shape = SubResource("sh_wall_v")
 
-[node name="LeftBorder" type="Area2D" parent="."]
+[node name="LeftBorder" type="Area2D" parent="." unique_id=1954562736]
 unique_name_in_owner = true
 position = Vector2(-580, 0)
 collision_layer = 0
-collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftBorder"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftBorder" unique_id=1345066972]
 shape = SubResource("sh_border")
 
-[node name="RightBorder" type="Area2D" parent="."]
+[node name="RightBorder" type="Area2D" parent="." unique_id=1472873631]
 unique_name_in_owner = true
 position = Vector2(580, 0)
 collision_layer = 0
-collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="RightBorder"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightBorder" unique_id=1365932361]
 shape = SubResource("sh_border")
 
-[node name="Interactables" type="Node2D" parent="."]
+[node name="Interactables" type="Node2D" parent="." unique_id=2085565747]
 unique_name_in_owner = true
 
-[node name="HomeEntrance" type="Area2D" parent="."]
+[node name="HomeEntrance" type="Area2D" parent="." unique_id=711752270]
 unique_name_in_owner = true
 position = Vector2(-410, -25)
 collision_layer = 0
-collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HomeEntrance"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HomeEntrance" unique_id=1923380681]
 shape = SubResource("sh_home")
 
-[node name="ApartmentEntrance" type="Area2D" parent="."]
+[node name="ApartmentEntrance" type="Area2D" parent="." unique_id=59400538]
 unique_name_in_owner = true
 position = Vector2(530, -20)
 collision_layer = 0
-collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ApartmentEntrance"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ApartmentEntrance" unique_id=1721447467]
 shape = SubResource("sh_apt")
 
-[node name="ApartmentDoorLight" type="PointLight2D" parent="."]
+[node name="ApartmentDoorLight" type="PointLight2D" parent="." unique_id=1106645518]
 position = Vector2(530, -55)
 color = Color(1, 0.85, 0.5, 1)
 energy = 0.25
 texture = SubResource("gtex_adoor")
 texture_scale = 3.5
 
-[node name="GroundFill" type="ColorRect" parent="."]
+[node name="GroundFill" type="ColorRect" parent="." unique_id=1123444491]
 z_index = -5
-offset_left = -1200.0
-offset_top = 115.0
-offset_right = 1200.0
-offset_bottom = 600.0
+offset_left = -1300.0
+offset_top = 686.0
+offset_right = 1100.0
+offset_bottom = 1171.0
 color = Color(0.05, 0.045, 0.05, 1)
+
+[node name="FgBuildings" type="Node2D" parent="."]
+unique_name_in_owner = true
+z_index = 10
+
+[node name="Fg0" type="Sprite2D" parent="FgBuildings"]
+position = Vector2(-1600, -100)
+scale = Vector2(0.772059, 0.772059)
+texture = ExtResource("6")
+centered = false
+texture_filter = 1
+
+[node name="Fg1" type="Sprite2D" parent="FgBuildings"]
+position = Vector2(1418.75, -100)
+scale = Vector2(0.772059, 0.772059)
+texture = ExtResource("6")
+centered = false
+texture_filter = 1
+
+[node name="Fg2" type="Sprite2D" parent="FgBuildings"]
+position = Vector2(4437.5, -100)
+scale = Vector2(0.772059, 0.772059)
+texture = ExtResource("6")
+centered = false
+texture_filter = 1
 
 [node name="Player" parent="." instance=ExtResource("4")]
 unique_name_in_owner = true
 position = Vector2(-400, 0)
 
-[node name="PointLight2D" type="PointLight2D" parent="Player"]
+[node name="CollisionShape2D" parent="Player" index="1"]
+shape = SubResource("RectangleShape2D_fmguk")
+
+[node name="CollisionShape2D" parent="Player/InteractionArea" index="0"]
+shape = SubResource("CircleShape2D_mwplg")
+
+[node name="PointLight2D" type="PointLight2D" parent="Player" unique_id=1584701462]
+position = Vector2(84, 29)
 color = Color(0.75, 0.8, 0.95, 1)
 energy = 0.25
 texture = SubResource("gtex_plight")
 texture_scale = 3.0
 
-[node name="HUDLayer" type="CanvasLayer" parent="."]
+[node name="HUDLayer" type="CanvasLayer" parent="." unique_id=511397747]
 unique_name_in_owner = true
 layer = 5
 
-[node name="TopBar" type="HBoxContainer" parent="HUDLayer"]
+[node name="TopBar" type="HBoxContainer" parent="HUDLayer" unique_id=497175296]
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 30.0
@@ -300,13 +333,13 @@ offset_right = -30.0
 offset_bottom = 60.0
 grow_horizontal = 2
 
-[node name="FloorLabel" type="Label" parent="HUDLayer/TopBar"]
+[node name="FloorLabel" type="Label" parent="HUDLayer/TopBar" unique_id=1122542954]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
 theme_override_font_sizes/font_size = 30
 
-[node name="StatusVBox" type="VBoxContainer" parent="HUDLayer"]
+[node name="StatusVBox" type="VBoxContainer" parent="HUDLayer" unique_id=1477719695]
 unique_name_in_owner = true
 offset_left = 30.0
 offset_top = 57.0
@@ -314,13 +347,13 @@ offset_right = 240.0
 offset_bottom = 57.0
 theme_override_constants/separation = 6
 
-[node name="StaminaLabel" type="Label" parent="HUDLayer/StatusVBox"]
+[node name="StaminaLabel" type="Label" parent="HUDLayer/StatusVBox" unique_id=1147349684]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.8, 0.5, 1)
 theme_override_font_sizes/font_size = 22
 
-[node name="StaminaBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+[node name="StaminaBar" type="ProgressBar" parent="HUDLayer/StatusVBox" unique_id=1650492736]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 12)
 layout_mode = 2
@@ -328,13 +361,13 @@ theme_override_styles/background = SubResource("sb_stam_bg")
 theme_override_styles/fill = SubResource("sb_stam_fill")
 show_percentage = false
 
-[node name="SanityLabel" type="Label" parent="HUDLayer/StatusVBox"]
+[node name="SanityLabel" type="Label" parent="HUDLayer/StatusVBox" unique_id=1131581313]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.5, 0.9, 1)
 theme_override_font_sizes/font_size = 22
 
-[node name="SanityBar" type="ProgressBar" parent="HUDLayer/StatusVBox"]
+[node name="SanityBar" type="ProgressBar" parent="HUDLayer/StatusVBox" unique_id=1829005075]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 12)
 layout_mode = 2
@@ -342,9 +375,9 @@ theme_override_styles/background = SubResource("sb_san_bg")
 theme_override_styles/fill = SubResource("sb_san_fill")
 show_percentage = false
 
-[node name="InventoryLayer" type="CanvasLayer" parent="."]
+[node name="InventoryLayer" type="CanvasLayer" parent="." unique_id=2007389170]
 unique_name_in_owner = true
-layer = 15
 process_mode = 3
+layer = 15
 
 [editable path="Player"]
