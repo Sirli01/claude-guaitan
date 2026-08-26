@@ -643,4 +643,3 @@ func _build_room_system() -> void:
 	add_room_ceiling("106", Vector2(236, -600), Vector2(504, 260), Rect2(Vector2(236, -600), Vector2(504, 260)))
 	add_room_ceiling("107", Vector2(756, -600), Vector2(132, 260), Rect2(Vector2(756, -600), Vector2(132, 260)))
 	add_room_ceiling("108", Vector2(520, 80), Vector2(340, 480))
-

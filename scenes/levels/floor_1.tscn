@@ -421,94 +421,112 @@ furniture_size = Vector2(48.0,32.0)
 
 [node name="RoomLight0" type="PointLight2D" parent="."]
 position = Vector2(-680.0,-270.0)
-energy = 2.5
-texture_scale = 8.4
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.5
+light_scale_val = 8.4
 [node name="RoomLight1" type="PointLight2D" parent="."]
 position = Vector2(-685.0,220.0)
-energy = 2.4
-texture_scale = 7.6
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.4
+light_scale_val = 7.6
 [node name="RoomLight2" type="PointLight2D" parent="."]
 position = Vector2(-265.0,220.0)
-energy = 2.4
-texture_scale = 7.6
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.4
+light_scale_val = 7.6
 [node name="RoomLight3" type="PointLight2D" parent="."]
 position = Vector2(140.0,220.0)
-energy = 2.3
-texture_scale = 7.0
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.3
+light_scale_val = 7.0
 [node name="RoomLight4" type="PointLight2D" parent="."]
 position = Vector2(-330.0,-470.0)
-energy = 2.4
-texture_scale = 7.6
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.4
+light_scale_val = 7.6
 [node name="RoomLight5" type="PointLight2D" parent="."]
 position = Vector2(70.0,-470.0)
-energy = 2.4
-texture_scale = 7.6
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.4
+light_scale_val = 7.6
 [node name="RoomLight6" type="PointLight2D" parent="."]
 position = Vector2(488.0,-470.0)
-energy = 2.3
-texture_scale = 7.2
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.3
+light_scale_val = 7.2
 [node name="RoomLight7" type="PointLight2D" parent="."]
 position = Vector2(822.0,-470.0)
-energy = 2.0
-texture_scale = 5.2
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.0
+light_scale_val = 5.2
 [node name="RoomLight8" type="PointLight2D" parent="."]
 position = Vector2(690.0,320.0)
-energy = 2.4
-texture_scale = 8.0
-
+script = ExtResource("12_rl")
+light_type = "room"
+base_energy = 2.4
+light_scale_val = 8.0
 [node name="CorridorLight0" type="PointLight2D" parent="."]
 position = Vector2(-640.0,440.0)
-energy = 1.5
-texture_scale = 4.8
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.5
+light_scale_val = 4.8
 [node name="CorridorLight1" type="PointLight2D" parent="."]
 position = Vector2(-140.0,440.0)
-energy = 1.5
-texture_scale = 4.8
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.5
+light_scale_val = 4.8
 [node name="CorridorLight2" type="PointLight2D" parent="."]
 position = Vector2(420.0,370.0)
-energy = 1.4
-texture_scale = 4.4
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.4
+light_scale_val = 4.4
 [node name="CorridorLight3" type="PointLight2D" parent="."]
 position = Vector2(190.0,100.0)
-energy = 1.4
-texture_scale = 4.4
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.4
+light_scale_val = 4.4
 [node name="CorridorLight4" type="PointLight2D" parent="."]
 position = Vector2(-180.0,100.0)
-energy = 1.4
-texture_scale = 4.4
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.4
+light_scale_val = 4.4
 [node name="CorridorLight5" type="PointLight2D" parent="."]
 position = Vector2(-420.0,-80.0)
-energy = 1.4
-texture_scale = 4.4
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.4
+light_scale_val = 4.4
 [node name="CorridorLight6" type="PointLight2D" parent="."]
 position = Vector2(-240.0,-260.0)
-energy = 1.4
-texture_scale = 4.4
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.4
+light_scale_val = 4.4
 [node name="CorridorLight7" type="PointLight2D" parent="."]
 position = Vector2(220.0,-260.0)
-energy = 1.4
-texture_scale = 4.4
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.4
+light_scale_val = 4.4
 [node name="CorridorLight8" type="PointLight2D" parent="."]
 position = Vector2(470.0,-260.0)
-energy = 1.4
-texture_scale = 4.4
-
+script = ExtResource("12_rl")
+light_type = "corridor"
+base_energy = 1.4
+light_scale_val = 4.4
 [node name="急救箱" type="Node2D" parent="."]
 position = Vector2(420.0,84.0)
 script = ExtResource("5_cont")
