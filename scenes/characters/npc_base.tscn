@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://npc_base_scene"]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc/npc_base.gd" id="1_npc"]
 

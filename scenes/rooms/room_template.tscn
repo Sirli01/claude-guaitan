@@ -87,15 +87,3 @@ color = Color(0.15, 0.12, 0.1, 1)
 
 [node name="AmbientLight" type="CanvasModulate" parent="."]
 color = Color(1, 1, 1, 1)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_top"]
-size = Vector2(316, 8)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_bottom"]
-size = Vector2(316, 8)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
-size = Vector2(8, 208)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_right"]
-size = Vector2(8, 208)

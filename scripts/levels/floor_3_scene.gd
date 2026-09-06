@@ -110,7 +110,7 @@ func _ready() -> void:
 	setup_player(Vector2(0, 220), 3.0)
 	_shrink_player_to_v1()
 	_build_arrival_elevator(Vector2(0, 220))
-	player.walk_speed = 180.0  # 第三层步行稍慢，增加压迫感
+	player.walk_speed = 90.0  # 第三层步行稍慢，增加压迫感（本层为 v1 世界，速度不随角色全局放大）
 	player.set_can_run(true)  # 允许跑但跑了会死
 	_spawn_npcs()
 	_build_monster()
@@ -123,7 +123,8 @@ func _ready() -> void:
 	await get_tree().physics_frame
 	_room_detection_enabled = true
 	# 所有墙壁生成完毕后烘焙导航网格（让怪物和NPC能绕过墙壁）
-	setup_navigation(Rect2(-920, -620, 1840, 1240))
+	# 边界为 v1 世界尺寸（本层未随全局放大）
+	setup_navigation(Rect2(-460, -310, 920, 620))
 	
 	# 启用体力系统和黑暗（第三层最暗）
 	enable_stamina()
@@ -147,13 +148,13 @@ func _ready() -> void:
 	# 读档时跳过入场动画，直接可以行动，NPC跟随玩家
 	if SaveManager.is_loading_save:
 		monster_active = true
-		# NPC跟随玩家（同入场后状态一致）
+		# NPC跟随玩家（同入场后状态一致，偏移为 v1 世界尺度）
 		if male_npc:
-			male_npc.start_following(player, Vector2(40, -20))
+			male_npc.start_following(player, Vector2(20, -10))
 		if cool_npc:
-			cool_npc.start_following(player, Vector2(-60, 30))
+			cool_npc.start_following(player, Vector2(-30, 15))
 		if cheerful_npc:
-			cheerful_npc.start_following(player, Vector2(-50, -40))
+			cheerful_npc.start_following(player, Vector2(-25, -20))
 		_refresh_floor_3_npc_dialogues()
 		return
 	

@@ -105,7 +105,7 @@ func _physics_process(_delta: float) -> void:
 		var dist = player.global_position.distance_to(female_npc.global_position)
 		# 沈薇一旦出现在玩家屏幕里就朝玩家跑（玩家必须在走廊，避免隔墙撞墙）
 		if _is_world_pos_on_screen(female_npc.global_position) and _current_room_id == "":
-			female_npc.walk_speed = 130.0
+			set_npc_speed_v1(female_npc, 65.0)
 			female_npc.walk_to(player.global_position)
 		if dist < 560.0 and _is_world_pos_on_screen(female_npc.global_position) and _current_room_id == "":
 			_waiting_for_female_proximity = false
@@ -230,7 +230,7 @@ func _spawn_npcs() -> void:
 	if GameManager.is_character_alive("timid_male"):
 		# 余凡留在到达电梯旁，稍微偏离队伍（原地不动，等待其他人回来）
 		timid_npc = create_npc_visual(TIMID_GUARD_POS, "timid_male")
-		timid_npc.walk_speed = 40.0
+		set_npc_speed_v1(timid_npc, 20.0)
 
 ## 判断鹿可是否正处于被锁定待救援状态（尚未被耳塞救下且仍在原地等待）。
 ## [return] 鹿可正在等待救援时为 true。
@@ -556,7 +556,7 @@ func _female_death_event() -> void:
 	var fallback_pos = player.global_position + Vector2(0, -120)
 	
 	if female_npc:
-		female_npc.walk_speed = 180.0
+		set_npc_speed_v1(female_npc, 90.0)
 		female_npc.walk_to(player.global_position)  # 直接向玩家跑
 	
 	# 第二段对话：描述奔跑+高跟鞋落下（与奔跑同时进行）
@@ -678,7 +678,7 @@ func _earplug_branch() -> void:
 	# 鹿可加入队伍
 	if cheerful_npc:
 		cheerful_npc.start_following(player, Vector2(-40, -24))
-		cheerful_npc.walk_speed = 160
+		set_npc_speed_v1(cheerful_npc, 80.0)
 	_rescue_complete()
 
 # ===== 救援后 → 找电梯卡 =====

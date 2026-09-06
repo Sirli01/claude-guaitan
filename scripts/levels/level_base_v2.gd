@@ -91,7 +91,13 @@ static func fix_label_filter(node: Node) -> void:
 
 const PLAYER_SCENE := preload("res://scenes/characters/player.tscn")
 
-## 实例化玩家并完成配置（贴图/碰撞/交互区/相机/照明）。
+## v1 基准移动速度（世界尺度 1.0 时的值）。
+## 所有角色速度统一按"v1 设计值 × world_scale"换算，脚本层只写 v1 语义数字。
+const V1_PLAYER_WALK_SPEED: float = 120.0
+const V1_PLAYER_RUN_SPEED: float = 200.0
+const V1_NPC_WALK_SPEED: float = 80.0
+
+## 实例化玩家并完成配置（贴图/碰撞/交互区/相机/照明/速度）。
 ## [param pos] 出生位置。[param zoom] 相机缩放。[return] 玩家节点。
 func setup_player(pos: Vector2, zoom: float = 6.0) -> CharacterBody2D:
 	_camera_zoom_factor = zoom
@@ -114,6 +120,11 @@ func setup_player(pos: Vector2, zoom: float = 6.0) -> CharacterBody2D:
 	if col:
 		GameManager.fit_character_collision(col, "sister")
 		player.collision = col
+
+	# 速度随世界尺度缩放（贴图/几何放大几倍，速度同样放大几倍，
+	# 保持与 v1 一致的相对手感；子类可在此之后按 v1 值覆盖）
+	player.walk_speed = V1_PLAYER_WALK_SPEED * world_scale
+	player.run_speed = V1_PLAYER_RUN_SPEED * world_scale
 
 	# 配置交互区域
 	if area:
@@ -1040,11 +1051,19 @@ func create_npc_visual(pos: Vector2, npc_id: String, visual_scale: float = 1.0) 
 	npc.name_label = label
 	npc.npc_name = display_name
 	npc.npc_id = npc_id
-	
+
+	# 默认速度随世界尺度缩放（子类可随后用 set_npc_speed_v1 覆盖）
+	npc.walk_speed = V1_NPC_WALK_SPEED * world_scale
+
 	# 所有子节点就绪后再加入场景树
 	_ensure_depth_sort_layer().add_child(npc)
-	
+
 	return npc
+
+## 按 v1 设计值设置 NPC 步行速度（内部乘 world_scale 换算到当前世界尺度）。
+## [param npc] NPC 节点。[param v1_speed] v1 语义的步行速度。
+func set_npc_speed_v1(npc: CharacterBody2D, v1_speed: float) -> void:
+	npc.walk_speed = v1_speed * world_scale
 
 ## 为 NPC 设置剧情对话内容。
 ## [param npc] NPC 节点。[param chapter] 剧本章节。[param event] 事件键。

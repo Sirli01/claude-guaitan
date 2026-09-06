@@ -167,6 +167,16 @@ func calculate_damage(damage: int, multiplier: float, is_critical: bool) -> floa
 
 短函数（1-3 行、意图明显）可用单行 `##` 注释。复杂逻辑必须逐段注释。
 
+## ⚠️ 速度与世界尺度规则（严格遵守）
+
+项目存在两套世界尺度：翻倍关卡（第一/二层、结局）`world_scale = 2.0`，序章房间 `PROLOGUE_SCALE = 4/3`，未翻倍关卡（第三层、序章街道、电梯内部）为 1.0。
+
+**所有角色速度必须写 v1 语义的数值，禁止手写缩放后的结果：**
+- 玩家速度由 `LevelBaseV2.setup_player()` 自动设置（`120/200 × world_scale`），子类只允许用 v1 值覆盖（如第三层 `walk_speed = 90.0`）
+- NPC 默认速度由 `LevelBaseV2.create_npc_visual()` 自动设置（`80 × world_scale`）
+- 显式指定 NPC 速度必须用 `LevelBaseV2.set_npc_speed_v1(npc, v1_speed)`，不得直接赋值 `npc.walk_speed`
+- 不走 `LevelBaseV2` 的独立场景（序章房间/街道、电梯内部）自行按各自尺度乘算，参照 `prologue_room_scene.gd`
+
 ## 实现新功能时
 
 1. 先读取相关 skill（如 `player-controller`, `state-machine`, `inventory-system` 等）

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Theme" uid="uid://horror_theme" path="res://assets/ui/horror_theme.tres" id="1"]
+[ext_resource type="Theme" uid="uid://dt1dtj1dvbt7r" path="res://assets/ui/horror_theme.tres" id="1"]
 
 [node name="Notification" type="CanvasLayer"]
 layer = 100

@@ -156,6 +156,9 @@ func _finish_prologue_player_setup() -> void:
 	if player.collision and player.collision.shape and player.collision.shape is RectangleShape2D:
 		player.collision.shape.size = GameManager.PLAYER_COLLISION_SIZE * PROLOGUE_SCALE
 		player.collision.position = GameManager.PLAYER_COLLISION_OFFSET * PROLOGUE_SCALE
+	# 速度随世界尺度缩放（与关卡几何/角色贴图同倍率，保持 v1 相对手感）
+	player.walk_speed = 120.0 * PROLOGUE_SCALE
+	player.run_speed = 200.0 * PROLOGUE_SCALE
 	if player.interaction_area and player.interaction_area.get_child_count() > 0:
 		var col_node: CollisionShape2D = player.interaction_area.get_child(0)
 		if col_node and col_node.shape and col_node.shape is CircleShape2D:

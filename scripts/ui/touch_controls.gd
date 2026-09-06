@@ -2,8 +2,8 @@ extends CanvasLayer
 ## 触屏虚拟控件 —— 虚拟摇杆 + 操作按钮
 ## 仅在 Android / iOS / 触屏设备上自动显示
 
-const JOY_RADIUS := 200.0
-const KNOB_RADIUS := 80.0
+const JOY_RADIUS := 100.0
+const KNOB_RADIUS := 40.0
 const DEAD_ZONE := 0.2
 
 var _joy_pos: Vector2

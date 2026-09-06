@@ -40,8 +40,9 @@ func _toggle() -> void:
 ## 构建控制台全部界面：场景跳转、道具给予、属性调节与快捷功能按钮。
 func _build_ui() -> void:
 	_panel = PanelContainer.new()
-	_panel.position = Vector2(920, 120)
-	_panel.size = Vector2(2000, 1400)
+	# 注意：控制台是屏幕空间 UI（1920x1080 设计分辨率），不随世界 2 倍化放大
+	_panel.position = Vector2(460, 60)
+	_panel.size = Vector2(1000, 960)
 	
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.08, 0.12, 0.95)
@@ -52,7 +53,7 @@ func _build_ui() -> void:
 	_panel.add_theme_stylebox_override("panel", style)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(1976, 1376)
+	scroll.custom_minimum_size = Vector2(976, 936)
 	_panel.add_child(scroll)
 	
 	var root = VBoxContainer.new()
